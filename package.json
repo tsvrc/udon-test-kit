@@ -1,0 +1,28 @@
+{
+  "name": "com.tsvrc.udon-test-kit",
+  "displayName": "Udon Test Kit",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": ".",
+  "keywords": [
+    "vrchat",
+    "udon",
+    "udonsharp",
+    "clientsim",
+    "testing",
+    "unit-testing"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "TsVRC",
+    "email": "contact@tsvrc.com",
+    "url": "https://tsvrc.com"
+  },
+  "dependencies": {
+    "com.unity.test-framework": "1.1.29"
+  },
+  "vpmDependencies": {
+    "com.vrchat.worlds": "3.10.x"
+  },
+  "changelogUrl": "https://github.com/tsvrc/udon-test-kit/releases"
+}

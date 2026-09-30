@@ -1,0 +1,30 @@
+{
+    "name": "UdonTestKit.Tests.EditMode",
+    "rootNamespace": "UdonTestKit.Tests.EditMode",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "UdonTestKit.ClientSim",
+        "VRC.SDKBase",
+        "VRC.SDK3",
+        "VRC.ClientSim",
+        "VRC.ClientSim.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "VRCSDKBase.dll",
+        "VRCSDK3.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
