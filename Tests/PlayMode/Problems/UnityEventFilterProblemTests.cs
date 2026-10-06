@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using UdonTestKit.ClientSim;
 using UdonTestKit.Tests.PlayMode.Helpers;
 using UnityEditor;
 using UnityEditor.Events;

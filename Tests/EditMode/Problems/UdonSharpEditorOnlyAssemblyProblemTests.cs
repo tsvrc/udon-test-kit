@@ -6,7 +6,7 @@ namespace UdonTestKit.Tests.EditMode.Problems
 {
     // Problem: Unity refuses to AddComponent a behaviour from an assembly compiled only for the
     // Editor, so a test double kept in an Editor-only test assembly can't be added to a GameObject.
-    // Solved by the UdonTestKit.Behaviours assembly targeting every platform, tested in
+    // Solved by the UdonTestKit assembly targeting every platform, tested in
     // Solutions/CallbackRecorderTests. A failure here means Unity changed, so that may no longer be needed.
     public class UdonSharpEditorOnlyAssemblyProblemTests
     {

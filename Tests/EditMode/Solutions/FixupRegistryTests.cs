@@ -1,6 +1,5 @@
 using System.Linq;
 using NUnit.Framework;
-using UdonTestKit.ClientSim;
 
 namespace UdonTestKit.Tests.EditMode.Solutions
 {

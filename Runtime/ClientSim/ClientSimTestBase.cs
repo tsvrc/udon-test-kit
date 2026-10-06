@@ -2,7 +2,7 @@ using System.Collections;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
-namespace UdonTestKit.ClientSim
+namespace UdonTestKit
 {
     /// <summary>
     /// Shared base for real, ClientSim-backed Play Mode tests. Applies every active

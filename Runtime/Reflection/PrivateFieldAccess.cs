@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace UdonTestKit.Reflection
+namespace UdonTestKit
 {
     /// <summary>
     /// Reads and writes fields, and calls methods, by name on any object or static type,

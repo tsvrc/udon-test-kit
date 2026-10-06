@@ -1,7 +1,7 @@
 using UnityEngine;
 using VRC.SDK3.ClientSim.Persistence;
 
-namespace UdonTestKit.ClientSim
+namespace UdonTestKit
 {
     /// <summary>
     /// With player persistence on, every ClientSim session creates a ClientSimPlayerObjectStorage

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UdonSharp;
 
-namespace UdonTestKit.Behaviours
+namespace UdonTestKit
 {
     /// <summary>
     /// A listener double for code that calls UdonSharpBehaviours by method name, such as

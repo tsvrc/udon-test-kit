@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace UdonTestKit.ClientSim
+namespace UdonTestKit
 {
     /// <summary>
     /// The ordered list of fixups ClientSimTestBase applies. A consuming world can switch one off

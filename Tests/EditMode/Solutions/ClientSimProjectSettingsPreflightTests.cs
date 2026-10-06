@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using UdonTestKit.ClientSim;
 using VRC.SDK3.ClientSim.Editor;
 
 namespace UdonTestKit.Tests.EditMode.Solutions
@@ -35,6 +34,19 @@ namespace UdonTestKit.Tests.EditMode.Solutions
         }
 
         [Test]
+        public void OnBeforeAnyTests_ClientSimCheckFails_NamesTheFixMenuItem()
+        {
+            // Arrange
+            var preflight = new ClientSimProjectSettingsPreflight(() => false, () => LayersAndMatrixNamed);
+
+            // Act
+            var failure = Assert.Throws<AssertionException>(() => preflight.OnBeforeAnyTests());
+
+            // Assert
+            Assert.That(failure.Message, Does.Contain("Tools > Udon Test Kit > Fix ClientSim Project Settings"));
+        }
+
+        [Test]
         public void OnBeforeAnyTests_ClientSimCheckFailsWithNoSettingNamed_StillFails()
         {
             var preflight = new ClientSimProjectSettingsPreflight(() => false, () => NoneNamed);
@@ -43,14 +55,14 @@ namespace UdonTestKit.Tests.EditMode.Solutions
         }
 
         [Test]
-        public void FindInvalidSettings_ClientSimCheckPasses_NamesNothing()
+        public void FindInvalid_ClientSimCheckPasses_NamesNothing()
         {
             // Arrange
             Assume.That(ClientSimProjectSettingsSetup.IsUsingCorrectSettings(), Is.True,
                 "This project's ClientSim settings are invalid, so this can't check the passing case.");
 
             // Act and Assert
-            Assert.That(ClientSimProjectSettingsPreflight.FindInvalidSettings(), Is.Empty);
+            Assert.That(ClientSimProjectSettings.FindInvalid(ClientSimProjectSettings.All), Is.Empty);
         }
     }
 }

@@ -24,8 +24,10 @@
     EditMode, PlayMode, or All. Defaults to All.
 
 .PARAMETER AssemblyNames
-    Passed straight to Unity's -assemblyNames. Defaults to this package's own suite
-    (UdonTestKit.Tests.EditMode / UdonTestKit.Tests.PlayMode); set it to test a different assembly.
+    Passed straight to Unity's -assemblyNames, to run only those test assemblies (separate
+    several with ";"). Defaults to the project's own tests: every assembly definition under
+    Assets that references Unity Test Framework or NUnit, plus Assembly-CSharp-Editor. Tests
+    that come with packages, such as the VRChat SDK's, don't run unless named here.
 
 .PARAMETER ResultsPath
     Folder to write the NUnit XML results into. Defaults to a timestamped folder under $env:TEMP.
@@ -89,6 +91,23 @@ function Find-UnityEditor([string] $version) {
     return $null
 }
 
+# The project's own test assemblies: assembly definitions under Assets that reference Unity Test
+# Framework or NUnit, by name or by the Test Runner assemblies' GUIDs, plus Assembly-CSharp-Editor
+# for tests kept in Editor folders. Packages' tests, such as the VRChat SDK's, are left out.
+function Find-ProjectTestAssemblies([string] $projectPath) {
+    $testReferences = @(
+        'UnityEngine.TestRunner', 'UnityEditor.TestRunner', 'nunit.framework.dll'
+        'GUID:27619889b8ba8c24980f49ee34dbb44a', 'GUID:0acc523941302664db1f4e527237feb3'
+    )
+    $names = @('Assembly-CSharp-Editor')
+    foreach ($file in Get-ChildItem (Join-Path $projectPath 'Assets') -Recurse -Filter '*.asmdef') {
+        $definition = Get-Content $file.FullName -Raw | ConvertFrom-Json
+        $references = @($definition.references) + @($definition.precompiledReferences)
+        if ($references | Where-Object { $testReferences -contains $_ }) { $names += $definition.name }
+    }
+    return $names
+}
+
 if (-not $ProjectPath) {
     # Prefer walking up from the script's own location: when this package is embedded in a host
     # project, that's the project you almost always mean, regardless of the caller's cwd.
@@ -111,6 +130,10 @@ if (-not $UnityPath -or -not (Test-Path $UnityPath)) {
     if (-not $UnityPath -or -not (Test-Path $UnityPath)) {
         throw 'Unity Editor not found. Pass -UnityPath explicitly.'
     }
+}
+
+if (-not $AssemblyNames) {
+    $AssemblyNames = (Find-ProjectTestAssemblies $ProjectPath) -join ';'
 }
 
 if (-not $ResultsPath) {
@@ -137,12 +160,13 @@ foreach ($mode in $modes) {
         '-testResults', $resultsFile
         '-logFile', $logFile
     )
-    $assemblies = $AssemblyNames
-    if (-not $assemblies) { $assemblies = "UdonTestKit.Tests.$mode" }
-    $unityArgs += @('-assemblyNames', $assemblies)
+    if ($AssemblyNames) { $unityArgs += @('-assemblyNames', $AssemblyNames) }
 
     Write-Host "$mode" -ForegroundColor Cyan
-    $process = Start-Process -FilePath $UnityPath -ArgumentList $unityArgs -NoNewWindow -PassThru
+    # Start-Process joins arguments with spaces without quoting them, so a path with a space
+    # would reach Unity cut in two.
+    $quotedArgs = $unityArgs | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }
+    $process = Start-Process -FilePath $UnityPath -ArgumentList $quotedArgs -NoNewWindow -PassThru
     $spinner = '|', '/', '-', '\'
     $frame = 0
     while (-not $process.HasExited) {
@@ -190,6 +214,9 @@ foreach ($mode in $modes) {
     if ($notRun -gt 0) { $summaryColor = 'Yellow' }
     if ($failed -gt 0) { $summaryColor = 'Red' }
     Write-Host "  $passed passed, $failed failed, $notRun inconclusive or skipped" -ForegroundColor $summaryColor
+    if ($passed + $failed + $notRun -eq 0) {
+        Write-Host "  No $mode tests found. Create test assemblies with Assets > Create > Udon Test Kit > Test Assemblies." -ForegroundColor Yellow
+    }
     Write-Host "  Results: $resultsFile" -ForegroundColor DarkGray
     Write-Host ''
 

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using VRC.SDK3.ClientSim.Editor;
 
-namespace UdonTestKit.ClientSim
+namespace UdonTestKit
 {
     /// <summary>
     /// When ClientSim starts, it runs ClientSimProjectSettingsSetup.IsUsingCorrectSettings(), and if
     /// that fails it force-opens its settings window. In batch mode the window logs errors, and
     /// Unity Test Framework fails the test on them. This fixup runs the same check before any test
-    /// and fails with a message naming the settings check.
+    /// and fails with a message naming the failing settings and the menu item that fixes them.
     /// </summary>
     public sealed class ClientSimProjectSettingsPreflight : IPlayModeEnvironmentFixup
     {
@@ -17,7 +17,7 @@ namespace UdonTestKit.ClientSim
         private readonly Func<IReadOnlyList<string>> _findInvalidSettings;
 
         public ClientSimProjectSettingsPreflight()
-            : this(ClientSimProjectSettingsSetup.IsUsingCorrectSettings, FindInvalidSettings)
+            : this(ClientSimProjectSettingsSetup.IsUsingCorrectSettings, () => ClientSimProjectSettings.FindInvalid(ClientSimProjectSettings.All))
         {
         }
 
@@ -35,29 +35,12 @@ namespace UdonTestKit.ClientSim
             IReadOnlyList<string> invalid = _findInvalidSettings();
             string which = invalid.Count > 0 ? " Failing: " + string.Join(", ", invalid) + "." : "";
             Assert.Fail("ClientSim's project settings check (ClientSimProjectSettingsSetup.IsUsingCorrectSettings) " +
-                "fails, so ClientSim would open its settings window and fail tests in batch mode." + which);
+                "fails, so ClientSim would open its settings window and fail tests in batch mode." + which +
+                " Fix it with " + ClientSimProjectSettings.FixMenuPath.Replace("/", " > ") + ".");
         }
 
         public void OnUnityTearDown()
         {
-        }
-
-        // Names which of ClientSim's individual settings checks fail, for the failure message.
-        // IsUsingCorrectSettings() stays the authority on whether the preflight fails at all.
-        internal static IReadOnlyList<string> FindInvalidSettings()
-        {
-            var invalid = new List<string>();
-            if (!ClientSimProjectSettingsSetup.IsUsingCorrectInputAxesSettings())
-                invalid.Add("input axes");
-            if (!ClientSimProjectSettingsSetup.IsUsingCorrectInputTypeSettings())
-                invalid.Add("input type");
-            if (!ClientSimProjectSettingsSetup.IsUsingCorrectAudioSettings())
-                invalid.Add("audio spatializer");
-            if (!UpdateLayers.AreLayersSetup())
-                invalid.Add("VRChat layers");
-            if (!UpdateLayers.IsCollisionLayerMatrixSetup())
-                invalid.Add("collision matrix");
-            return invalid;
         }
     }
 }

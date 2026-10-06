@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Core;
 
-namespace UdonTestKit.ClientSim
+namespace UdonTestKit
 {
     /// <summary>
     /// When Play Mode starts, the VRChat SDK's VRC.Core.UnityEventFilter strips every persistent
@@ -17,7 +17,7 @@ namespace UdonTestKit.ClientSim
     /// This fixup adds an entry for each of those types, permitting their TestStarted,
     /// TestFinished, RunStarted and RunFinished methods. It runs from [InitializeOnLoad], only when
     /// some loaded assembly references this one, so a project that doesn't use
-    /// UdonTestKit.ClientSim is never touched. If the SDK's internals it relies on can't be found,
+    /// UdonTestKit is never touched. If the SDK's internals it relies on can't be found,
     /// it logs a warning instead of throwing.
     /// </summary>
     [InitializeOnLoad]

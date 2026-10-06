@@ -1,7 +1,7 @@
 using UnityEngine;
 using VRC.SDK3.ClientSim;
 
-namespace UdonTestKit.Behaviours
+namespace UdonTestKit
 {
     /// <summary>
     /// Gives a GameObject an owner of its own in ClientSim. Without one, ClientSim reports the

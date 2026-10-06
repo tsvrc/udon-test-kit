@@ -1,4 +1,4 @@
-namespace UdonTestKit.ClientSim
+namespace UdonTestKit
 {
     /// <summary>
     /// A workaround for a known Play Mode testing problem, applied by ClientSimTestBase through

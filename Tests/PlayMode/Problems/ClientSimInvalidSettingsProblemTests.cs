@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using UdonTestKit.ClientSim;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;

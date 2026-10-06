@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UdonTestKit.Behaviours;
 using UnityEngine;
 
 namespace UdonTestKit.Tests.PlayMode.Solutions

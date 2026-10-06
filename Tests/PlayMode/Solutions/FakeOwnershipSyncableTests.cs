@@ -1,7 +1,5 @@
 using System.Collections;
 using NUnit.Framework;
-using UdonTestKit.Behaviours;
-using UdonTestKit.ClientSim;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDKBase;

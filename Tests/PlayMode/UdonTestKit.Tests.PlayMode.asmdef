@@ -3,8 +3,7 @@
     "rootNamespace": "UdonTestKit.Tests.PlayMode",
     "references": [
         "UnityEngine.TestRunner",
-        "UdonTestKit.ClientSim",
-        "UdonTestKit.Behaviours",
+        "UdonTestKit",
         "UdonSharp.Runtime",
         "VRC.SDKBase",
         "VRC.SDK3",
@@ -22,7 +21,8 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [
-        "UNITY_INCLUDE_TESTS"
+        "UNITY_INCLUDE_TESTS",
+        "UDON_TEST_KIT_TESTS"
     ],
     "versionDefines": [],
     "noEngineReferences": false

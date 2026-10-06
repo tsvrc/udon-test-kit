@@ -6,7 +6,7 @@ using VRC.SDK3.Components;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit.ClientSim
+namespace UdonTestKit
 {
     /// <summary>
     /// A real ClientSim session for Play Mode tests: starts ClientSim with the scene descriptor it

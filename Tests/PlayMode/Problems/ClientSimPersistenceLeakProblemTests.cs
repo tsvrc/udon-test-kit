@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using UdonTestKit.ClientSim;
 using UdonTestKit.Tests.PlayMode.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;

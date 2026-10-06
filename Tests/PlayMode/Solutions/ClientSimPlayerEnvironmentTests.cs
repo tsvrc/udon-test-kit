@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
-using UdonTestKit.ClientSim;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;

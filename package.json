@@ -3,7 +3,7 @@
   "displayName": "Udon Test Kit",
   "version": "0.1.0",
   "unity": "2022.3",
-  "description": ".",
+  "description": "Test VRChat worlds with Unity Test Framework: real ClientSim sessions in Play Mode tests, fixes for the SDK problems that break them, and UdonSharp test helpers.",
   "keywords": [
     "vrchat",
     "udon",
