@@ -1,0 +1,19 @@
+{
+    "name": "UdonTestKit.Behaviours",
+    "rootNamespace": "UdonTestKit.Behaviours",
+    "references": [
+        "UdonSharp.Runtime",
+        "VRC.ClientSim"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

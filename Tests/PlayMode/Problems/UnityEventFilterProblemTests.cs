@@ -23,6 +23,7 @@ namespace UdonTestKit.Tests.PlayMode.Problems
     public class UnityEventFilterProblemTests
     {
         private const string TestRunnerTypeName = "UnityEngine.TestTools.TestRunner.PlaymodeTestsController";
+        private const string PlayModeStateChangedField = "m_PlayModeStateChangedEvent";
 
         // The test runner's event fields that carry its listeners.
         private static readonly string[] TestRunnerEventFieldNames =
@@ -47,16 +48,20 @@ namespace UdonTestKit.Tests.PlayMode.Problems
         public void PlayModeStateChanged_InPlayMode_RunsTheFilter()
         {
             // Arrange
-            FieldInfo eventField = typeof(EditorApplication).GetField("playModeStateChanged", BindingFlags.NonPublic | BindingFlags.Static);
+            FieldInfo eventField = typeof(EditorApplication).GetField(PlayModeStateChangedField, BindingFlags.NonPublic | BindingFlags.Static);
             MethodInfo filterOnEntry = typeof(UnityEventFilter).GetMethod("RunFilteringOnPlayModeEntry", BindingFlags.NonPublic | BindingFlags.Static);
-            Assume.That(eventField, Is.Not.Null, "EditorApplication.playModeStateChanged's field not found. Has Unity changed?");
+            Assume.That(eventField, Is.Not.Null, $"EditorApplication.{PlayModeStateChangedField} not found. Has Unity changed?");
             Assume.That(filterOnEntry, Is.Not.Null, "UnityEventFilter.RunFilteringOnPlayModeEntry not found. Has the SDK changed?");
 
             // Act
-            var subscribers = (Delegate)eventField.GetValue(null);
+            List<MethodInfo> subscribedMethods = EnumerateByReflection(eventField.GetValue(null))
+                .OfType<Delegate>()
+                .SelectMany(subscriber => subscriber.GetInvocationList())
+                .Select(subscriber => subscriber.Method)
+                .ToList();
 
             // Assert
-            Assert.That(subscribers?.GetInvocationList().Select(subscriber => subscriber.Method), Has.Member(filterOnEntry));
+            Assert.That(subscribedMethods, Has.Member(filterOnEntry));
         }
 
         [Test]
@@ -164,6 +169,21 @@ namespace UdonTestKit.Tests.PlayMode.Problems
             var host = new GameObject(nameof(UnityEventFilterProblemTests));
             _created.Add(host);
             return host.AddComponent<EventSource>();
+        }
+
+        // The event's store has a GetEnumerator method without implementing IEnumerable, so it's
+        // walked the way foreach would, through reflection.
+        private static IEnumerable<object> EnumerateByReflection(object store)
+        {
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            MethodInfo getEnumerator = store.GetType().GetMethod("GetEnumerator", flags);
+            Assert.That(getEnumerator, Is.Not.Null, $"{store.GetType().Name}.GetEnumerator not found. Has Unity changed?");
+
+            object enumerator = getEnumerator.Invoke(store, null);
+            MethodInfo moveNext = enumerator.GetType().GetMethod("MoveNext", flags);
+            PropertyInfo current = enumerator.GetType().GetProperty("Current", flags);
+            while ((bool)moveNext.Invoke(enumerator, null))
+                yield return current.GetValue(enumerator);
         }
 
         private static IReadOnlyCollection<string> FindTestRunnerListenerTypeNames()

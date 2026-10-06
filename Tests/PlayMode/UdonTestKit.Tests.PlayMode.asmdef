@@ -4,6 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UdonTestKit.ClientSim",
+        "UdonTestKit.Behaviours",
+        "UdonSharp.Runtime",
         "VRC.SDKBase",
         "VRC.SDK3",
         "VRC.ClientSim",

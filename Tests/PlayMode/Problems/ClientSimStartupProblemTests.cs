@@ -63,7 +63,6 @@ namespace UdonTestKit.Tests.PlayMode.Problems
             {
                 enableClientSim = true,
                 spawnPlayer = true,
-                deleteEditorOnly = false,
                 localPlayerIsMaster = true,
                 initializationDelay = 0f,
             };

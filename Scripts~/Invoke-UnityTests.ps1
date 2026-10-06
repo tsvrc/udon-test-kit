@@ -8,7 +8,8 @@
     parameter. Not tied to any particular project: point -ProjectPath at whichever Unity
     project you want tested.
 
-    Only failures print by default, each with its failure message; passes are just counted.
+    Only failures, inconclusive and skipped tests print by default, each with its message;
+    passes are just counted.
     Pass -Verbose to see every test.
 
 .PARAMETER ProjectPath
@@ -123,6 +124,7 @@ if ($TestMode -ne 'All') { $modes = @($TestMode) }
 
 $totalPassed = 0
 $totalFailed = 0
+$totalNotRun = 0
 
 foreach ($mode in $modes) {
     $resultsFile = Join-Path $ResultsPath "$mode.xml"
@@ -159,6 +161,7 @@ foreach ($mode in $modes) {
     $results = [xml] (Get-Content $resultsFile -Raw)
     $passed = 0
     $failed = 0
+    $notRun = 0
     foreach ($testCase in $results.SelectNodes('//test-case')) {
         if ($testCase.result -eq 'Passed') {
             $passed++
@@ -172,21 +175,33 @@ foreach ($mode in $modes) {
                 Write-Host "      $($messageNode.InnerText.Trim())" -ForegroundColor DarkGray
             }
         }
+        else {
+            # Inconclusive (an Assume didn't hold) or Skipped (ignored): the test proved nothing.
+            $notRun++
+            Write-Host "  $($testCase.result.ToUpper())  $($testCase.fullname)" -ForegroundColor Yellow
+            $messageNode = $testCase.SelectSingleNode('reason/message')
+            if ($messageNode) {
+                Write-Host "      $($messageNode.InnerText.Trim())" -ForegroundColor DarkGray
+            }
+        }
     }
 
     $summaryColor = 'Green'
+    if ($notRun -gt 0) { $summaryColor = 'Yellow' }
     if ($failed -gt 0) { $summaryColor = 'Red' }
-    Write-Host "  $passed passed, $failed failed" -ForegroundColor $summaryColor
+    Write-Host "  $passed passed, $failed failed, $notRun inconclusive or skipped" -ForegroundColor $summaryColor
     Write-Host "  Results: $resultsFile" -ForegroundColor DarkGray
     Write-Host ''
 
     $totalPassed += $passed
     $totalFailed += $failed
+    $totalNotRun += $notRun
 }
 
 $totalColor = 'Green'
+if ($totalNotRun -gt 0) { $totalColor = 'Yellow' }
 if ($totalFailed -gt 0) { $totalColor = 'Red' }
-Write-Host "Total: $totalPassed passed, $totalFailed failed" -ForegroundColor $totalColor
+Write-Host "Total: $totalPassed passed, $totalFailed failed, $totalNotRun inconclusive or skipped" -ForegroundColor $totalColor
 
 if ($totalFailed -gt 0) { exit 1 }
 exit 0
