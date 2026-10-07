@@ -19,10 +19,10 @@
     "url": "https://tsvrc.com"
   },
   "dependencies": {
-    "com.unity.test-framework": "1.1.29"
+    "com.unity.test-framework": "1.1.33"
   },
   "vpmDependencies": {
-    "com.vrchat.worlds": "3.10.x"
+    "com.vrchat.worlds": "^3.8.2"
   },
   "changelogUrl": "https://github.com/tsvrc/udon-test-kit/releases"
 }
