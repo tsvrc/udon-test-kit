@@ -26,8 +26,8 @@ namespace UdonTestKit.Tests.Solutions
         public IEnumerator SetOwner_RemotePlayerId_LocalMasterIsNotOwner()
         {
             // Arrange
-            yield return StartClientSim(localPlayerIsMaster: true);
-            VRCPlayerApi remote = SpawnRemote();
+            yield return Session.Start(localPlayerIsMaster: true);
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
             FakeOwnershipSyncable syncable = CreateTarget();
 
             // Act
@@ -42,8 +42,8 @@ namespace UdonTestKit.Tests.Solutions
         public IEnumerator NetworkingSetOwner_RemotePlayer_RemoteBecomesOwner()
         {
             // Arrange
-            yield return StartClientSim(localPlayerIsMaster: true);
-            VRCPlayerApi remote = SpawnRemote();
+            yield return Session.Start(localPlayerIsMaster: true);
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
             CreateTarget().SetOwner(Networking.LocalPlayer.playerId);
 
             // Act
@@ -58,7 +58,7 @@ namespace UdonTestKit.Tests.Solutions
         public IEnumerator GetOwner_SetOwnerNeverCalled_IsNobody()
         {
             // Arrange
-            yield return StartClientSim(localPlayerIsMaster: true);
+            yield return Session.Start(localPlayerIsMaster: true);
             CreateTarget();
 
             // Act
@@ -66,12 +66,6 @@ namespace UdonTestKit.Tests.Solutions
 
             // Assert
             Assert.That(owner, Is.Null);
-        }
-
-        private VRCPlayerApi SpawnRemote()
-        {
-            Players.SpawnRemotePlayer(RemoteName);
-            return ClientSimPlayerEnvironment.FindPlayerByName(RemoteName);
         }
 
         private FakeOwnershipSyncable CreateTarget()

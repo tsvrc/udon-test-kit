@@ -15,7 +15,7 @@ namespace UdonTestKit.Tests.Problems
     {
         private const string RemoteName = "Remote";
 
-        private readonly ClientSimPlayerEnvironment _players = new ClientSimPlayerEnvironment();
+        private readonly ClientSimSession _session = new ClientSimSession();
         private GameObject _target;
 
         [TearDown]
@@ -23,15 +23,14 @@ namespace UdonTestKit.Tests.Problems
         {
             if (_target != null)
                 Object.DestroyImmediate(_target);
-            _players.Teardown();
-            new ClientSimPersistenceLeakFixup().OnUnityTearDown();
+            _session.End();
         }
 
         [UnityTest]
         public IEnumerator GetOwner_PlainGameObject_IsTheMaster()
         {
             // Arrange
-            yield return _players.Start(localPlayerIsMaster: true);
+            yield return _session.Start(localPlayerIsMaster: true);
             _target = new GameObject(nameof(ClientSimOwnershipProblemTests));
 
             // Act
@@ -46,9 +45,8 @@ namespace UdonTestKit.Tests.Problems
         public IEnumerator SetOwner_PlainGameObjectToRemotePlayer_MasterStaysOwner()
         {
             // Arrange
-            yield return _players.Start(localPlayerIsMaster: true);
-            _players.SpawnRemotePlayer(RemoteName);
-            VRCPlayerApi remote = ClientSimPlayerEnvironment.FindPlayerByName(RemoteName);
+            yield return _session.Start(localPlayerIsMaster: true);
+            VRCPlayerApi remote = _session.SpawnRemotePlayer(RemoteName);
             _target = new GameObject(nameof(ClientSimOwnershipProblemTests));
 
             // Act

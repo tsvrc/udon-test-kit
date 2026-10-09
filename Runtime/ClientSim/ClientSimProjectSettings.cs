@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.ClientSim.Editor;
@@ -9,8 +10,9 @@ using Object = UnityEngine.Object;
 namespace UdonTestKit
 {
     /// <summary>
-    /// The project settings ClientSim checks before it starts (ClientSimProjectSettingsSetup.IsUsingCorrectSettings),
-    /// each with the change that makes it pass. Fix() applies the changes for the ones that fail.
+    /// The project settings ClientSim checks before it starts
+    /// (ClientSimProjectSettingsSetup.IsUsingCorrectSettings), each with the change that makes it
+    /// pass, and a menu item that applies the changes for the ones that fail.
     /// </summary>
     public static class ClientSimProjectSettings
     {
@@ -41,24 +43,35 @@ namespace UdonTestKit
         internal static IReadOnlyList<string> Fix(IEnumerable<Setting> settings)
         {
             var fixedSettings = new List<string>();
-            foreach (Setting setting in settings)
+            foreach (Setting setting in settings.Where(setting => !setting.IsValid()))
             {
-                if (setting.IsValid())
-                    continue;
                 setting.Apply();
                 fixedSettings.Add(setting.Name);
             }
             return fixedSettings;
         }
 
-        internal static IReadOnlyList<string> FindInvalid(IEnumerable<Setting> settings)
+        // When ClientSim's check fails, ClientSim opens its settings window as it starts, and in batch
+        // mode that window logs errors that fail the test without naming the cause.
+        internal static void AssertValid()
         {
-            return settings.Where(setting => !setting.IsValid()).Select(setting => setting.Name).ToList();
+            AssertValid(ClientSimProjectSettingsSetup.IsUsingCorrectSettings, All);
+        }
+
+        internal static void AssertValid(Func<bool> clientSimCheck, IEnumerable<Setting> settings)
+        {
+            if (clientSimCheck())
+                return;
+
+            string[] invalid = settings.Where(setting => !setting.IsValid()).Select(setting => setting.Name).ToArray();
+            Assert.Fail("ClientSim's project settings check fails" +
+                (invalid.Length > 0 ? " on: " + string.Join(", ", invalid) : "") +
+                ". Fix them with " + FixMenuPath.Replace("/", " > ") + ".");
         }
 
         // ClientSim's own SetInputTypeSettings sets the Input System only (1), which its check
-        // rejects (proven in EditMode/Problems/ClientSimInputTypeSetterProblemTests). ClientSim's
-        // window asks for both input systems, which is 2.
+        // rejects (Tests/Editor/Problems/ClientSimInputTypeSetterProblemTests). ClientSim's window
+        // asks for both input systems, which is 2.
         private static void UseBothInputSystems()
         {
             var projectSettings = new SerializedObject(AssetDatabase.LoadAssetAtPath<Object>("ProjectSettings/ProjectSettings.asset"));

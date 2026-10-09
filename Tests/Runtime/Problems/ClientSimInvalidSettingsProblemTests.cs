@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
@@ -15,8 +16,8 @@ namespace UdonTestKit.Tests.Problems
     // Problem: in Play Mode, ClientSim's settings hook is ClientSimProjectSettingsSetup.IsUsingCorrectSettings.
     // When it fails, ClientSim force-opens its settings window, which logs errors in batch mode, and
     // unexpected errors fail the test (Editor/Problems/UnityTestFrameworkLogProblemTests).
-    // Solved by ClientSimProjectSettingsPreflight, tested in Editor/Solutions/ClientSimProjectSettingsPreflightTests.
-    // A failure here means ClientSim changed, so the preflight may no longer be needed.
+    // Solved by ClientSimProjectSettings.AssertValid, tested in Editor/Solutions/ClientSimProjectSettingsTests.
+    // A failure here means ClientSim changed, so that check may no longer be needed.
     //
     // ClientSimMenu's two editor hooks are internal statics, reached by name. The check hook is
     // forced to fail instead of breaking this project's real settings.
@@ -24,7 +25,7 @@ namespace UdonTestKit.Tests.Problems
     {
         private const string NoGraphicDevice = "No graphic device is available";
 
-        private readonly ClientSimPlayerEnvironment _players = new ClientSimPlayerEnvironment();
+        private readonly RawClientSim _clientSim = new RawClientSim();
         private readonly List<string> _loggedErrors = new List<string>();
         private object _savedCheckHook;
         private object _savedOpenHook;
@@ -41,8 +42,8 @@ namespace UdonTestKit.Tests.Problems
         {
             CheckHookField().SetValue(null, _savedCheckHook);
             OpenHookField().SetValue(null, _savedOpenHook);
-            _players.Teardown();
-            new ClientSimPersistenceLeakFixup().OnUnityTearDown();
+            _clientSim.End();
+            ClientSimSession.DestroySavedDataObjects();
 
             foreach (ClientSimSettingsWindow window in Resources.FindObjectsOfTypeAll<ClientSimSettingsWindow>())
                 UnityEngine.Object.DestroyImmediate(window);
@@ -73,7 +74,7 @@ namespace UdonTestKit.Tests.Problems
             OpenHookField().SetValue(null, (Action)(() => openRequests++));
 
             // Act
-            yield return _players.Start();
+            yield return _clientSim.Start();
 
             // Assert
             Assert.That(openRequests, Is.EqualTo(1));

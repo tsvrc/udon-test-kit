@@ -1,0 +1,227 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using VRC.SDK3.ClientSim;
+using VRC.SDK3.Components;
+using VRC.SDKBase;
+
+namespace UdonTestKit.Tests.Solutions
+{
+    // Solution: ClientSimSession checks ClientSim's project settings, starts ClientSim with a scene
+    // descriptor, its own only when the scene has none, waits until ClientSim is ready or throws
+    // TimeoutException, and ends it leaving nothing behind. The problems are proven in
+    // Problems/ClientSimStartupProblemTests and Problems/ClientSimInvalidSettingsProblemTests.
+    public class ClientSimSessionTests : ClientSimTestBase
+    {
+        private const string RemoteName = "Remote";
+
+        private ClientSimSession _slowSession;
+        private GameObject _sceneDescriptor;
+        private Action _restore;
+
+        [TearDown]
+        public void TearDown()
+        {
+            _slowSession?.End();
+            if (_sceneDescriptor != null)
+                UnityEngine.Object.DestroyImmediate(_sceneDescriptor);
+            _restore?.Invoke();
+            _restore = null;
+        }
+
+#if UNITY_EDITOR
+        [Test]
+        public void Start_ClientSimSettingsInvalid_FailsNamingThemBeforeClientSimStarts()
+        {
+            // Arrange: breaks the audio spatializer setting in memory only.
+            var audioManager = new UnityEditor.SerializedObject(
+                UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Object>("ProjectSettings/AudioManager.asset"));
+            UnityEditor.SerializedProperty spatializer = audioManager.FindProperty("m_SpatializerPlugin");
+            string original = spatializer.stringValue;
+            Assume.That(original, Is.Not.Empty, "This project has no audio spatializer to break.");
+            _restore = () => SetSpatializer(audioManager, original);
+            SetSpatializer(audioManager, "");
+
+            // Act
+            var failure = Assert.Throws<AssertionException>(() => Session.Start().MoveNext());
+
+            // Assert
+            Assert.That(failure.Message, Does.Contain("audio spatializer"));
+            Assert.That(ClientSimMain.HasInstance(), Is.False);
+        }
+
+        private static void SetSpatializer(UnityEditor.SerializedObject audioManager, string plugin)
+        {
+            audioManager.Update();
+            audioManager.FindProperty("m_SpatializerPlugin").stringValue = plugin;
+            audioManager.ApplyModifiedProperties();
+        }
+#endif
+
+        [UnityTest]
+        public IEnumerator Start_WhenItReturns_LocalPlayerIsEnabled()
+        {
+            yield return Session.Start();
+
+            Assert.That(Networking.LocalPlayer.gameObject.activeSelf, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator Start_ClientSimNotReadyWithinTimeout_ThrowsTimeoutException()
+        {
+            // Arrange: ClientSim takes 5 s to get ready, the timeout is 0.2 s.
+            _slowSession = new ClientSimSession(readyTimeoutSeconds: 0.2f, initializationDelay: 5f);
+            IEnumerator start = _slowSession.Start();
+
+            // Act
+            TimeoutException failure;
+            while (MoveNext(start, out failure))
+                yield return start.Current;
+
+            // Assert
+            Assert.That(failure, Is.Not.Null, "Start finished instead of timing out.");
+        }
+
+        [UnityTest]
+        public IEnumerator Start_Default_LocalPlayerIsMaster()
+        {
+            yield return Session.Start();
+
+            Assert.That(Networking.IsMaster, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator Start_LocalPlayerIsMasterFalse_LocalPlayerIsNotMaster()
+        {
+            yield return Session.Start(localPlayerIsMaster: false);
+
+            Assert.That(Networking.IsMaster, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator Start_SceneHasADescriptor_SpawnsAtItsSpawnPoint()
+        {
+            // Arrange
+            var spawnPosition = new Vector3(5f, 0f, 7f);
+            _sceneDescriptor = CreateSceneDescriptor(spawnPosition);
+
+            // Act
+            yield return Session.Start();
+
+            // Assert
+            Assert.That(Vector3.Distance(Networking.LocalPlayer.GetPosition(), spawnPosition), Is.LessThan(0.5f));
+            Assert.That(SceneDescriptors().Count(), Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator End_SceneHasADescriptor_LeavesIt()
+        {
+            // Arrange
+            _sceneDescriptor = CreateSceneDescriptor(Vector3.zero);
+            yield return Session.Start();
+
+            // Act
+            Session.End();
+
+            // Assert
+            Assert.That(_sceneDescriptor != null, "End destroyed the scene's own descriptor.");
+        }
+
+        [UnityTest]
+        public IEnumerator End_AfterStart_LeavesNoClientSimTestModeOrDescriptor()
+        {
+            // Arrange
+            yield return Session.Start();
+
+            // Act
+            Session.End();
+
+            // Assert
+            Assert.That(ClientSimMain.HasInstance(), Is.False);
+            Assert.That(ClientSimRuntimeLoader.IsInUnityTest(), Is.False);
+            Assert.That(SceneDescriptors(), Is.Empty);
+        }
+
+        [UnityTest]
+        public IEnumerator SpawnRemotePlayer_SameFrame_ReturnsTheRemotePlayer()
+        {
+            // Arrange
+            yield return Session.Start();
+
+            // Act
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
+
+            // Assert
+            Assert.That(remote.displayName, Is.EqualTo(RemoteName));
+            Assert.That(remote.isLocal, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator SpawnRemotePlayer_TwoPlayers_GetDistinctIds()
+        {
+            // Arrange
+            yield return Session.Start();
+
+            // Act
+            VRCPlayerApi alpha = Session.SpawnRemotePlayer("Alpha");
+            VRCPlayerApi beta = Session.SpawnRemotePlayer("Beta");
+
+            // Assert
+            Assert.That(alpha.playerId, Is.Not.EqualTo(beta.playerId));
+        }
+
+        [UnityTest]
+        public IEnumerator RemovePlayer_SameFrame_IsNoLongerFoundByName()
+        {
+            // Arrange
+            yield return Session.Start();
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
+
+            // Act
+            Session.RemovePlayer(remote);
+
+            // Assert
+            Assert.That(ClientSimSession.FindPlayerByName(RemoteName), Is.Null);
+        }
+
+        [UnityTest]
+        public IEnumerator FindPlayerByName_UnknownName_ReturnsNull()
+        {
+            yield return Session.Start();
+
+            Assert.That(ClientSimSession.FindPlayerByName("NoSuchPlayer"), Is.Null);
+        }
+
+        private static GameObject CreateSceneDescriptor(Vector3 spawnPosition)
+        {
+            var descriptorObject = new GameObject("SceneDescriptor");
+            var spawn = new GameObject("Spawn");
+            spawn.transform.position = spawnPosition;
+            spawn.transform.SetParent(descriptorObject.transform);
+            descriptorObject.AddComponent<VRCSceneDescriptor>().spawns = new[] { spawn.transform };
+            return descriptorObject;
+        }
+
+        private static IEnumerable<VRCSceneDescriptor> SceneDescriptors() =>
+            Resources.FindObjectsOfTypeAll<VRCSceneDescriptor>().Where(descriptor => descriptor.gameObject.scene.IsValid());
+
+        // Steps a coroutine, capturing a TimeoutException instead of letting it fail the test.
+        private static bool MoveNext(IEnumerator routine, out TimeoutException failure)
+        {
+            failure = null;
+            try
+            {
+                return routine.MoveNext();
+            }
+            catch (TimeoutException e)
+            {
+                failure = e;
+                return false;
+            }
+        }
+    }
+}

@@ -8,10 +8,12 @@ using Object = UnityEngine.Object;
 
 namespace UdonTestKit.Editor.Tests.Solutions
 {
-    // Solution: ClientSimProjectSettings.Fix applies the change for every setting that fails
-    // ClientSim's check. The first tests use stand-in settings. The others break one real setting
-    // of this project, fix it, and put the original value back. Why ClientSim's own input type
-    // setter isn't used is proven in Problems/ClientSimInputTypeSetterProblemTests.
+    // Solution: ClientSimProjectSettings.AssertValid fails a test before ClientSim starts when
+    // ClientSim's own settings check would fail, naming the failing settings; the problem is proven
+    // in Runtime/Problems/ClientSimInvalidSettingsProblemTests. Fix applies the change for every
+    // setting that fails ClientSim's check. Tests with stand-in settings come first. The others break
+    // one real setting of this project, fix it, and put the original value back. Why ClientSim's own
+    // input type setter isn't used is proven in Problems/ClientSimInputTypeSetterProblemTests.
     public class ClientSimProjectSettingsTests
     {
         private Action _restore;
@@ -21,6 +23,41 @@ namespace UdonTestKit.Editor.Tests.Solutions
         {
             _restore?.Invoke();
             _restore = null;
+        }
+
+        [Test]
+        public void AssertValid_ClientSimCheckPasses_DoesNotFail()
+        {
+            var settings = new[] { StandIn("layers", false, new List<string>()) };
+
+            Assert.DoesNotThrow(() => ClientSimProjectSettings.AssertValid(() => true, settings));
+        }
+
+        [Test]
+        public void AssertValid_ClientSimCheckFails_NamesEachFailingSettingAndTheFixMenuItem()
+        {
+            // Arrange
+            var settings = new[]
+            {
+                StandIn("valid", true, new List<string>()),
+                StandIn("layers", false, new List<string>()),
+                StandIn("matrix", false, new List<string>()),
+            };
+
+            // Act
+            var failure = Assert.Throws<AssertionException>(() => ClientSimProjectSettings.AssertValid(() => false, settings));
+
+            // Assert
+            Assert.That(failure.Message, Does.Contain("on: layers, matrix."));
+            Assert.That(failure.Message, Does.Contain("Tools > Udon Test Kit > Fix ClientSim Project Settings"));
+        }
+
+        [Test]
+        public void AssertValid_ClientSimCheckFailsWithNoSettingNamed_StillFails()
+        {
+            var settings = new[] { StandIn("valid", true, new List<string>()) };
+
+            Assert.Throws<AssertionException>(() => ClientSimProjectSettings.AssertValid(() => false, settings));
         }
 
         [Test]

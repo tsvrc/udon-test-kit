@@ -10,8 +10,8 @@ namespace UdonTestKit.Editor.Tests.Problems
     // Problem: Unity behaviors the kit's code has to handle. Resources.FindObjectsOfTypeAll also
     // returns loaded prefab assets, whose scene isn't valid; DestroyImmediate refuses an asset
     // without allowDestroyingAssets; and a destroyed object is null only through Unity's ==.
-    // Solved by ClientSimPersistenceLeakFixup's scene guard and plain DestroyImmediate (tested in
-    // Solutions/ClientSimPersistenceLeakFixupTests), and by PlayerObjectStorages.CountAlive.
+    // Solved by the scene guard and plain DestroyImmediate in ClientSimSession.DestroySavedDataObjects
+    // (tested in Solutions/ClientSimSessionTests), and by SavedData.CountAlive.
     // A failure here means Unity changed, so that handling may no longer be needed.
     public class UnityObjectProblemTests
     {

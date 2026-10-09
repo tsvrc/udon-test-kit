@@ -9,8 +9,8 @@ namespace UdonTestKit.Editor.Tests.Problems
     // UnhandledLogMessageException ("Unhandled log message: ... Use LogAssert.Expect").
     // It's why the errors ClientSim's settings window logs in batch mode fail tests
     // (Runtime/Problems/ClientSimInvalidSettingsProblemTests). Solved by
-    // ClientSimProjectSettingsPreflight, tested in Solutions/ClientSimProjectSettingsPreflightTests.
-    // A failure here means Unity Test Framework changed, so the preflight may no longer be needed.
+    // ClientSimProjectSettings.AssertValid, tested in Solutions/ClientSimProjectSettingsTests.
+    // A failure here means Unity Test Framework changed, so that check may no longer be needed.
     public class UnityTestFrameworkLogProblemTests
     {
         private const string UnexpectedError = "An error log no test expected.";

@@ -205,12 +205,11 @@ public class ExamplePlayModeTests : ClientSimTestBase
     [UnityTest]
     public IEnumerator SpawnRemotePlayer_InClientSim_JoinsThePlayerList()
     {
-        yield return StartClientSim();
+        yield return Session.Start();
 
-        Players.SpawnRemotePlayer(""Remote"");
+        VRCPlayerApi remote = Session.SpawnRemotePlayer(""Remote"");
 
-        VRCPlayerApi remote = ClientSimPlayerEnvironment.FindPlayerByName(""Remote"");
-        Assert.That(remote, Is.Not.Null);
+        Assert.That(VRCPlayerApi.GetPlayerCount(), Is.EqualTo(2));
         Assert.That(remote.isLocal, Is.False);
     }
 }

@@ -5,88 +5,40 @@ using VRC.SDK3.ClientSim;
 
 namespace UdonTestKit.Tests.Solutions
 {
-    // Solution: ClientSimTestBase applies every active fixup in FixupRegistry: OnBeforeAnyTests from
-    // its [OneTimeSetUp], and OnUnityTearDown from its [UnityTearDown] after its ClientSim session is
-    // gone. A recording fixup is registered for each test and removed afterwards.
-    public class ClientSimTestBaseTests
+    // Solution: ClientSimTestBase ends its session after every test, and only after the derived
+    // class's own teardown, which can still use the session.
+    public class ClientSimTestBaseTests : ClientSimTestBase
     {
-        private RecordingFixup _fixup;
-        private TestBase _base;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _fixup = new RecordingFixup();
-            FixupRegistry.Register(_fixup);
-            _base = new TestBase();
-        }
+        private bool _checkSessionInTearDown;
 
         [TearDown]
         public void TearDown()
         {
-            FixupRegistry.Unregister(_fixup);
-            FixupRegistry.EnableAll();
-            _base.Players.Teardown();
-            new ClientSimPersistenceLeakFixup().OnUnityTearDown();
-        }
-
-        [Test]
-        public void OneTimeSetUp_RegisteredFixup_RunsItsOnBeforeAnyTests()
-        {
-            _base.ClientSimTestBase_OneTimeSetUp();
-
-            Assert.That(_fixup.BeforeAnyTestsCalls, Is.EqualTo(1));
-        }
-
-        [Test]
-        public void OneTimeSetUp_DisabledFixup_SkipsIt()
-        {
-            // Arrange
-            FixupRegistry.Disable<RecordingFixup>();
-
-            // Act
-            _base.ClientSimTestBase_OneTimeSetUp();
-
-            // Assert
-            Assert.That(_fixup.BeforeAnyTestsCalls, Is.Zero);
+            bool check = _checkSessionInTearDown;
+            _checkSessionInTearDown = false;
+            if (check)
+                Assert.That(ClientSimMain.HasInstance(), Is.True, "The base class ended the session before this teardown.");
         }
 
         [UnityTest]
-        public IEnumerator UnityTearDown_AfterASession_RunsFixupOnceClientSimIsGone()
+        public IEnumerator DerivedTearDown_AfterStart_SessionIsStillRunning()
+        {
+            yield return Session.Start();
+
+            _checkSessionInTearDown = true;
+        }
+
+        [UnityTest]
+        public IEnumerator EndClientSimSession_AfterStart_EndsTheSession()
         {
             // Arrange
-            yield return _base.StartSession();
-            Assume.That(ClientSimMain.HasInstance(), Is.True, "The session didn't start.");
+            yield return Session.Start();
 
             // Act
-            yield return _base.ClientSimTestBase_UnityTearDown();
+            EndClientSimSession();
 
             // Assert
-            Assert.That(_fixup.UnityTearDownCalls, Is.EqualTo(1));
-            Assert.That(_fixup.ClientSimWasRunningAtTearDown, Is.False);
-        }
-
-        // Has no tests of its own, so NUnit never runs it as a fixture.
-        private sealed class TestBase : ClientSimTestBase
-        {
-            public new ClientSimPlayerEnvironment Players => base.Players;
-
-            public IEnumerator StartSession() => StartClientSim();
-        }
-
-        private sealed class RecordingFixup : IPlayModeEnvironmentFixup
-        {
-            public int BeforeAnyTestsCalls;
-            public int UnityTearDownCalls;
-            public bool ClientSimWasRunningAtTearDown;
-
-            public void OnBeforeAnyTests() => BeforeAnyTestsCalls++;
-
-            public void OnUnityTearDown()
-            {
-                UnityTearDownCalls++;
-                ClientSimWasRunningAtTearDown = ClientSimMain.HasInstance();
-            }
+            Assert.That(ClientSimMain.HasInstance(), Is.False);
         }
     }
 }
