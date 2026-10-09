@@ -103,7 +103,7 @@ namespace UdonTestKit.Tests
         {
             // Arrange
             var spawnPosition = new Vector3(5f, 0f, 7f);
-            _sceneDescriptor = CreateSceneDescriptor(spawnPosition);
+            _sceneDescriptor = ClientSimSession.CreateSceneDescriptor(spawnPosition);
 
             // Act
             yield return Session.Start();
@@ -117,7 +117,7 @@ namespace UdonTestKit.Tests
         public IEnumerator End_SceneHasADescriptor_LeavesIt()
         {
             // Arrange
-            _sceneDescriptor = CreateSceneDescriptor(Vector3.zero);
+            _sceneDescriptor = ClientSimSession.CreateSceneDescriptor(Vector3.zero);
             yield return Session.Start();
 
             // Act
@@ -190,16 +190,6 @@ namespace UdonTestKit.Tests
             yield return Session.Start();
 
             Assert.That(ClientSimSession.FindPlayerByName("NoSuchPlayer"), Is.Null);
-        }
-
-        private static GameObject CreateSceneDescriptor(Vector3 spawnPosition)
-        {
-            var descriptorObject = new GameObject("SceneDescriptor");
-            var spawn = new GameObject("Spawn");
-            spawn.transform.position = spawnPosition;
-            spawn.transform.SetParent(descriptorObject.transform);
-            descriptorObject.AddComponent<VRCSceneDescriptor>().spawns = new[] { spawn.transform };
-            return descriptorObject;
         }
 
         private static IEnumerable<VRCSceneDescriptor> SceneDescriptors() =>

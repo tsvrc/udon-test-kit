@@ -61,14 +61,19 @@ namespace UdonTestKit
 
             foreach (string typeName in listenerTypeNames)
             {
-                Type listenerType = AppDomain.CurrentDomain.GetAssemblies()
-                    .Select(assembly => assembly.GetType(typeName))
-                    .FirstOrDefault(type => type != null);
+                Type listenerType = FindType(typeName);
                 if (listenerType == null)
                     Warn($"could not find {typeName}, so it was not allowlisted.");
                 else if (!allowlist.Contains(listenerType))
                     allowlist.Add(listenerType, entryConstructor.Invoke(new object[] { new List<string>(AllowedMethodNames), new List<string>() }));
             }
+        }
+
+        internal static Type FindType(string fullName)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetType(fullName))
+                .FirstOrDefault(type => type != null);
         }
 
         private static void Warn(string reason)

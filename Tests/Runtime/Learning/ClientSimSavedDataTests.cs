@@ -18,18 +18,12 @@ namespace UdonTestKit.Tests.Learning
     // ClientSimSession.End and Start handle both.
     public class ClientSimSavedDataTests
     {
-        // Long enough for a live storage to save again.
-        private const float WriteWindowSeconds = 1f;
-        // A pause before reading the file time, so a save started before End isn't counted after it.
-        private const float SettleSeconds = 0.5f;
-        private const string NewerSave = "{\"1\":[]}";
-        private const string Key = "UdonTestKit.ProblemKey";
 
         private readonly RawClientSim _clientSim = new RawClientSim();
         private List<ClientSimPlayerObjectStorage> _existingBefore;
 
         [SetUp]
-        public void SetUp() => _existingBefore = SavedData.FindStorages();
+        public void SetUp() => _existingBefore = ClientSimSession.SavedDataObjects().ToList();
 
         // Cleans up with the kit only after each test has observed ClientSim without it.
         [TearDown]
@@ -79,11 +73,11 @@ namespace UdonTestKit.Tests.Learning
             Assume.That(storage != null, SavedData.PersistenceOffMessage);
             string saveFile = SavedData.PlayerObjectFileOf(storage);
             _clientSim.End();
-            yield return new WaitForSecondsRealtime(SettleSeconds);
+            yield return new WaitForSecondsRealtime(SavedData.SettleSeconds);
             DateTime lastWriteAfterEnd = File.GetLastWriteTimeUtc(saveFile);
 
             // Act
-            yield return new WaitForSecondsRealtime(WriteWindowSeconds);
+            yield return new WaitForSecondsRealtime(SavedData.WriteWindowSeconds);
 
             // Assert
             Assert.That(File.GetLastWriteTimeUtc(saveFile), Is.GreaterThan(lastWriteAfterEnd));
@@ -115,14 +109,14 @@ namespace UdonTestKit.Tests.Learning
             Assume.That(storage != null, SavedData.PersistenceOffMessage);
             string saveFile = SavedData.PlayerObjectFileOf(storage);
             _clientSim.End();
-            yield return new WaitForSecondsRealtime(SettleSeconds);
+            yield return new WaitForSecondsRealtime(SavedData.SettleSeconds);
 
             // Act: a newer save lands in the file, as the next session's would.
-            File.WriteAllText(saveFile, NewerSave);
-            yield return new WaitForSecondsRealtime(WriteWindowSeconds);
+            File.WriteAllText(saveFile, SavedData.NewerSave);
+            yield return new WaitForSecondsRealtime(SavedData.WriteWindowSeconds);
 
             // Assert
-            Assert.That(File.ReadAllText(saveFile), Is.Not.EqualTo(NewerSave));
+            Assert.That(File.ReadAllText(saveFile), Is.Not.EqualTo(SavedData.NewerSave));
         }
 
         [UnityTest]
@@ -133,14 +127,14 @@ namespace UdonTestKit.Tests.Learning
             Assume.That(CreatedStorages(), Is.Not.Empty, SavedData.PersistenceOffMessage);
 
             // Act
-            PlayerData.SetString(Key, "value");
-            yield return new WaitForSecondsRealtime(SettleSeconds);
+            PlayerData.SetString(SavedData.Key, "value");
+            yield return new WaitForSecondsRealtime(SavedData.SettleSeconds);
 
             // Assert
-            Assert.That(File.ReadAllText(SavedData.PlayerDataFileOf(Networking.LocalPlayer)), Does.Not.Contain(Key));
+            Assert.That(File.ReadAllText(SavedData.PlayerDataFileOf(Networking.LocalPlayer)), Does.Not.Contain(SavedData.Key));
         }
 
         private List<ClientSimPlayerObjectStorage> CreatedStorages() =>
-            SavedData.FindStorages().Except(_existingBefore).ToList();
+            ClientSimSession.SavedDataObjects().Except(_existingBefore).ToList();
     }
 }

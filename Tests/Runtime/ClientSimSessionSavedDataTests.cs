@@ -14,15 +14,12 @@ namespace UdonTestKit.Tests
 {
     public class ClientSimSessionSavedDataTests : ClientSimTestBase
     {
-        private const float WriteWindowSeconds = 1f;
-        private const string NewerSave = "{\"1\":[]}";
-        private const string Key = "UdonTestKit.SolutionKey";
         private const string Value = "saved";
 
         private List<ClientSimPlayerObjectStorage> _existingBefore;
 
         [SetUp]
-        public void SetUp() => _existingBefore = SavedData.FindStorages();
+        public void SetUp() => _existingBefore = ClientSimSession.SavedDataObjects().ToList();
 
         [TearDown]
         public void TearDown()
@@ -57,11 +54,11 @@ namespace UdonTestKit.Tests
             Session.End();
 
             // Act
-            File.WriteAllText(saveFile, NewerSave);
-            yield return new WaitForSecondsRealtime(WriteWindowSeconds);
+            File.WriteAllText(saveFile, SavedData.NewerSave);
+            yield return new WaitForSecondsRealtime(SavedData.WriteWindowSeconds);
 
             // Assert
-            Assert.That(File.ReadAllText(saveFile), Is.EqualTo(NewerSave));
+            Assert.That(File.ReadAllText(saveFile), Is.EqualTo(SavedData.NewerSave));
         }
 
         [UnityTest]
@@ -72,11 +69,11 @@ namespace UdonTestKit.Tests
             Assume.That(CreatedStorages(), Is.Not.Empty, SavedData.PersistenceOffMessage);
 
             // Act
-            PlayerData.SetString(Key, Value);
+            PlayerData.SetString(SavedData.Key, Value);
             yield return null;
 
             // Assert
-            Assert.That(File.ReadAllText(SavedData.PlayerDataFileOf(Networking.LocalPlayer)), Does.Contain(Key));
+            Assert.That(File.ReadAllText(SavedData.PlayerDataFileOf(Networking.LocalPlayer)), Does.Contain(SavedData.Key));
         }
 
         [UnityTest]
@@ -85,7 +82,7 @@ namespace UdonTestKit.Tests
             // Arrange
             yield return Session.Start();
             Assume.That(CreatedStorages(), Is.Not.Empty, SavedData.PersistenceOffMessage);
-            PlayerData.SetString(Key, Value);
+            PlayerData.SetString(SavedData.Key, Value);
             yield return null;
             Session.End();
 
@@ -93,7 +90,7 @@ namespace UdonTestKit.Tests
             yield return Session.Start();
 
             // Assert
-            Assert.That(PlayerData.TryGetString(Networking.LocalPlayer, Key, out string restored), Is.True);
+            Assert.That(PlayerData.TryGetString(Networking.LocalPlayer, SavedData.Key, out string restored), Is.True);
             Assert.That(restored, Is.EqualTo(Value));
         }
 
@@ -103,7 +100,7 @@ namespace UdonTestKit.Tests
             // Arrange
             yield return Session.Start();
             Assume.That(CreatedStorages(), Is.Not.Empty, SavedData.PersistenceOffMessage);
-            PlayerData.SetString(Key, Value);
+            PlayerData.SetString(SavedData.Key, Value);
             yield return null;
             Session.End();
 
@@ -112,10 +109,10 @@ namespace UdonTestKit.Tests
             yield return Session.Start();
 
             // Assert
-            Assert.That(PlayerData.HasKey(Networking.LocalPlayer, Key), Is.False);
+            Assert.That(PlayerData.HasKey(Networking.LocalPlayer, SavedData.Key), Is.False);
         }
 
         private List<ClientSimPlayerObjectStorage> CreatedStorages() =>
-            SavedData.FindStorages().Except(_existingBefore).ToList();
+            ClientSimSession.SavedDataObjects().Except(_existingBefore).ToList();
     }
 }

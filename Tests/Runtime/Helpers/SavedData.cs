@@ -3,26 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using UnityEngine;
 using VRC.SDK3.ClientSim.Persistence;
 using VRC.SDKBase;
 
 namespace UdonTestKit.Tests.Helpers
 {
-    // Reaches ClientSim's saved-data internals, which have no public API.
+    // Shared by the saved-data tests, and a way into ClientSim's saved-data internals, which have
+    // no public API.
     internal static class SavedData
     {
         public const string PersistenceOffMessage =
             "The session created no ClientSimPlayerObjectStorage, so ClientSim's player persistence is off.";
-
-        // Scene instances only, never the prefab asset FindObjectsOfTypeAll also returns
-        // (Editor/Learning/UnityObjectTests).
-        public static List<ClientSimPlayerObjectStorage> FindStorages()
-        {
-            return Resources.FindObjectsOfTypeAll<ClientSimPlayerObjectStorage>()
-                .Where(storage => storage.gameObject.scene.IsValid())
-                .ToList();
-        }
+        public const string Key = "UdonTestKit.Key";
+        public const string NewerSave = "{\"1\":[]}";
+        // Long enough for a live storage to save again.
+        public const float WriteWindowSeconds = 1f;
+        // A pause before reading a save file, so a save started earlier isn't counted after it.
+        public const float SettleSeconds = 0.5f;
 
         // A destroyed object is null only through Unity's == (Editor/Learning/UnityObjectTests).
         public static int CountAlive(IEnumerable<ClientSimPlayerObjectStorage> storages)
@@ -30,7 +27,6 @@ namespace UdonTestKit.Tests.Helpers
             return storages.Count(storage => storage != null);
         }
 
-        // ClientSim's own internal PlayerDataFilePath, for the player the storage was initialized with.
         public static string PlayerObjectFileOf(ClientSimPlayerObjectStorage storage)
         {
             FieldInfo playerField = typeof(ClientSimPlayerObjectStorage).GetField("_player", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -43,6 +39,7 @@ namespace UdonTestKit.Tests.Helpers
             return FilePath(typeof(ClientSimPlayerDataStorage), player);
         }
 
+        // ClientSim's own internal PlayerDataFilePath.
         private static string FilePath(Type storageType, VRCPlayerApi player)
         {
             MethodInfo pathMethod = storageType.GetMethod("PlayerDataFilePath", BindingFlags.NonPublic | BindingFlags.Static);

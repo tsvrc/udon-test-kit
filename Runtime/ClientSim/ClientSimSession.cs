@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -47,7 +49,7 @@ namespace UdonTestKit
             ClientSimProjectSettings.AssertValid();
 
             if (Object.FindObjectOfType<VRC_SceneDescriptor>() == null)
-                _addedDescriptor = CreateDescriptor();
+                _addedDescriptor = CreateSceneDescriptor(Vector3.zero);
 
             var settings = new ClientSimSettings
             {
@@ -141,20 +143,25 @@ namespace UdonTestKit
         }
 
         // ClientSim keeps each player's saved data on a hidden root object that its own teardown
-        // never destroys, and that keeps rewriting the player's save file. FindObjectsOfTypeAll also
-        // returns ClientSim's prefab asset, whose scene isn't valid; DestroyImmediate without
-        // allowDestroyingAssets would refuse it anyway.
+        // never destroys, and that keeps rewriting the player's save file.
         internal static void DestroySavedDataObjects()
         {
-            foreach (ClientSimPlayerObjectStorage storage in Resources.FindObjectsOfTypeAll<ClientSimPlayerObjectStorage>())
-                if (storage != null && storage.gameObject.scene.IsValid())
-                    Object.DestroyImmediate(storage.gameObject);
+            foreach (ClientSimPlayerObjectStorage storage in SavedDataObjects().ToList())
+                Object.DestroyImmediate(storage.gameObject);
         }
 
-        private static GameObject CreateDescriptor()
+        // FindObjectsOfTypeAll also returns ClientSim's prefab asset, whose scene isn't valid.
+        internal static IEnumerable<ClientSimPlayerObjectStorage> SavedDataObjects()
+        {
+            return Resources.FindObjectsOfTypeAll<ClientSimPlayerObjectStorage>()
+                .Where(storage => storage != null && storage.gameObject.scene.IsValid());
+        }
+
+        internal static GameObject CreateSceneDescriptor(Vector3 spawnPosition)
         {
             var descriptorObject = new GameObject("__TestSceneDescriptor");
             var spawn = new GameObject("__TestSpawn");
+            spawn.transform.position = spawnPosition;
             spawn.transform.SetParent(descriptorObject.transform);
             descriptorObject.AddComponent<VRCSceneDescriptor>().spawns = new[] { spawn.transform };
             return descriptorObject;

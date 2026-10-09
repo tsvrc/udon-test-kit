@@ -32,15 +32,9 @@ namespace UdonTestKit.Tests.Helpers
 
         public static Type FindType(string fullName)
         {
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                Type type = assembly.GetType(fullName);
-                if (type != null)
-                    return type;
-            }
-
-            Assert.Fail($"{fullName} not found. Has Unity Test Framework's internal layout changed?");
-            return null;
+            Type type = UnityEventFilterAllowlist.FindType(fullName);
+            Assert.That(type, Is.Not.Null, $"{fullName} not found. Has Unity Test Framework's internal layout changed?");
+            return type;
         }
 
         // Creates an instance of a listener type, as a component on a new GameObject or as a
