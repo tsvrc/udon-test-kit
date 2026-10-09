@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace UdonTestKit.Tests.Helpers
 {
-    // ClientSim started and ended directly, without ClientSimSession, so a Problem test sees what
+    // ClientSim started and ended directly, without ClientSimSession, so a learning test sees what
     // ClientSim does on its own.
     internal sealed class RawClientSim
     {

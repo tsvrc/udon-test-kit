@@ -11,17 +11,13 @@ using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 using VRC.SDK3.ClientSim.Editor;
 
-namespace UdonTestKit.Tests.Problems
+namespace UdonTestKit.Tests.Learning
 {
-    // Problem: in Play Mode, ClientSim's settings hook is ClientSimProjectSettingsSetup.IsUsingCorrectSettings.
-    // When it fails, ClientSim force-opens its settings window, which logs errors in batch mode, and
-    // unexpected errors fail the test (Editor/Problems/UnityTestFrameworkLogProblemTests).
-    // Solved by ClientSimProjectSettings.AssertValid, tested in Editor/Solutions/ClientSimProjectSettingsTests.
-    // A failure here means ClientSim changed, so that check may no longer be needed.
-    //
-    // ClientSimMenu's two editor hooks are internal statics, reached by name. The check hook is
-    // forced to fail instead of breaking this project's real settings.
-    public class ClientSimInvalidSettingsProblemTests
+    // When ClientSim's settings check fails, ClientSim opens its settings window as it starts, and
+    // in batch mode the window logs errors. ClientSimProjectSettings.AssertValid fails first.
+    // ClientSimMenu's two hooks are internal statics, reached by name; the check is forced to fail
+    // instead of breaking this project's settings.
+    public class ClientSimInvalidSettingsTests
     {
         private const string NoGraphicDevice = "No graphic device is available";
 

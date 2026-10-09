@@ -5,13 +5,11 @@ using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Problems
+namespace UdonTestKit.Tests.Learning
 {
-    // Problem: ClientSim refuses to start without a VRCSceneDescriptor in the scene, and when it
-    // does start, the local player isn't enabled until ClientSim finishes initializing.
-    // Solved by ClientSimSession.Start, tested in Solutions/ClientSimSessionTests.
-    // A failure here means ClientSim changed, so that setup may no longer be needed.
-    public class ClientSimStartupProblemTests
+    // ClientSim won't start without a scene descriptor, and its local player isn't enabled in the
+    // frame it starts. ClientSimSession.Start adds a descriptor and waits.
+    public class ClientSimStartupTests
     {
         private readonly RawClientSim _clientSim = new RawClientSim();
 

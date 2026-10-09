@@ -1,9 +1,7 @@
 using NUnit.Framework;
 
-namespace UdonTestKit.Editor.Tests.Solutions
+namespace UdonTestKit.Editor.Tests
 {
-    // Solution: PrivateFieldAccess reaches members by name, including private ones declared on a
-    // base class. The base class problem is proven in Problems/ReflectionProblemTests.
     public class PrivateFieldAccessTests
     {
         private const int InitialStaticValue = 10;

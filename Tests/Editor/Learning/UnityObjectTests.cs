@@ -5,15 +5,12 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim.Persistence;
 
-namespace UdonTestKit.Editor.Tests.Problems
+namespace UdonTestKit.Editor.Tests.Learning
 {
-    // Problem: Unity behaviors the kit's code has to handle. Resources.FindObjectsOfTypeAll also
-    // returns loaded prefab assets, whose scene isn't valid; DestroyImmediate refuses an asset
-    // without allowDestroyingAssets; and a destroyed object is null only through Unity's ==.
-    // Solved by the scene guard and plain DestroyImmediate in ClientSimSession.DestroySavedDataObjects
-    // (tested in Solutions/ClientSimSessionTests), and by SavedData.CountAlive.
-    // A failure here means Unity changed, so that handling may no longer be needed.
-    public class UnityObjectProblemTests
+    // FindObjectsOfTypeAll also returns prefab assets, DestroyImmediate refuses an asset, and a
+    // destroyed object is null only through Unity's ==. ClientSimSession.SavedDataObjects and the
+    // saved-data tests rely on all three.
+    public class UnityObjectTests
     {
         private const string PlayerDataPrefabResourcePath = "ClientSim/Prefabs/ClientSimPlayerData";
 
@@ -52,7 +49,7 @@ namespace UdonTestKit.Editor.Tests.Problems
         public void DestroyImmediate_GameObject_IsNullOnlyThroughUnityEquality()
         {
             // Arrange
-            var gameObject = new GameObject(nameof(UnityObjectProblemTests));
+            var gameObject = new GameObject(nameof(UnityObjectTests));
 
             // Act
             Object.DestroyImmediate(gameObject);

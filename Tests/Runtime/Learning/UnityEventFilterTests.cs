@@ -12,14 +12,12 @@ using UnityEngine;
 using UnityEngine.Events;
 using VRC.Core;
 
-namespace UdonTestKit.Tests.Problems
+namespace UdonTestKit.Tests.Learning
 {
-    // Problem: when Play Mode starts, the VRChat SDK's UnityEventFilter strips persistent UnityEvent
-    // listeners it doesn't permit, and a stripped listener is never called. Unity Test Framework's
-    // Play Mode test runner calls its callbacks through listeners of four types the filter denies.
-    // Solved by UnityEventFilterAllowlist, tested in Solutions/UnityEventFilterAllowlistTests.
-    // A failure here means the SDK or Unity Test Framework changed, so the fixup may no longer be needed.
-    public class UnityEventFilterProblemTests
+    // When Play Mode starts, the VRChat SDK strips UnityEvent listeners whose type isn't
+    // allowlisted, including the four Unity Test Framework reports results through.
+    // UnityEventFilterAllowlist adds those four.
+    public class UnityEventFilterTests
     {
         private const string TestRunnerTypeName = "UnityEngine.TestTools.TestRunner.PlaymodeTestsController";
         private const string PlayModeStateChangedField = "m_PlayModeStateChangedEvent";
@@ -165,7 +163,7 @@ namespace UdonTestKit.Tests.Problems
 
         private EventSource CreateEventSource()
         {
-            var host = new GameObject(nameof(UnityEventFilterProblemTests));
+            var host = new GameObject(nameof(UnityEventFilterTests));
             _created.Add(host);
             return host.AddComponent<EventSource>();
         }

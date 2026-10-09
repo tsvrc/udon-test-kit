@@ -3,13 +3,11 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace UdonTestKit.Tests.Problems
+namespace UdonTestKit.Tests.Learning
 {
-    // Problem: Object.Destroy doesn't destroy right away; the object is gone only from the next frame.
-    // It's why Problems/ClientSimPersistenceLeakProblemTests yields a frame after ClientSim's teardown
-    // before asserting a leak, so a deferred cleanup isn't mistaken for one.
-    // A failure here means Unity changed, so that wait may no longer be needed.
-    public class UnityObjectLifetimeProblemTests
+    // Object.Destroy takes effect only from the next frame, so a test yields a frame before
+    // checking that something survived.
+    public class UnityObjectLifetimeTests
     {
         private GameObject _gameObject;
 
@@ -24,7 +22,7 @@ namespace UdonTestKit.Tests.Problems
         public void Destroy_SameFrame_ObjectStillExists()
         {
             // Arrange
-            _gameObject = new GameObject(nameof(UnityObjectLifetimeProblemTests));
+            _gameObject = new GameObject(nameof(UnityObjectLifetimeTests));
 
             // Act
             Object.Destroy(_gameObject);
@@ -37,7 +35,7 @@ namespace UdonTestKit.Tests.Problems
         public IEnumerator Destroy_NextFrame_ObjectIsGone()
         {
             // Arrange
-            _gameObject = new GameObject(nameof(UnityObjectLifetimeProblemTests));
+            _gameObject = new GameObject(nameof(UnityObjectLifetimeTests));
 
             // Act
             Object.Destroy(_gameObject);

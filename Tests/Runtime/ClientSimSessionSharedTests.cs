@@ -4,11 +4,10 @@ using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Solutions
+namespace UdonTestKit.Tests
 {
-    // Solution: one ClientSimSession can serve every test in a fixture. Unity Test Framework 1.1.33
-    // has no yielding one-time setup, so the first [UnitySetUp] starts it and [OneTimeTearDown]
-    // ends it. Each case checks the same session is still running with the same local player.
+    // One session for every test in the fixture. Unity Test Framework 1.1.33 has no yielding
+    // one-time setup, so the first [UnitySetUp] starts it and [OneTimeTearDown] ends it.
     public class ClientSimSessionSharedTests
     {
         private readonly ClientSimSession _session = new ClientSimSession();

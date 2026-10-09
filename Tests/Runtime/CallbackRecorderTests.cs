@@ -2,10 +2,8 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace UdonTestKit.Tests.Solutions
+namespace UdonTestKit.Tests
 {
-    // Solution: CallbackRecorder also works in Play Mode tests. Its full behavior is tested in
-    // Editor/Solutions/CallbackRecorderTests.
     public class CallbackRecorderTests
     {
         private GameObject _host;

@@ -10,13 +10,8 @@ using VRC.SDK3.ClientSim.Persistence;
 using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Solutions
+namespace UdonTestKit.Tests
 {
-    // Solution: ClientSimSession.End stops an ended session's saved data from being written, so the
-    // next session in the same scene starts from what the last one saved and keeps what it saves
-    // itself. Start returns once the local player's saved data is restored, so a test can use
-    // PlayerData right away. DeleteSavedData gives the next session none. The problems are proven in
-    // Problems/ClientSimSavedDataProblemTests.
     public class ClientSimSessionSavedDataTests : ClientSimTestBase
     {
         private const float WriteWindowSeconds = 1f;

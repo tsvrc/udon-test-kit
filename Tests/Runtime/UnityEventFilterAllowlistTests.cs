@@ -2,11 +2,9 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UdonTestKit.Tests.Helpers;
 
-namespace UdonTestKit.Tests.Solutions
+namespace UdonTestKit.Tests
 {
-    // Solution: UnityEventFilterAllowlist makes the VRChat SDK's UnityEventFilter permit Unity
-    // Test Framework's four listener types and their four runner methods. The problem is proven in
-    // Problems/UnityEventFilterProblemTests. Nothing here applies the fixup: it already ran at domain load.
+    // Nothing here applies the allowlist: it ran when the editor loaded.
     public class UnityEventFilterAllowlistTests
     {
         private readonly List<UnityEngine.Object> _created = new List<UnityEngine.Object>();

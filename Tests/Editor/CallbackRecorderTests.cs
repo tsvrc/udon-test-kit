@@ -2,11 +2,8 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace UdonTestKit.Editor.Tests.Solutions
+namespace UdonTestKit.Editor.Tests
 {
-    // Solution: CallbackRecorder can be added to a GameObject from a test and records calls made
-    // by method name. Why it lives in its own assembly is proven in
-    // Problems/UdonSharpEditorOnlyAssemblyProblemTests.
     public class CallbackRecorderTests
     {
         private readonly List<GameObject> _created = new List<GameObject>();

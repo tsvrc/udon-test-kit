@@ -7,12 +7,8 @@ using UnityEditor.Compilation;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit.Editor.Tests.Solutions
+namespace UdonTestKit.Editor.Tests
 {
-    // Solution: TestAssemblyCreator writes test assemblies with every reference a test needs, so a
-    // world doesn't assemble that list by hand. Files are written to a temporary folder outside
-    // Assets, so nothing here is imported or compiled. That the created assemblies compile and
-    // their example tests pass in a fresh project is checked in FINDINGS.md (F10).
     public class TestAssemblyCreatorTests
     {
         private const string KitTestsFolder = "Assets/udon-test-kit/Tests";

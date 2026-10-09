@@ -3,15 +3,11 @@ using UnityEditor;
 using VRC.SDK3.ClientSim.Editor;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit.Editor.Tests.Problems
+namespace UdonTestKit.Editor.Tests.Learning
 {
-    // Problem: ClientSim's own SetInputTypeSettings, the one its settings window runs, sets the
-    // Input System only, and its IsUsingCorrectInputTypeSettings check rejects that value. So
-    // ClientSim's fix for the input type leaves its check failing.
-    // Solved by ClientSimProjectSettings setting both input systems, tested in
-    // Solutions/ClientSimProjectSettingsTests. A failure here means ClientSim changed, so the
-    // kit could call ClientSim's setter instead.
-    public class ClientSimInputTypeSetterProblemTests
+    // ClientSim's own input type setter writes a value its own check rejects, so
+    // ClientSimProjectSettings writes 2, both input systems, instead.
+    public class ClientSimInputTypeSetterTests
     {
         private int _originalInputHandler;
 

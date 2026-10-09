@@ -3,11 +3,8 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Build.Player;
 
-namespace UdonTestKit.Editor.Tests.Solutions
+namespace UdonTestKit.Editor.Tests
 {
-    // Solution: the kit's assembly compiles only when UNITY_INCLUDE_TESTS is defined, so a world
-    // build leaves it out, even though the assembly targets every platform and is auto-referenced.
-    // Without that constraint the world's player scripts don't compile at all.
     public class PlayerBuildTests
     {
         private string _outputFolder;

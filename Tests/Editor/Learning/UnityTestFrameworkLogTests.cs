@@ -3,15 +3,11 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace UdonTestKit.Editor.Tests.Problems
+namespace UdonTestKit.Editor.Tests.Learning
 {
-    // Problem: Unity Test Framework treats an error log that no test expected as a failure, raising
-    // UnhandledLogMessageException ("Unhandled log message: ... Use LogAssert.Expect").
-    // It's why the errors ClientSim's settings window logs in batch mode fail tests
-    // (Runtime/Problems/ClientSimInvalidSettingsProblemTests). Solved by
-    // ClientSimProjectSettings.AssertValid, tested in Solutions/ClientSimProjectSettingsTests.
-    // A failure here means Unity Test Framework changed, so that check may no longer be needed.
-    public class UnityTestFrameworkLogProblemTests
+    // Unity Test Framework fails a test on any error log it didn't expect, which is how ClientSim's
+    // settings window fails tests in batch mode (Runtime/Learning/ClientSimInvalidSettingsTests).
+    public class UnityTestFrameworkLogTests
     {
         private const string UnexpectedError = "An error log no test expected.";
 

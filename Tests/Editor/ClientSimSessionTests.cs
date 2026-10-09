@@ -3,12 +3,8 @@ using NUnit.Framework;
 using UnityEngine;
 using VRC.SDK3.ClientSim.Persistence;
 
-namespace UdonTestKit.Editor.Tests.Solutions
+namespace UdonTestKit.Editor.Tests
 {
-    // Solution: the parts of ClientSimSession that need no running ClientSim. DestroySavedDataObjects
-    // destroys the hidden storage objects ClientSim leaves in a scene, but never ClientSim's prefab
-    // asset; DeleteSavedData deletes one scene's saved files. The problems are proven in
-    // Runtime/Problems/ClientSimSavedDataProblemTests.
     public class ClientSimSessionTests
     {
         private const string PlayerDataPrefabResourcePath = "ClientSim/Prefabs/ClientSimPlayerData";

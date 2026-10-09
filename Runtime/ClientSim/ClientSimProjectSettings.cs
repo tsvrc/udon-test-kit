@@ -70,7 +70,7 @@ namespace UdonTestKit
         }
 
         // ClientSim's own SetInputTypeSettings sets the Input System only (1), which its check
-        // rejects (Tests/Editor/Problems/ClientSimInputTypeSetterProblemTests). ClientSim's window
+        // rejects (Tests/Editor/Learning/ClientSimInputTypeSetterTests). ClientSim's window
         // asks for both input systems, which is 2.
         private static void UseBothInputSystems()
         {

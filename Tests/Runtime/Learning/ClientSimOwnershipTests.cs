@@ -4,14 +4,11 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Problems
+namespace UdonTestKit.Tests.Learning
 {
-    // Problem: in ClientSim, a GameObject without an IClientSimSyncable is always owned by the
-    // master, and Networking.SetOwner can't change that. So while the local player is master, a
-    // test can't make it "not the owner" of such a GameObject.
-    // Solved by FakeOwnershipSyncable, tested in Solutions/FakeOwnershipSyncableTests.
-    // A failure here means ClientSim changed, so the double may no longer be needed.
-    public class ClientSimOwnershipProblemTests
+    // In ClientSim the master owns every GameObject without an IClientSimSyncable, and
+    // Networking.SetOwner can't change that. FakeOwnershipSyncable gives a GameObject its own owner.
+    public class ClientSimOwnershipTests
     {
         private const string RemoteName = "Remote";
 
@@ -31,7 +28,7 @@ namespace UdonTestKit.Tests.Problems
         {
             // Arrange
             yield return _session.Start(localPlayerIsMaster: true);
-            _target = new GameObject(nameof(ClientSimOwnershipProblemTests));
+            _target = new GameObject(nameof(ClientSimOwnershipTests));
 
             // Act
             VRCPlayerApi owner = Networking.GetOwner(_target);
@@ -47,7 +44,7 @@ namespace UdonTestKit.Tests.Problems
             // Arrange
             yield return _session.Start(localPlayerIsMaster: true);
             VRCPlayerApi remote = _session.SpawnRemotePlayer(RemoteName);
-            _target = new GameObject(nameof(ClientSimOwnershipProblemTests));
+            _target = new GameObject(nameof(ClientSimOwnershipTests));
 
             // Act
             Networking.SetOwner(remote, _target);

@@ -6,13 +6,9 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace UdonTestKit.Editor.Tests.Solutions
+namespace UdonTestKit.Editor.Tests
 {
-    // Solution: UnityEventFilterAllowlist's own logic: what it adds, and that it warns instead of
-    // throwing when the SDK internals it relies on are missing. It runs against stand-in filter types
-    // shaped like the SDK's, so every path can be reached. That it works against the real SDK is
-    // proven in Runtime/Solutions/UnityEventFilterAllowlistTests, and the problem in
-    // Runtime/Problems/UnityEventFilterProblemTests.
+    // Runs against stand-in filter types shaped like the SDK's, so every warning can be reached.
     public class UnityEventFilterAllowlistTests
     {
         private static readonly Regex AllowlistWarning = new Regex(@"^\[UdonTestKit\] UnityEventFilterAllowlist: ");

@@ -2,13 +2,11 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace UdonTestKit.Editor.Tests.Problems
+namespace UdonTestKit.Editor.Tests.Learning
 {
-    // Problem: Unity refuses to AddComponent a behaviour from an assembly compiled only for the
-    // Editor, so a test double kept in an Editor-only test assembly can't be added to a GameObject.
-    // Solved by the UdonTestKit assembly targeting every platform, tested in
-    // Solutions/CallbackRecorderTests. A failure here means Unity changed, so that may no longer be needed.
-    public class UdonSharpEditorOnlyAssemblyProblemTests
+    // Unity won't add a behaviour from an Editor-only assembly to a GameObject, so the kit's
+    // assembly, which holds CallbackRecorder, targets every platform.
+    public class UdonSharpEditorOnlyAssemblyTests
     {
         private GameObject _host;
 
@@ -23,7 +21,7 @@ namespace UdonTestKit.Editor.Tests.Problems
         public void AddComponent_BehaviourFromEditorOnlyAssembly_IsRefused()
         {
             // Arrange
-            _host = new GameObject(nameof(UdonSharpEditorOnlyAssemblyProblemTests));
+            _host = new GameObject(nameof(UdonSharpEditorOnlyAssemblyTests));
             var logs = new List<string>();
             Application.LogCallback record = (message, stackTrace, type) => logs.Add(message);
             Application.logMessageReceived += record;

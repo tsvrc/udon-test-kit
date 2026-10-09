@@ -9,12 +9,8 @@ using VRC.SDK3.ClientSim;
 using VRC.SDK3.Components;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Solutions
+namespace UdonTestKit.Tests
 {
-    // Solution: ClientSimSession checks ClientSim's project settings, starts ClientSim with a scene
-    // descriptor, its own only when the scene has none, waits until ClientSim is ready or throws
-    // TimeoutException, and ends it leaving nothing behind. The problems are proven in
-    // Problems/ClientSimStartupProblemTests and Problems/ClientSimInvalidSettingsProblemTests.
     public class ClientSimSessionTests : ClientSimTestBase
     {
         private const string RemoteName = "Remote";

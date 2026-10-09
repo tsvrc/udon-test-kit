@@ -1,13 +1,11 @@
 using System.Reflection;
 using NUnit.Framework;
 
-namespace UdonTestKit.Editor.Tests.Problems
+namespace UdonTestKit.Editor.Tests.Learning
 {
-    // Problem: Type.GetField and Type.GetMethod, called on a derived type, don't find a private
-    // member declared on its base class, even with BindingFlags.NonPublic.
-    // Solved by PrivateFieldAccess searching base classes, tested in Solutions/PrivateFieldAccessTests.
-    // A failure here means .NET changed, so that search may no longer be needed.
-    public class ReflectionProblemTests
+    // GetField and GetMethod on a derived type miss a private member of its base class, so
+    // PrivateFieldAccess searches base classes.
+    public class ReflectionTests
     {
         private const BindingFlags InstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 

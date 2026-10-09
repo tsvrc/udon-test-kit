@@ -4,11 +4,8 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Solutions
+namespace UdonTestKit.Tests
 {
-    // Solution: FakeOwnershipSyncable lets a test make any player the owner of a GameObject, so
-    // the local player can be master and still not own it. The problem is proven in
-    // Problems/ClientSimOwnershipProblemTests.
     public class FakeOwnershipSyncableTests : ClientSimTestBase
     {
         private const string RemoteName = "Remote";

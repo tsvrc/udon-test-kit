@@ -16,7 +16,7 @@ namespace UdonTestKit.Tests.Helpers
             "The session created no ClientSimPlayerObjectStorage, so ClientSim's player persistence is off.";
 
         // Scene instances only, never the prefab asset FindObjectsOfTypeAll also returns
-        // (Editor/Problems/UnityObjectProblemTests).
+        // (Editor/Learning/UnityObjectTests).
         public static List<ClientSimPlayerObjectStorage> FindStorages()
         {
             return Resources.FindObjectsOfTypeAll<ClientSimPlayerObjectStorage>()
@@ -24,7 +24,7 @@ namespace UdonTestKit.Tests.Helpers
                 .ToList();
         }
 
-        // A destroyed object is null only through Unity's == (Editor/Problems/UnityObjectProblemTests).
+        // A destroyed object is null only through Unity's == (Editor/Learning/UnityObjectTests).
         public static int CountAlive(IEnumerable<ClientSimPlayerObjectStorage> storages)
         {
             return storages.Count(storage => storage != null);

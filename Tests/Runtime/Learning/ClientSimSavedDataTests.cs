@@ -11,16 +11,12 @@ using VRC.SDK3.ClientSim.Persistence;
 using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Problems
+namespace UdonTestKit.Tests.Learning
 {
-    // Problem: with player persistence on, ClientSim keeps each player's saved data on a hidden root
-    // object that its own teardown never destroys. That object keeps rewriting the player's save
-    // file, which the next session in the same scene uses too, so it overwrites what that session
-    // saves. And ClientSim reports ready before it restores the local player's saved data, when
-    // PlayerData changes aren't saved yet.
-    // Solved by ClientSimSession.End and Start, tested in Solutions/ClientSimSessionSavedDataTests.
-    // A failure here means ClientSim changed, so that handling may no longer be needed.
-    public class ClientSimSavedDataProblemTests
+    // The hidden object ClientSim saves a player's data with outlives ClientSim's teardown and
+    // overwrites newer saves, and a change made before the local player is restored isn't saved.
+    // ClientSimSession.End and Start handle both.
+    public class ClientSimSavedDataTests
     {
         // Long enough for a live storage to save again.
         private const float WriteWindowSeconds = 1f;

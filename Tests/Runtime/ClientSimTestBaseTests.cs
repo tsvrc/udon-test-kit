@@ -3,10 +3,8 @@ using NUnit.Framework;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 
-namespace UdonTestKit.Tests.Solutions
+namespace UdonTestKit.Tests
 {
-    // Solution: ClientSimTestBase ends its session after every test, and only after the derived
-    // class's own teardown, which can still use the session.
     public class ClientSimTestBaseTests : ClientSimTestBase
     {
         private bool _checkSessionInTearDown;

@@ -6,14 +6,10 @@ using UnityEngine;
 using VRC.SDK3.ClientSim.Editor;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit.Editor.Tests.Solutions
+namespace UdonTestKit.Editor.Tests
 {
-    // Solution: ClientSimProjectSettings.AssertValid fails a test before ClientSim starts when
-    // ClientSim's own settings check would fail, naming the failing settings; the problem is proven
-    // in Runtime/Problems/ClientSimInvalidSettingsProblemTests. Fix applies the change for every
-    // setting that fails ClientSim's check. Tests with stand-in settings come first. The others break
-    // one real setting of this project, fix it, and put the original value back. Why ClientSim's own
-    // input type setter isn't used is proven in Problems/ClientSimInputTypeSetterProblemTests.
+    // The Fix tests break one real setting of this project in memory, run the fix, and put the
+    // original value back.
     public class ClientSimProjectSettingsTests
     {
         private Action _restore;
