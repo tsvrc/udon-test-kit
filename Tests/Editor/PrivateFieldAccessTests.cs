@@ -57,7 +57,7 @@ namespace UdonTestKit.Editor.Tests
             // Arrange
             var target = new Derived();
 
-            // Act & Assert
+            // Act and Assert
             Assert.Throws<AssertionException>(() => PrivateFieldAccess.GetField<int>(target, "_doesNotExist"));
         }
 
@@ -67,7 +67,7 @@ namespace UdonTestKit.Editor.Tests
             // Arrange
             var target = new Derived();
 
-            // Act & Assert
+            // Act and Assert
             Assert.Throws<AssertionException>(() => PrivateFieldAccess.SetField(target, "_doesNotExist", 1));
         }
 
@@ -112,7 +112,7 @@ namespace UdonTestKit.Editor.Tests
             // Arrange
             var target = new Derived();
 
-            // Act & Assert
+            // Act and Assert
             Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(target, "DoesNotExist"));
         }
 

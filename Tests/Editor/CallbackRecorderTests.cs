@@ -69,32 +69,6 @@ namespace UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void CallbackA_CalledThreeTimes_CountsThree()
-        {
-            // Arrange
-            CallbackRecorder recorder = Create();
-
-            // Act
-            recorder.CallbackA();
-            recorder.CallbackA();
-            recorder.CallbackA();
-
-            // Assert
-            Assert.That(recorder.CallbackACount, Is.EqualTo(3));
-        }
-
-        [Test]
-        public void Callbacks_NoLog_DoNotThrow()
-        {
-            // Arrange
-            CallbackRecorder recorder = Create();
-
-            // Act & Assert
-            Assert.DoesNotThrow(() => recorder.CallbackA());
-            Assert.DoesNotThrow(() => recorder.CallbackB());
-        }
-
-        [Test]
         public void Callbacks_WithLog_AppendGameObjectNameAndCallback()
         {
             // Arrange

@@ -25,6 +25,11 @@ namespace UdonTestKit
 
         internal static readonly string[] PrecompiledReferences = { "nunit.framework.dll", "VRCSDKBase.dll", "VRCSDK3.dll" };
 
+        internal const string AssemblyCSharpWarning =
+            "[UdonTestKit] Some scripts under Assets have no assembly definition, so they compile into " +
+            "Assembly-CSharp, which the created test assemblies can't reference. Edit Mode tests for them can go " +
+            "in an Editor folder without an assembly definition. Play Mode tests need those scripts in an assembly definition.";
+
         [MenuItem(MenuPath, priority = 90)]
         private static void CreateFromMenu()
         {
@@ -45,19 +50,14 @@ namespace UdonTestKit
             return folder;
         }
 
-        internal const string AssemblyCSharpWarning =
-            "[UdonTestKit] Some scripts under Assets have no assembly definition, so they compile into " +
-            "Assembly-CSharp, which the created test assemblies can't reference. Edit Mode tests for them can go " +
-            "in an Editor folder without an assembly definition. Play Mode tests need those scripts in an assembly definition.";
-
         internal static bool HasScriptsInAssemblyCSharp()
         {
             return CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies)
                 .Any(assembly => assembly.name == "Assembly-CSharp" && assembly.sourceFiles.Any(file => file.StartsWith("Assets/")));
         }
 
-        /// <summary>Writes the Tests folder into <paramref name="parentFolder"/> and returns its path.
-        /// Doesn't refresh the AssetDatabase.</summary>
+        // Writes the Tests folder into parentFolder and returns its path, without refreshing the
+        // AssetDatabase.
         internal static string Create(string parentFolder, string assemblyPrefix, IEnumerable<string> worldAssemblies)
         {
             string testsFolder = UniqueFolder(Path.Combine(parentFolder, "Tests"));

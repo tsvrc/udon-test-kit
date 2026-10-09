@@ -43,9 +43,8 @@ namespace UdonTestKit.Tests.Helpers
             return null;
         }
 
-        /// <summary>Creates an instance of a listener type, as a component on a new GameObject
-        /// or as a ScriptableObject, and adds what it created to <paramref name="created"/> for
-        /// the caller's teardown.</summary>
+        // Creates an instance of a listener type, as a component on a new GameObject or as a
+        // ScriptableObject, and adds what it created to created for the caller's teardown.
         public static UnityEngine.Object CreateListener(Type type, List<UnityEngine.Object> created)
         {
             if (typeof(Component).IsAssignableFrom(type))
