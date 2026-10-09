@@ -8,14 +8,14 @@ using UnityEngine.TestTools;
 
 namespace UdonTestKit.Editor.Tests.Solutions
 {
-    // Solution: UnityEventFilterAllowlistFixup's own logic: what it adds, and that it warns instead of
+    // Solution: UnityEventFilterAllowlist's own logic: what it adds, and that it warns instead of
     // throwing when the SDK internals it relies on are missing. It runs against stand-in filter types
     // shaped like the SDK's, so every path can be reached. That it works against the real SDK is
-    // proven in Runtime/Solutions/UnityEventFilterAllowlistFixupTests, and the problem in
+    // proven in Runtime/Solutions/UnityEventFilterAllowlistTests, and the problem in
     // Runtime/Problems/UnityEventFilterProblemTests.
-    public class UnityEventFilterAllowlistFixupTests
+    public class UnityEventFilterAllowlistTests
     {
-        private static readonly Regex FixupWarning = new Regex(@"^\[UdonTestKit\] UnityEventFilterAllowlistFixup: ");
+        private static readonly Regex AllowlistWarning = new Regex(@"^\[UdonTestKit\] UnityEventFilterAllowlist: ");
 
         private static string[] KnownListener => new[] { typeof(KnownListenerType).FullName };
 
@@ -26,7 +26,7 @@ namespace UdonTestKit.Editor.Tests.Solutions
         public void Apply_NewListenerType_AddsAnEntryPermittingTheFourRunnerMethods()
         {
             // Act
-            UnityEventFilterAllowlistFixup.Apply(typeof(WorkingFilter), KnownListener);
+            UnityEventFilterAllowlist.Apply(typeof(WorkingFilter), KnownListener);
 
             // Assert
             var entry = (WorkingFilter.AllowedMethodFilter)WorkingFilter.Entries[typeof(KnownListenerType)];
@@ -41,7 +41,7 @@ namespace UdonTestKit.Editor.Tests.Solutions
             WorkingFilter.Entries[typeof(KnownListenerType)] = existing;
 
             // Act
-            UnityEventFilterAllowlistFixup.Apply(typeof(WorkingFilter), KnownListener);
+            UnityEventFilterAllowlist.Apply(typeof(WorkingFilter), KnownListener);
 
             // Assert
             Assert.That(WorkingFilter.Entries[typeof(KnownListenerType)], Is.SameAs(existing));
@@ -51,10 +51,10 @@ namespace UdonTestKit.Editor.Tests.Solutions
         public void Apply_UnknownListenerTypeName_WarnsAndStillAddsTheOthers()
         {
             // Arrange
-            LogAssert.Expect(LogType.Warning, FixupWarning);
+            LogAssert.Expect(LogType.Warning, AllowlistWarning);
 
             // Act
-            UnityEventFilterAllowlistFixup.Apply(typeof(WorkingFilter), new[] { "No.Such.ListenerType", KnownListener[0] });
+            UnityEventFilterAllowlist.Apply(typeof(WorkingFilter), new[] { "No.Such.ListenerType", KnownListener[0] });
 
             // Assert
             Assert.That(WorkingFilter.Entries.Contains(typeof(KnownListenerType)), Is.True);
@@ -66,9 +66,9 @@ namespace UdonTestKit.Editor.Tests.Solutions
         [TestCase(typeof(FilterThatThrows))]
         public void Apply_SdkInternalsMissing_WarnsInsteadOfThrowing(Type filterType)
         {
-            LogAssert.Expect(LogType.Warning, FixupWarning);
+            LogAssert.Expect(LogType.Warning, AllowlistWarning);
 
-            Assert.DoesNotThrow(() => UnityEventFilterAllowlistFixup.Apply(filterType, KnownListener));
+            Assert.DoesNotThrow(() => UnityEventFilterAllowlist.Apply(filterType, KnownListener));
         }
 
         // Stand-ins shaped like VRC.Core.UnityEventFilter's internals, each missing one piece.

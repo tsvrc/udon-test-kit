@@ -4,15 +4,15 @@ using UdonTestKit.Tests.Helpers;
 
 namespace UdonTestKit.Tests.Solutions
 {
-    // Solution: UnityEventFilterAllowlistFixup makes the VRChat SDK's UnityEventFilter permit Unity
+    // Solution: UnityEventFilterAllowlist makes the VRChat SDK's UnityEventFilter permit Unity
     // Test Framework's four listener types and their four runner methods. The problem is proven in
     // Problems/UnityEventFilterProblemTests. Nothing here applies the fixup: it already ran at domain load.
-    public class UnityEventFilterAllowlistFixupTests
+    public class UnityEventFilterAllowlistTests
     {
         private readonly List<UnityEngine.Object> _created = new List<UnityEngine.Object>();
 
-        private static IEnumerable<string> ListenerTypeNames => UnityEventFilterAllowlistFixup.ListenerTypeNames;
-        private static IEnumerable<string> RunnerMethodNames => UnityEventFilterAllowlistFixup.AllowedMethodNames;
+        private static IEnumerable<string> ListenerTypeNames => UnityEventFilterAllowlist.ListenerTypeNames;
+        private static IEnumerable<string> RunnerMethodNames => UnityEventFilterAllowlist.AllowedMethodNames;
 
         [TearDown]
         public void TearDown()

@@ -15,7 +15,7 @@ namespace UdonTestKit
     // without an allowlist entry for each, a Play Mode run never reports and never exits.
     // The SDK's allowlist is internal; if it can't be reached, this warns instead of throwing.
     [InitializeOnLoad]
-    internal static class UnityEventFilterAllowlistFixup
+    internal static class UnityEventFilterAllowlist
     {
         internal static readonly string[] ListenerTypeNames =
         {
@@ -30,7 +30,7 @@ namespace UdonTestKit
             "TestStarted", "TestFinished", "RunStarted", "RunFinished",
         };
 
-        static UnityEventFilterAllowlistFixup()
+        static UnityEventFilterAllowlist()
         {
             Apply(typeof(UnityEventFilter), ListenerTypeNames);
         }
@@ -73,7 +73,7 @@ namespace UdonTestKit
 
         private static void Warn(string reason)
         {
-            Debug.LogWarning("[UdonTestKit] UnityEventFilterAllowlistFixup: " + reason);
+            Debug.LogWarning("[UdonTestKit] UnityEventFilterAllowlist: " + reason);
         }
     }
 }

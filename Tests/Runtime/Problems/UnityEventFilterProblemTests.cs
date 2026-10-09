@@ -17,7 +17,7 @@ namespace UdonTestKit.Tests.Problems
     // Problem: when Play Mode starts, the VRChat SDK's UnityEventFilter strips persistent UnityEvent
     // listeners it doesn't permit, and a stripped listener is never called. Unity Test Framework's
     // Play Mode test runner calls its callbacks through listeners of four types the filter denies.
-    // Solved by UnityEventFilterAllowlistFixup, tested in Solutions/UnityEventFilterAllowlistFixupTests.
+    // Solved by UnityEventFilterAllowlist, tested in Solutions/UnityEventFilterAllowlistTests.
     // A failure here means the SDK or Unity Test Framework changed, so the fixup may no longer be needed.
     public class UnityEventFilterProblemTests
     {
@@ -32,7 +32,7 @@ namespace UdonTestKit.Tests.Problems
 
         private readonly List<UnityEngine.Object> _created = new List<UnityEngine.Object>();
 
-        private static IEnumerable<string> TestRunnerListenerTypeNames => UnityEventFilterAllowlistFixup.ListenerTypeNames;
+        private static IEnumerable<string> TestRunnerListenerTypeNames => UnityEventFilterAllowlist.ListenerTypeNames;
 
         [TearDown]
         public void TearDown()
@@ -145,7 +145,7 @@ namespace UdonTestKit.Tests.Problems
             Type listenerType = UnityEventFilterAccess.FindType(typeName);
             UnityEngine.Object listener = UnityEventFilterAccess.CreateListener(listenerType, _created);
             IDictionary allowlist = UnityEventFilterAccess.Allowlist();
-            object fixupEntry = allowlist[listenerType];
+            object kitEntry = allowlist[listenerType];
             allowlist.Remove(listenerType);
 
             try
@@ -158,8 +158,8 @@ namespace UdonTestKit.Tests.Problems
             }
             finally
             {
-                if (fixupEntry != null)
-                    allowlist[listenerType] = fixupEntry;
+                if (kitEntry != null)
+                    allowlist[listenerType] = kitEntry;
             }
         }
 
