@@ -1,41 +1,18 @@
 # Udon Test Kit
 
-Test a VRChat world with Unity Test Framework. Play Mode tests run a real ClientSim session with
-real `VRCPlayerApi` players, and the kit works around the VRChat SDK and ClientSim problems that
-otherwise break those tests.
+[![Release](https://img.shields.io/github/v/release/tsvrc/udon-test-kit?style=flat&label=release&color=58a6ff&labelColor=161b22)](https://github.com/tsvrc/udon-test-kit/releases)
+[![Last commit](https://img.shields.io/github/last-commit/tsvrc/udon-test-kit?style=flat&label=last%20commit&color=58a6ff&labelColor=161b22)](https://github.com/tsvrc/udon-test-kit/commits/main)
+[![License: MIT](https://img.shields.io/github/license/tsvrc/udon-test-kit?style=flat&color=58a6ff&labelColor=161b22)](LICENSE.md)
 
-The learning tests in `Tests/*/Learning` check the VRChat SDK, ClientSim and Unity behavior the
-kit relies on. When an update changes that behavior, they fail and name the kit code to revisit.
+Automated tests for VRChat worlds with Unity Test Framework. Play Mode tests run your UdonSharp
+behaviours in a real ClientSim session, with real players.
 
-Requires Unity 2022.3 and VRChat Worlds SDK 3.8.2 or later. Earlier SDKs stop Play Mode when a
-scene has no scene descriptor, and Unity Test Framework's test scene has none.
+Docs: [tsvrc.com/docs/udon-test-kit](https://tsvrc.com/docs/udon-test-kit/intro).
 
-## Set up
+*Udon Test Kit is a [TsVRC](https://tsvrc.com) project. It isn't affiliated with, endorsed by, or
+sponsored by VRChat Inc.*
 
-1. Add the package to your world. The VRChat Creator Companion installs it in `Packages`.
-2. Select a folder in the Project window and choose **Assets > Create > Udon Test Kit > Test
-   Assemblies**. You get a `Tests` folder with three assemblies, each with an example that works:
-   - `EditMode` and `PlayMode` hold your tests.
-   - `Doubles` holds behaviours your tests add to GameObjects, such as spies with callbacks of your
-     own. Both test assemblies reference it. Unity can't add a behaviour from the Edit Mode test
-     assembly, which only compiles for the Editor, so they go here.
-
-   They reference the kit, UdonSharp, the VRChat SDK, ClientSim and every assembly definition of
-   yours under `Assets`. Like the kit, they're left out of your world's builds.
-3. Run the tests from Unity's Test Runner window, or from the command line.
-
-Scripts without an assembly definition compile into `Assembly-CSharp`, which an assembly
-definition can't reference. Edit Mode tests for them work from any `Editor` folder, and the kit is
-available there too. Play Mode tests need those scripts moved into an assembly definition. The
-menu item warns you when this applies.
-
-If a Play Mode test fails before ClientSim starts, naming project settings, run **Tools > Udon
-Test Kit > Fix ClientSim Project Settings** once. It changes each setting ClientSim's own check
-rejects and logs what it changed.
-
-## Play Mode tests
-
-Extend `ClientSimTestBase` and start its `Session` in a test. The session ends after every test.
+## Quick look
 
 ```csharp
 using System.Collections;
@@ -59,201 +36,35 @@ public class PlayerCountTests : ClientSimTestBase
 }
 ```
 
-`Session.Start` returns once the local player has joined and its saved data is restored. Pass
-`localPlayerIsMaster: false` to make another player the master. `SpawnRemotePlayer` and
-`RemovePlayer` take effect before they return, and `ClientSimSession.FindPlayerByName` finds a
-player by display name.
+Full walkthrough: [Write your first test](https://tsvrc.com/docs/udon-test-kit/first-test).
 
-`Session.SetOwner(player, gameObject)` makes a player the owner of a GameObject. ClientSim only
-lets GameObjects with `VRCObjectSync` or `VRCObjectPool` change owner, and the master owns all
-others, so `Networking.SetOwner` does nothing on them. After `Session.SetOwner`, it works on that
-GameObject too, such as when the code you're testing takes ownership. To test what happens when the
-local player isn't the owner:
+## Install
 
-```csharp
-yield return Session.Start();
-VRCPlayerApi remote = Session.SpawnRemotePlayer("Remote");
-Session.SetOwner(remote, door.gameObject);
+Requires Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or later.
 
-door.Open(); // runs the code path for a player who doesn't own the door
-```
+Install **Udon Test Kit** (`com.tsvrc.udon-test-kit`) as described in
+[Install a TsVRC package](https://tsvrc.com/docs/install-a-package); the `.unitypackage` is on the
+[releases page](https://github.com/tsvrc/udon-test-kit/releases). Then create your test assemblies:
+[Add Udon Test Kit to your project](https://tsvrc.com/docs/udon-test-kit/add-to-your-project).
 
-To skip the base class, create a `ClientSimSession` yourself and call its `End` in your teardown.
-One session can also serve every test in a class: start it in a `[UnitySetUp]` when it isn't
-running yet, and end it in `[OneTimeTearDown]`. Tests that share a session also share whatever
-the earlier ones changed, so keep that for tests that only read.
+## Command-line test runner
 
-### Choosing the scene
+[`Scripts~/Invoke-UnityTests.ps1`](Scripts~/Invoke-UnityTests.ps1) runs a Unity project's tests
+from PowerShell and prints only what failed. It's standalone: copy it into any Unity project, with
+or without the kit. See
+[Run tests from the command line](https://tsvrc.com/docs/udon-test-kit/how-to/running-tests-from-the-command-line).
 
-By default every test runs in Unity Test Framework's own test scene, which the whole run shares. To
-run tests in a scene of their own, pass a `TestScene` to the base class:
+## Contributing
 
-```csharp
-public class LobbyTests : ClientSimTestBase
-{
-    public LobbyTests() : base(TestScene.FromAsset("Assets/Scenes/MyWorld.unity"), TestSceneLifetime.PerFixture)
-    {
-    }
-}
-```
+Bug reports, fixes and new helpers are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers setting
+up a project to develop the kit in, running its tests, and opening a pull request. Ask questions in
+[GitHub Discussions](https://github.com/orgs/tsvrc/discussions) rather than in an issue.
 
-- `TestScene.Empty("Lobby")` is a new empty scene. `TestScene.FromAsset(path)` is a scene asset,
-  such as your world's own scene; it doesn't need to be in the build settings.
-- `TestSceneLifetime.PerTest`, the default, loads a fresh copy for every test and unloads it after,
-  so each test starts from the same scene. `TestSceneLifetime.PerFixture` loads it once for every
-  test in the class.
-- The scene loads before your own setup and becomes the active scene, so ClientSim and the objects
-  your test creates go into it. It unloads after ClientSim has ended, destroying everything in it.
+Found a security issue? Follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
+Community conduct is covered by the
+[org-wide Code of Conduct](https://github.com/tsvrc/.github/blob/main/CODE_OF_CONDUCT.md).
 
-The session adds a scene descriptor only when the active scene has none. When the active scene has
-its own, such as your world's scene, the local player spawns at that descriptor's spawn point.
+## License
 
-`TestScene` also works without the base class: `yield return scene.Load()` in a `[UnitySetUp]`, and
-`scene.Unload()` once ClientSim has ended, such as in a `[UnityTearDown]`.
-
-## Saved data
-
-ClientSim saves each player's PlayerData and PlayerObjects in your project's `ClientSimStorage`
-folder, one file per player and scene. Ending a session stops it from saving, so the next session
-in the same scene starts from what the last one saved, like a player who leaves and rejoins. That
-lets one test check that data survives a rejoin:
-
-```csharp
-yield return Session.Start();
-PlayerData.SetString("coins", "10");
-yield return null; // ClientSim has saved it by the next frame
-Session.End();
-
-yield return Session.Start();
-
-Assert.That(PlayerData.TryGetString(Networking.LocalPlayer, "coins", out string coins), Is.True);
-Assert.That(coins, Is.EqualTo("10"));
-```
-
-Saved data stays on disk after a test, so a later test in the same scene starts from it too. Call
-`ClientSimSession.DeleteSavedData()` to delete what ClientSim saved for the active scene, such as
-at the start of a test that needs none.
-
-Unity Test Framework gives its test scene a new name on every run, so each run leaves a few files
-in `ClientSimStorage` that no later run reads. Delete them whenever you like.
-
-## Adding your world's own setup
-
-Put what your world's tests need in a base class of your own that extends `ClientSimTestBase`, and
-use NUnit's attributes there. NUnit runs a base class's setup before yours and its teardown after
-yours, so your `[SetUp]` and `[TearDown]` can still use the session, and your `[UnityTearDown]` runs
-after ClientSim has ended but before the test scene unloads.
-
-Editor tooling that reacts to domain reloads, asset imports or scene changes, such as code
-generators, can skip its work during tests by checking `TestRun.IsActive`. It's true while Unity
-Test Framework runs tests, across domain reloads, and from the start of a `-runTests` batch
-process. Unity Test Framework reports a Play Mode run's start only after the domain reload into
-Play Mode, so tooling that runs on that reload also checks
-`EditorApplication.isPlayingOrWillChangePlaymode`.
-
-None of this depends on where the kit is installed: `Packages` through the VRChat Creator
-Companion, `Assets` through a `.unitypackage`, or a git clone.
-
-## Test helpers
-
-### Checking calls made by name
-
-UdonSharp code often calls another behaviour by method name, with `SendCustomEvent`, such as on a
-target and method name your code stored earlier. A `CallbackSpy` is a behaviour to pass as that
-target, and its `CallLog` records each call to it, in order:
-
-```csharp
-using var calls = new CallLog();
-CallbackSpy listener = calls.CreateSpy("Listener");
-scoreboard.Subscribe(listener, nameof(CallbackSpy.CallbackA));
-
-scoreboard.AddPoint();
-
-Assert.That(calls, Is.EqualTo(new[] { "Listener.CallbackA" }));
-```
-
-- Each call is recorded as `"GameObjectName.CallbackName"`. Spies created from the same log record
-  into it in the order the calls arrived, so a test can check the order across several of them.
-- `calls.Clear()` forgets the calls so far, such as the ones a test's setup caused.
-- Disposing the log destroys its spies, so `using var` is all the cleanup a test needs.
-- `CallbackA` and `CallbackB` cover most tests. For callbacks named after what your code calls,
-  subclass `CallbackSpy` and call `Record()` from each method:
-
-  ```csharp
-  public class DoorSpy : CallbackSpy
-  {
-      public void Open() => Record();
-  }
-  ```
-
-  Create it with `calls.CreateSpy<DoorSpy>("Door")`, and it records `"Door.Open"`. Put subclasses in
-  the `Doubles` assembly, so both Edit Mode and Play Mode tests can use them.
-
-Outside Udon, as in a test, a call by name reaches only a public, parameterless method with exactly
-that name. A misspelled name does nothing and raises no error, so check what the log recorded, not
-just that nothing failed. `SendCustomEventDelayedSeconds` and `SendCustomEventDelayedFrames` never
-call anything outside Udon; call the method directly instead.
-
-### Other helpers
-
-`PrivateFieldAccess` reads and writes fields and calls methods by name, whatever their access
-level, including private members of a base class. A name that isn't found fails the test.
-
-## What the kit fixes on its own
-
-When Play Mode starts, the VRChat SDK strips the listeners Unity Test Framework reports Play Mode
-results through, so a Play Mode run never finishes. While the kit is installed, the SDK keeps them.
-
-ClientSim opens its settings window when its project settings check fails, and in batch mode that
-window logs errors that fail the test without naming the cause. `Session.Start` fails first and
-names the settings.
-
-ClientSim never destroys the hidden object that saves a player's data, and that object keeps
-saving after the session ends, over whatever a later session saves. `Session.End` destroys it.
-
-The kit compiles only when `UNITY_INCLUDE_TESTS` is defined, so it's never part of a world build.
-
-## Running tests from the command line
-
-`Scripts~/Invoke-UnityTests.ps1` runs a Unity project's tests from PowerShell on Windows. It's a
-single file that doesn't use the kit or anything else beyond Unity Test Framework, so you can copy
-it into any Unity project, such as its root folder. It finds the project by looking up from its
-own folder. Unity doesn't import folders ending in `~`, so a `.unitypackage` of the kit doesn't
-include the script; take it from the kit's repository.
-
-Close the Unity Editor first: batch mode can't open a project another Editor has open. Then:
-
-```powershell
-.\Invoke-UnityTests.ps1
-```
-
-It runs your project's tests: those in every assembly definition under `Assets`, and in scripts
-without one, such as tests in `Editor` folders. Tests that come with packages, such as the VRChat
-SDK's, don't run. Each test mode starts Unity once and prints failed, inconclusive and skipped
-tests with their messages, then counts the rest. The script exits with 1 when a test failed or was
-inconclusive, or when a run didn't finish. An inconclusive test is an `Assume` that didn't hold,
-so it proved nothing.
-
-`Get-Help .\Invoke-UnityTests.ps1 -Detailed` shows its options:
-
-| Option           | Default                                                                       |
-| ---------------- | ----------------------------------------------------------------------------- |
-| `-TestMode`      | `All` (or `EditMode`, `PlayMode`)                                             |
-| `-AssemblyNames` | your project's assemblies; separate several with `;`                          |
-| `-ProjectPath`   | the nearest project above the script's folder, then above the current folder  |
-| `-UnityPath`     | the version in `ProjectVersion.txt`, in Unity Hub's default folder            |
-| `-ResultsPath`   | a new folder under the temp folder, for each mode's results XML and Unity log |
-
-If PowerShell refuses to run the script because of its execution policy, allow local scripts once
-with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
-
-## Developing the kit
-
-The kit's own tests compile only when `UDON_TEST_KIT_TESTS` is defined, so they never show up in a
-world that uses the kit. To run them, add that symbol to **Project Settings > Player > Scripting
-Define Symbols** in the project you develop the kit in.
-
-Keep the kit under that project's `Assets` folder, where the script's default finds its tests, and
-run `Scripts~/Invoke-UnityTests.ps1` from where it is. Never have two copies of the kit in one
-project, such as a checkout and a VCC install: two assemblies named `UdonTestKit` stop the project
-compiling.
+MIT, see [LICENSE.md](LICENSE.md). The TsVRC name and logo are governed separately, see
+[TRADEMARK.md](https://github.com/tsvrc/.github/blob/main/TRADEMARK.md).
