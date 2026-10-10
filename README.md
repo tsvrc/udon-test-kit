@@ -64,8 +64,33 @@ One session can also serve every test in a class: start it in a `[UnitySetUp]` w
 running yet, and end it in `[OneTimeTearDown]`. Tests that share a session also share whatever
 the earlier ones changed, so keep that for tests that only read.
 
+### Choosing the scene
+
+By default every test runs in Unity Test Framework's own test scene, which the whole run shares. To
+run tests in a scene of their own, pass a `TestScene` to the base class:
+
+```csharp
+public class LobbyTests : ClientSimTestBase
+{
+    public LobbyTests() : base(TestScene.FromAsset("Assets/Scenes/MyWorld.unity"), TestSceneLifetime.PerFixture)
+    {
+    }
+}
+```
+
+- `TestScene.Empty("Lobby")` is a new empty scene. `TestScene.FromAsset(path)` is a scene asset,
+  such as your world's own scene; it doesn't need to be in the build settings.
+- `TestSceneLifetime.PerTest`, the default, loads a fresh copy for every test and unloads it after,
+  so each test starts from the same scene. `TestSceneLifetime.PerFixture` loads it once for every
+  test in the class.
+- The scene loads before your own setup and becomes the active scene, so ClientSim and the objects
+  your test creates go into it. It unloads after ClientSim has ended, destroying everything in it.
+
 The session adds a scene descriptor only when the active scene has none. When the active scene has
 its own, such as your world's scene, the local player spawns at that descriptor's spawn point.
+
+`TestScene` also works without the base class: `yield return scene.Load()` in a `[UnitySetUp]`, and
+`scene.Unload()` once ClientSim has ended, such as in a `[UnityTearDown]`.
 
 ## Saved data
 
