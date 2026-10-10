@@ -1,7 +1,7 @@
 {
   "name": "com.tsvrc.udon-test-kit",
   "displayName": "Udon Test Kit",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "unity": "2022.3",
   "description": "Test VRChat worlds with Unity Test Framework: real ClientSim sessions in Play Mode tests, fixes for the SDK problems that break them, and UdonSharp test helpers.",
   "keywords": [
