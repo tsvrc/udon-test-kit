@@ -56,7 +56,9 @@ namespace UdonTestKit
             AssetDatabase.Refresh();
             Debug.Log($"[UdonTestKit] Created test assemblies in {folder}.");
             if (HasScriptsInAssemblyCSharp())
+            {
                 Debug.LogWarning(AssemblyCSharpWarning);
+            }
             return folder;
         }
 
@@ -157,7 +159,9 @@ namespace UdonTestKit
         {
             string candidate = folder;
             for (int i = 1; Directory.Exists(candidate); i++)
+            {
                 candidate = folder + " " + i;
+            }
             return candidate;
         }
 
@@ -169,9 +173,13 @@ namespace UdonTestKit
             {
                 string path = AssetDatabase.GetAssetPath(selected);
                 if (!AssetDatabase.IsValidFolder(path))
+                {
                     path = Path.GetDirectoryName(path)?.Replace('\\', '/');
+                }
                 if (path != null && (path == "Assets" || path.StartsWith("Assets/")))
+                {
                     return path;
+                }
             }
             return "Assets";
         }

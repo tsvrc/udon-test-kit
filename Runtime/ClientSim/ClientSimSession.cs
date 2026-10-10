@@ -121,18 +121,22 @@ namespace UdonTestKit
         }
 
         /// <summary>
-        /// Ends ClientSim, stops its players' saved data from being written, and removes the scene
+        /// Ends ClientSim, stops its players saved data from being written, and removes the scene
         /// descriptor Start added, if any. Safe to call when no session is running.
         /// </summary>
         public void End()
         {
             if (ClientSimMain.HasInstance())
+            {
                 ClientSimMain.RemoveInstance();
+            }
             ClientSimRuntimeLoader.EndUnityTesting();
             DestroySavedDataObjects();
 
             if (_addedDescriptor != null)
+            {
                 Object.DestroyImmediate(_addedDescriptor);
+            }
             _addedDescriptor = null;
         }
 
@@ -151,12 +155,16 @@ namespace UdonTestKit
         internal static void DeleteSavedData(string storageRoot, string sceneName)
         {
             if (!Directory.Exists(storageRoot))
+            {
                 return;
+            }
 
             var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_" + Regex.Escape(sceneName) + @"\.json$");
             foreach (string file in Directory.GetFiles(storageRoot, "*.json", SearchOption.AllDirectories))
                 if (sceneFile.IsMatch(Path.GetFileName(file)))
+                {
                     File.Delete(file);
+                }
         }
 
         // ClientSim keeps each player's saved data on a hidden root object that its own teardown
@@ -164,7 +172,9 @@ namespace UdonTestKit
         internal static void DestroySavedDataObjects()
         {
             foreach (ClientSimPlayerObjectStorage storage in SavedDataObjects().ToList())
+            {
                 Object.DestroyImmediate(storage.gameObject);
+            }
         }
 
         // FindObjectsOfTypeAll also returns ClientSim's prefab asset, whose scene isn't valid.

@@ -34,8 +34,12 @@ namespace UdonTestKit
         public void Dispose()
         {
             foreach (CallbackSpy spy in _spies)
+            {
                 if (spy != null)
+                {
                     Object.DestroyImmediate(spy.gameObject);
+                }
+            }
             _spies.Clear();
         }
 

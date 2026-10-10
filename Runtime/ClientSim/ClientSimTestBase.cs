@@ -32,7 +32,9 @@ namespace UdonTestKit
         public IEnumerator LoadTestScene()
         {
             if (_scene != null)
+            {
                 yield return _scene.Load();
+            }
         }
 
         [TearDown]
@@ -46,7 +48,9 @@ namespace UdonTestKit
         public IEnumerator UnloadPerTestScene()
         {
             if (_sceneLifetime == TestSceneLifetime.PerTest)
+            {
                 _scene?.Unload();
+            }
             yield break;
         }
 

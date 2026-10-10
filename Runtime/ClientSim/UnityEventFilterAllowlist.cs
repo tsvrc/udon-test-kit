@@ -63,9 +63,13 @@ namespace UdonTestKit
             {
                 Type listenerType = FindType(typeName);
                 if (listenerType == null)
+                {
                     Warn($"could not find {typeName}, so it was not allowlisted.");
+                }
                 else if (!allowlist.Contains(listenerType))
+                {
                     allowlist.Add(listenerType, entryConstructor.Invoke(new object[] { new List<string>(AllowedMethodNames), new List<string>() }));
+                }
             }
         }
 

@@ -37,7 +37,9 @@ namespace UdonTestKit
         public IEnumerator Load()
         {
             if (IsLoaded)
+            {
                 yield break;
+            }
 
             _previousActiveScene = SceneManager.GetActiveScene();
             if (_assetPath == null)
@@ -48,7 +50,9 @@ namespace UdonTestKit
             {
                 _scene = EditorSceneManager.LoadSceneInPlayMode(_assetPath, new LoadSceneParameters(LoadSceneMode.Additive));
                 while (!_scene.isLoaded)
+                {
                     yield return null;
+                }
                 // LoadSceneInPlayMode drops the operation it loads with. Finalized on Unity's exit
                 // instead, it crashed Unity; finalizing it now, while the scene is loaded, doesn't.
                 GC.Collect();
@@ -63,10 +67,14 @@ namespace UdonTestKit
         public void Unload()
         {
             if (!IsLoaded)
+            {
                 return;
+            }
 
             if (SceneManager.GetActiveScene() == _scene && _previousActiveScene.IsValid() && _previousActiveScene.isLoaded)
+            {
                 SceneManager.SetActiveScene(_previousActiveScene);
+            }
             // The synchronous unload, obsolete because it's unsafe inside physics callbacks, which a
             // teardown isn't. It finishes before returning, unlike UnloadSceneAsync.
 #pragma warning disable CS0618
