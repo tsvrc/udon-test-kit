@@ -169,26 +169,18 @@ namespace UdonTestKit
         internal const string ExampleEditModeTests =
 @"using NUnit.Framework;
 using UdonTestKit;
-using UnityEngine;
 
 public class ExampleEditModeTests
 {
     [Test]
     public void SendCustomEvent_CallbackA_IsRecorded()
     {
-        var host = new GameObject(""Recorder"");
-        try
-        {
-            var recorder = host.AddComponent<CallbackRecorder>();
+        using var calls = new CallLog();
+        CallbackSpy spy = calls.CreateSpy();
 
-            recorder.SendCustomEvent(nameof(CallbackRecorder.CallbackA));
+        spy.SendCustomEvent(nameof(CallbackSpy.CallbackA));
 
-            Assert.That(recorder.CallbackACount, Is.EqualTo(1));
-        }
-        finally
-        {
-            Object.DestroyImmediate(host);
-        }
+        Assert.That(calls, Is.EqualTo(new[] { ""Spy.CallbackA"" }));
     }
 }
 ";

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UdonTestKit.Editor.Tests.Learning
 {
     // Unity won't add a behaviour from an Editor-only assembly to a GameObject, so the kit's
-    // assembly, which holds CallbackRecorder, targets every platform.
+    // assembly, which holds CallbackSpy, targets every platform.
     public class UdonSharpEditorOnlyAssemblyTests
     {
         private GameObject _host;

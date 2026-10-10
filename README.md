@@ -151,9 +151,46 @@ Companion, `Assets` through a `.unitypackage`, or a git clone.
 
 ## Test helpers
 
-`CallbackRecorder` is an `UdonSharpBehaviour` that counts calls to `CallbackA` and `CallbackB`,
-and adds `"GameObjectName.CallbackX"` to its `Log` list when you set one. Use it as the target of
-code that calls behaviours by method name, such as `SendCustomEvent`.
+### Checking calls made by name
+
+UdonSharp code often calls another behaviour by method name, with `SendCustomEvent`, such as on a
+target and method name your code stored earlier. A `CallbackSpy` is a behaviour to pass as that
+target, and its `CallLog` records each call to it, in order:
+
+```csharp
+using var calls = new CallLog();
+CallbackSpy listener = calls.CreateSpy("Listener");
+scoreboard.Subscribe(listener, nameof(CallbackSpy.CallbackA));
+
+scoreboard.AddPoint();
+
+Assert.That(calls, Is.EqualTo(new[] { "Listener.CallbackA" }));
+```
+
+- Each call is recorded as `"GameObjectName.CallbackName"`. Spies created from the same log record
+  into it in the order the calls arrived, so a test can check the order across several of them.
+- `calls.Clear()` forgets the calls so far, such as the ones a test's setup caused.
+- Disposing the log destroys its spies, so `using var` is all the cleanup a test needs.
+- `CallbackA` and `CallbackB` cover most tests. For callbacks named after what your code calls,
+  subclass `CallbackSpy` and call `Record()` from each method:
+
+  ```csharp
+  public class DoorSpy : CallbackSpy
+  {
+      public void Open() => Record();
+  }
+  ```
+
+  Create it with `calls.CreateSpy<DoorSpy>("Door")`, and it records `"Door.Open"`. Unity can't add a
+  behaviour from an Edit Mode test assembly to a GameObject, so put subclasses in an assembly that
+  targets every platform, such as your Play Mode tests'. `CallbackSpy` itself works in both.
+
+Outside Udon, as in a test, a call by name reaches only a public, parameterless method with exactly
+that name. A misspelled name does nothing and raises no error, so check what the log recorded, not
+just that nothing failed. `SendCustomEventDelayedSeconds` and `SendCustomEventDelayedFrames` never
+call anything outside Udon; call the method directly instead.
+
+### Other helpers
 
 `PrivateFieldAccess` reads and writes fields and calls methods by name, whatever their access
 level, including private members of a base class. A name that isn't found fails the test.
