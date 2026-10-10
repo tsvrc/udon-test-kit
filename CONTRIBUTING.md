@@ -1,0 +1,85 @@
+# Contributing to Udon Test Kit
+
+Bug reports, fixes and new test helpers are welcome. Before you build a new helper or change a
+public API, open an issue to agree on its shape, so the code you write is the code that gets
+merged. Questions go in [GitHub Discussions](https://github.com/orgs/tsvrc/discussions).
+
+## Reporting a bug
+
+Use the bug report form. The kit relies on the VRChat SDK's internals, which ClientSim ships in, so
+the SDK version matters most, and so does how you ran the test: the Test Runner window and batch
+mode fail in different ways. A failing test that shows the problem is the most useful thing you can
+attach.
+
+## Setup
+
+The kit's tests need a VRChat world project to run in.
+
+1. Create a world project with Unity 2022.3 and VRChat Worlds SDK 3.8.2 or later, through the
+   [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
+2. Clone this repository into the project's `Assets` folder, for example as
+   `Assets/udon-test-kit`. Don't install the kit through the Creator Companion as well: two
+   assemblies named `UdonTestKit` stop the project compiling.
+3. Add `UDON_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The kit's
+   own tests compile only when it's defined, so they never show up in a world that uses the kit.
+
+## Running tests
+
+Run both modes before opening a pull request. In the Editor, use the EditMode and PlayMode tabs of
+**Window > General > Test Runner**. From PowerShell, with the Editor closed:
+
+```powershell
+.\Scripts~\Invoke-UnityTests.ps1
+```
+
+The script runs the tests of every assembly definition under `Assets`, which is why the kit lives
+there while you develop it. Its options are in the
+[Invoke-UnityTests.ps1 reference](https://tsvrc.com/docs/udon-test-kit/reference/invoke-unity-tests).
+
+## Learning tests
+
+The tests in `Tests/Editor/Learning` and `Tests/Runtime/Learning` don't test the kit. They pin down
+the VRChat SDK, ClientSim, UdonSharp and Unity behavior the kit relies on, such as which owners
+ClientSim allows or which listeners the SDK strips when Play Mode starts. When an update changes
+that behavior, a learning test fails and its comment names the kit code to revisit.
+
+Add one whenever kit code depends on behavior you found by trying it rather than in documentation.
+When one fails after an update, change the kit code it names, then update the test to the new
+behavior.
+
+## Coding conventions
+
+Match the style of the surrounding file. A few things aren't obvious from reading one file:
+
+- Kit code in `Runtime/` calls `UnityEditor` directly, without `#if UNITY_EDITOR`. The `UdonTestKit`
+  assembly compiles only when `UNITY_INCLUDE_TESTS` is defined, which keeps it out of player
+  builds, and `PlayerBuildTests` fails if that stops being true.
+- Test names read `Method_Condition_Result`, such as `Fix_AllSettingsValid_AppliesNothing`, and the
+  body is split with `// Arrange`, `// Act` and `// Assert` comments.
+- A comment says why the code does something when that isn't obvious, usually the SDK or ClientSim
+  behavior it works around. It states that reason itself instead of pointing to another file, a
+  test or a notes document, so it still makes sense when read alone.
+
+A change to what the kit does needs a test that fails without it.
+
+## Documentation
+
+The kit's documentation is on [tsvrc.com](https://tsvrc.com/docs/udon-test-kit/intro), built from
+`docs/udon-test-kit/` in the [tsvrc/docs](https://github.com/tsvrc/docs) repository. A change to
+what users call or see needs a matching pull request there.
+
+## Submitting a pull request
+
+1. Sign off every commit (`git commit -s`) per the
+   [Developer Certificate of Origin](https://developercertificate.org/). This certifies you wrote the
+   change, or otherwise have the right to submit it under this project's license (MIT).
+2. You're responsible for everything in your change, including any part AI tooling (Claude,
+   Copilot, or similar) helped write: read, understand and test all of it before submitting, the
+   same as if you'd written it yourself. A pull request that's mostly unreviewed AI output, and
+   would take longer to review than it saves, will be closed.
+3. Open the pull request, describing what it changes and why. Community conduct is covered by the
+   [org-wide Code of Conduct](https://github.com/tsvrc/.github/blob/main/CODE_OF_CONDUCT.md).
+
+## Reporting a security vulnerability
+
+Don't open a public issue for this. See [SECURITY.md](SECURITY.md).
