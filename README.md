@@ -118,6 +118,23 @@ at the start of a test that needs none.
 Unity Test Framework gives its test scene a new name on every run, so each run leaves a few files
 in `ClientSimStorage` that no later run reads. Delete them whenever you like.
 
+## Adding your world's own setup
+
+Put what your world's tests need in a base class of your own that extends `ClientSimTestBase`, and
+use NUnit's attributes there. NUnit runs a base class's setup before yours and its teardown after
+yours, so your `[SetUp]` and `[TearDown]` can still use the session, and your `[UnityTearDown]` runs
+after ClientSim has ended but before the test scene unloads.
+
+Editor tooling that reacts to domain reloads, asset imports or scene changes, such as code
+generators, can skip its work during tests by checking `TestRun.IsActive`. It's true while Unity
+Test Framework runs tests, across domain reloads, and from the start of a `-runTests` batch
+process. Unity Test Framework reports a Play Mode run's start only after the domain reload into
+Play Mode, so tooling that runs on that reload also checks
+`EditorApplication.isPlayingOrWillChangePlaymode`.
+
+None of this depends on where the kit is installed: `Packages` through the VRChat Creator
+Companion, `Assets` through a `.unitypackage`, or a git clone.
+
 ## Test helpers
 
 `CallbackRecorder` is an `UdonSharpBehaviour` that counts calls to `CallbackA` and `CallbackB`,
