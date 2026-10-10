@@ -70,8 +70,7 @@ namespace UdonTestKit
         }
 
         // ClientSim's own SetInputTypeSettings sets the Input System only (1), which its check
-        // rejects (Tests/Editor/Learning/ClientSimInputTypeSetterTests). ClientSim's window
-        // asks for both input systems, which is 2.
+        // rejects. ClientSim's window asks for both input systems, which is 2.
         private static void UseBothInputSystems()
         {
             var projectSettings = new SerializedObject(AssetDatabase.LoadAssetAtPath<Object>("ProjectSettings/ProjectSettings.asset"));

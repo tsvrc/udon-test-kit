@@ -21,7 +21,7 @@ namespace UdonTestKit.Tests.Helpers
         // A pause before reading a save file, so a save started earlier isn't counted after it.
         public const float SettleSeconds = 0.5f;
 
-        // A destroyed object is null only through Unity's == (Editor/Learning/UnityObjectTests).
+        // A destroyed object equals null only through Unity's == and !=, not through `is null`.
         public static int CountAlive(IEnumerable<ClientSimPlayerObjectStorage> storages)
         {
             return storages.Count(storage => storage != null);

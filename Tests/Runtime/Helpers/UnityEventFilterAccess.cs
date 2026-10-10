@@ -9,8 +9,7 @@ using VRC.Core;
 namespace UdonTestKit.Tests.Helpers
 {
     // Reaches the VRChat SDK's UnityEventFilter internals and Unity Test Framework's internal
-    // listener types by name. Only works in Play Mode: outside it, UnityEventFilter throws
-    // (Editor/Learning/UnityEventFilterOutsidePlayModeTests).
+    // listener types by name. Only works in Play Mode: outside it, UnityEventFilter throws.
     internal static class UnityEventFilterAccess
     {
         public const string RunFinished = "RunFinished";

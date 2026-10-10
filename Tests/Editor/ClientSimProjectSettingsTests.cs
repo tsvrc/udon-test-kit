@@ -174,7 +174,8 @@ namespace UdonTestKit.Editor.Tests
 
         // ClientSim's input axes fix replaces the file on disk, so it can't repair a change that only
         // exists in memory: that case saves the broken value. The others stay in memory: saving
-        // them too started a script recompile in the middle of the run (FINDINGS.md, F10).
+        // them too started a script recompile in the middle of the run, and a later test failed
+        // with "Can't add script behaviour while compiling".
         private static void Write(SerializedProperty property, object value, bool saveToDisk)
         {
             property.serializedObject.Update();

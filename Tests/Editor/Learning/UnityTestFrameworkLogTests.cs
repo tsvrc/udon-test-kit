@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 namespace UdonTestKit.Editor.Tests.Learning
 {
     // Unity Test Framework fails a test on any error log it didn't expect, which is how ClientSim's
-    // settings window fails tests in batch mode (Runtime/Learning/ClientSimInvalidSettingsTests).
+    // settings window fails tests in batch mode.
     public class UnityTestFrameworkLogTests
     {
         private const string UnexpectedError = "An error log no test expected.";
