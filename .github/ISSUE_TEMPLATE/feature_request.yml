@@ -1,5 +1,5 @@
 name: Feature request
-description: Propose something Test Kit doesn't do yet.
+description: Propose something Udon Test Kit doesn't do yet.
 labels: [enhancement]
 body:
   - type: textarea

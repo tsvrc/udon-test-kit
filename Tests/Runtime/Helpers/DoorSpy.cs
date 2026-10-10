@@ -1,4 +1,4 @@
-namespace Tsvrc.TestKit.Tests.Helpers
+namespace Tsvrc.UdonTestKit.Tests.Helpers
 {
     // A spy with callbacks named for what a world's code calls.
     public class DoorSpy : CallbackSpy

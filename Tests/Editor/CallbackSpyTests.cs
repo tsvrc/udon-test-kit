@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Tsvrc.TestKit.Editor.Tests
+namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     public class CallbackSpyTests
     {

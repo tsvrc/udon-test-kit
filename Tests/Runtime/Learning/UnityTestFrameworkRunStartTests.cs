@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using UnityEditor;
 
-namespace Tsvrc.TestKit.Tests.Learning
+namespace Tsvrc.UdonTestKit.Tests.Learning
 {
     // Unity Test Framework reports a Play Mode run's start only after the domain reload into Play
     // Mode, so TestRun.IsActive can't cover that reload. Editor tooling that reacts to it also checks
@@ -20,8 +20,8 @@ namespace Tsvrc.TestKit.Tests.Learning
         [InitializeOnLoad]
         private static class PlayModeDomainLoad
         {
-            private const string RecordedKey = "Tsvrc.TestKit.Tests.PlayModeDomainLoad.Recorded";
-            private const string RunStartedKey = "Tsvrc.TestKit.Tests.PlayModeDomainLoad.RunStarted";
+            private const string RecordedKey = "Tsvrc.UdonTestKit.Tests.PlayModeDomainLoad.Recorded";
+            private const string RunStartedKey = "Tsvrc.UdonTestKit.Tests.PlayModeDomainLoad.RunStarted";
 
             static PlayModeDomainLoad()
             {

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Read the documentation
-    url: https://tsvrc.com/docs/test-kit/intro
-    about: Setup, how-to guides and reference for Test Kit.
+    url: https://tsvrc.com/docs/udon-test-kit/intro
+    about: Setup, how-to guides and reference for Udon Test Kit.
   - name: Ask a question
     url: https://github.com/orgs/tsvrc/discussions
     about: Questions belong in Discussions, not the issue tracker.

@@ -2,7 +2,7 @@ using System.Collections;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
-namespace Tsvrc.TestKit
+namespace Tsvrc.UdonTestKit
 {
     /// <summary>
     /// Base for Play Mode tests that use ClientSim. Start <see cref="Session"/> in a test; it ends

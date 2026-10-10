@@ -1,4 +1,4 @@
-namespace Tsvrc.TestKit
+namespace Tsvrc.UdonTestKit
 {
     /// <summary>How long a ClientSimTestBase fixture keeps its TestScene loaded.</summary>
     public enum TestSceneLifetime

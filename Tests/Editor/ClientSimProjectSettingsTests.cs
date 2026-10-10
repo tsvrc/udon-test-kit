@@ -6,7 +6,7 @@ using UnityEngine;
 using VRC.SDK3.ClientSim.Editor;
 using Object = UnityEngine.Object;
 
-namespace Tsvrc.TestKit.Editor.Tests
+namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     // The Fix tests break one real setting of this project in memory, run the fix, and put the
     // original value back.
@@ -45,7 +45,7 @@ namespace Tsvrc.TestKit.Editor.Tests
 
             // Assert
             Assert.That(failure.Message, Does.Contain("on: layers, matrix."));
-            Assert.That(failure.Message, Does.Contain("Tools > TsVRC > Test Kit > Fix ClientSim Project Settings"));
+            Assert.That(failure.Message, Does.Contain("Tools > TsVRC > Udon Test Kit > Fix ClientSim Project Settings"));
         }
 
         [Test]

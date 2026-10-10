@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Build.Player;
 
-namespace Tsvrc.TestKit.Editor.Tests
+namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     public class PlayerBuildTests
     {
@@ -22,7 +22,7 @@ namespace Tsvrc.TestKit.Editor.Tests
         public void CompilePlayerScripts_WindowsBuild_LeavesOutTheKit()
         {
             // Arrange
-            _outputFolder = Path.Combine(Path.GetTempPath(), "Tsvrc.TestKit.PlayerBuildTests");
+            _outputFolder = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.PlayerBuildTests");
             var settings = new ScriptCompilationSettings
             {
                 target = BuildTarget.StandaloneWindows64,
@@ -36,7 +36,7 @@ namespace Tsvrc.TestKit.Editor.Tests
             TestContext.WriteLine("Player assemblies: " + string.Join(", ", result.assemblies));
             Assert.That(result.assemblies, Has.Some.StartsWith("VRC."),
                 "The world's player scripts didn't compile.");
-            Assert.That(result.assemblies, Has.None.StartsWith("Tsvrc.TestKit"));
+            Assert.That(result.assemblies, Has.None.StartsWith("Tsvrc.UdonTestKit"));
         }
     }
 }

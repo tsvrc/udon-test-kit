@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Tsvrc.TestKit.Editor.Tests.Learning
+namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
     // Unity Test Framework fails a test on any error log it didn't expect, which is how ClientSim's
     // settings window fails tests in batch mode.

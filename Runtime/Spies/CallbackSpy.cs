@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using UdonSharp;
 
-namespace Tsvrc.TestKit
+namespace Tsvrc.UdonTestKit
 {
     /// <summary>
     /// A test spy for code that calls an UdonSharpBehaviour's methods by name, such as

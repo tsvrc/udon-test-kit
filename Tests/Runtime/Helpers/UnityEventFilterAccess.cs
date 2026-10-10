@@ -6,7 +6,7 @@ using NUnit.Framework;
 using UnityEngine;
 using VRC.Core;
 
-namespace Tsvrc.TestKit.Tests.Helpers
+namespace Tsvrc.UdonTestKit.Tests.Helpers
 {
     // Reaches the VRChat SDK's UnityEventFilter internals and Unity Test Framework's internal
     // listener types by name. Only works in Play Mode: outside it, UnityEventFilter throws.

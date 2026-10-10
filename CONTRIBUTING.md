@@ -1,4 +1,4 @@
-# Contributing to Test Kit
+# Contributing to Udon Test Kit
 
 Bug reports, fixes and new test helpers are welcome. Before you build a new helper or change a
 public API, open an issue to agree on its shape, so the code you write is the code that gets
@@ -19,8 +19,8 @@ The kit's tests need a VRChat world project to run in.
    [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
 2. Clone this repository into the project's `Assets` folder, for example as
    `Assets/udon-test-kit`. Don't install the kit through the Creator Companion as well: two
-   assemblies named `Tsvrc.TestKit` stop the project compiling.
-3. Add `TSVRC_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The kit's
+   assemblies named `Tsvrc.UdonTestKit` stop the project compiling.
+3. Add `TSVRC_UDON_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The kit's
    own tests compile only when it's defined, so they never show up in a world that uses the kit.
 
 ## Running tests
@@ -34,7 +34,7 @@ Run both modes before opening a pull request. In the Editor, use the EditMode an
 
 The script runs the tests of every assembly definition under `Assets`, which is why the kit lives
 there while you develop it. Its options are in the
-[Invoke-UnityTests.ps1 reference](https://tsvrc.com/docs/test-kit/reference/invoke-unity-tests).
+[Invoke-UnityTests.ps1 reference](https://tsvrc.com/docs/udon-test-kit/reference/invoke-unity-tests).
 
 ## Learning tests
 
@@ -51,7 +51,7 @@ behavior.
 
 Match the style of the surrounding file. A few things aren't obvious from reading one file:
 
-- Kit code in `Runtime/` calls `UnityEditor` directly, without `#if UNITY_EDITOR`. The `Tsvrc.TestKit`
+- Kit code in `Runtime/` calls `UnityEditor` directly, without `#if UNITY_EDITOR`. The `Tsvrc.UdonTestKit`
   assembly compiles only when `UNITY_INCLUDE_TESTS` is defined, which keeps it out of player
   builds, and `PlayerBuildTests` fails if that stops being true.
 - Test names read `Method_Condition_Result`, such as `Fix_AllSettingsValid_AppliesNothing`, and the
@@ -64,8 +64,8 @@ A change to what the kit does needs a test that fails without it.
 
 ## Documentation
 
-The kit's documentation is on [tsvrc.com](https://tsvrc.com/docs/test-kit/intro), built from
-`docs/test-kit/` in the [tsvrc/docs](https://github.com/tsvrc/docs) repository. A change to
+The kit's documentation is on [tsvrc.com](https://tsvrc.com/docs/udon-test-kit/intro), built from
+`docs/udon-test-kit/` in the [tsvrc/docs](https://github.com/tsvrc/docs) repository. A change to
 what users call or see needs a matching pull request there.
 
 ## Submitting a pull request

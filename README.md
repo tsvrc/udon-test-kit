@@ -1,4 +1,4 @@
-# Test Kit
+# Udon Test Kit
 
 [![Release](https://img.shields.io/github/v/release/tsvrc/udon-test-kit?style=flat&label=release&color=58a6ff&labelColor=161b22)](https://github.com/tsvrc/udon-test-kit/releases)
 [![Last commit](https://img.shields.io/github/last-commit/tsvrc/udon-test-kit?style=flat&label=last%20commit&color=58a6ff&labelColor=161b22)](https://github.com/tsvrc/udon-test-kit/commits/main)
@@ -7,9 +7,9 @@
 Automated tests for VRChat worlds with Unity Test Framework. Play Mode tests run your UdonSharp
 behaviours in a real ClientSim session, with real players.
 
-Docs: [tsvrc.com/docs/test-kit](https://tsvrc.com/docs/test-kit/intro).
+Docs: [tsvrc.com/docs/udon-test-kit](https://tsvrc.com/docs/udon-test-kit/intro).
 
-*Test Kit is a [TsVRC](https://tsvrc.com) project. It isn't affiliated with, endorsed by, or
+*Udon Test Kit is a [TsVRC](https://tsvrc.com) project. It isn't affiliated with, endorsed by, or
 sponsored by VRChat Inc.*
 
 ## Quick look
@@ -17,7 +17,7 @@ sponsored by VRChat Inc.*
 ```csharp
 using System.Collections;
 using NUnit.Framework;
-using Tsvrc.TestKit;
+using Tsvrc.UdonTestKit;
 using UnityEngine.TestTools;
 using VRC.SDKBase;
 
@@ -36,23 +36,23 @@ public class PlayerCountTests : ClientSimTestBase
 }
 ```
 
-Full walkthrough: [Write your first test](https://tsvrc.com/docs/test-kit/first-test).
+Full walkthrough: [Write your first test](https://tsvrc.com/docs/udon-test-kit/first-test).
 
 ## Install
 
 Requires Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or later.
 
-Install **Test Kit** (`com.tsvrc.test-kit`) as described in
+Install **Udon Test Kit** (`com.tsvrc.udon-test-kit`) as described in
 [Install a TsVRC package](https://tsvrc.com/docs/install-a-package); the `.unitypackage` is on the
 [releases page](https://github.com/tsvrc/udon-test-kit/releases). Then create your test assemblies:
-[Add Test Kit to your project](https://tsvrc.com/docs/test-kit/add-to-your-project).
+[Add Udon Test Kit to your project](https://tsvrc.com/docs/udon-test-kit/add-to-your-project).
 
 ## Command-line test runner
 
 [`Scripts~/Invoke-UnityTests.ps1`](Scripts~/Invoke-UnityTests.ps1) runs a Unity project's tests
 from PowerShell and prints only what failed. It's standalone: copy it into any Unity project, with
 or without the kit. See
-[Run tests from the command line](https://tsvrc.com/docs/test-kit/how-to/running-tests-from-the-command-line).
+[Run tests from the command line](https://tsvrc.com/docs/udon-test-kit/how-to/running-tests-from-the-command-line).
 
 ## Contributing
 

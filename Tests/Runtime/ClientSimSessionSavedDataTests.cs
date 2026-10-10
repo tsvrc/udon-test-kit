@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Tsvrc.TestKit.Tests.Helpers;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim.Persistence;
 using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 
-namespace Tsvrc.TestKit.Tests
+namespace Tsvrc.UdonTestKit.Tests
 {
     public class ClientSimSessionSavedDataTests : ClientSimTestBase
     {

@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using Tsvrc.TestKit.Tests.Helpers;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEngine;
 using UnityEngine.Events;
 using VRC.Core;
 
-namespace Tsvrc.TestKit.Tests.Learning
+namespace Tsvrc.UdonTestKit.Tests.Learning
 {
     // When Play Mode starts, the VRChat SDK strips UnityEvent listeners whose type isn't
     // allowlisted, including the four Unity Test Framework reports results through.

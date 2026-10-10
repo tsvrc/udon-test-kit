@@ -4,6 +4,6 @@
 
 ## Checklist
 
-- [ ] Edit Mode and Play Mode tests pass with `TSVRC_TEST_KIT_TESTS` defined, and new behavior has a test.
+- [ ] Edit Mode and Play Mode tests pass with `TSVRC_UDON_TEST_KIT_TESTS` defined, and new behavior has a test.
 - [ ] Kit code that relies on new VRChat SDK, ClientSim, UdonSharp or Unity behavior has a learning test for it.
-- [ ] Docs in [tsvrc/docs](https://github.com/tsvrc/docs) (`docs/test-kit/`) are updated if this changes what users call or see.
+- [ ] Docs in [tsvrc/docs](https://github.com/tsvrc/docs) (`docs/udon-test-kit/`) are updated if this changes what users call or see.

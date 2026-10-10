@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace Tsvrc.TestKit
+namespace Tsvrc.UdonTestKit
 {
     /// <summary>
     /// Reads and writes fields, and calls methods, by name on any object or type, whatever their

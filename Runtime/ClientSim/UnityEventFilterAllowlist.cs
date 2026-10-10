@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Core;
 
-namespace Tsvrc.TestKit
+namespace Tsvrc.UdonTestKit
 {
     // When Play Mode starts, the VRChat SDK's VRC.Core.UnityEventFilter strips every persistent
     // UnityEvent listener it doesn't permit, and a stripped listener is never called. Unity Test
@@ -82,7 +82,7 @@ namespace Tsvrc.TestKit
 
         private static void Warn(string reason)
         {
-            Debug.LogWarning("[TestKit] UnityEventFilterAllowlist: " + reason);
+            Debug.LogWarning("[UdonTestKit] UnityEventFilterAllowlist: " + reason);
         }
     }
 }

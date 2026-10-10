@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Tsvrc.TestKit.Editor.Tests
+namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     public class PrivateFieldAccessTests
     {

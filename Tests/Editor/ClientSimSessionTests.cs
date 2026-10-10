@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using VRC.SDK3.ClientSim.Persistence;
 
-namespace Tsvrc.TestKit.Editor.Tests
+namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     public class ClientSimSessionTests
     {
@@ -60,7 +60,7 @@ namespace Tsvrc.TestKit.Editor.Tests
         public void DeleteSavedData_FilesForSeveralScenes_DeletesOnlyTheGivenScenes()
         {
             // Arrange
-            _storageRoot = Path.Combine(Path.GetTempPath(), "Tsvrc.TestKit.ClientSimSessionTests");
+            _storageRoot = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.ClientSimSessionTests");
             string data = CreateFile("PlayerData", "PlayerData_1_World.json");
             string objects = CreateFile("PlayerObjects", "PlayerObject_2_World.json");
             string otherScene = CreateFile("PlayerData", "PlayerData_1_My_World.json");

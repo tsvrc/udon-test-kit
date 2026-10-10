@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
-namespace Tsvrc.TestKit
+namespace Tsvrc.UdonTestKit
 {
     /// <summary>
     /// A scene for Play Mode tests to run in: a new empty scene, or a scene asset such as the world's

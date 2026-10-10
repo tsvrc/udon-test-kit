@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace Tsvrc.TestKit.Editor.Tests.Learning
+namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
     // Unity won't add a behaviour from an Editor-only assembly to a GameObject, so the kit's
     // assembly, which holds CallbackSpy, targets every platform.

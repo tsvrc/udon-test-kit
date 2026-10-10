@@ -1,16 +1,16 @@
 using System.Collections;
 using NUnit.Framework;
-using Tsvrc.TestKit.Tests.Helpers;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
-namespace Tsvrc.TestKit.Tests
+namespace Tsvrc.UdonTestKit.Tests
 {
     [PrebuildSetup(typeof(TestWorldScene)), PostBuildCleanup(typeof(TestWorldScene))]
     public class TestSceneTests
     {
-        private const string SceneName = "Tsvrc.TestKit.TestSceneTests";
+        private const string SceneName = "Tsvrc.UdonTestKit.TestSceneTests";
 
         private TestScene _scene;
 

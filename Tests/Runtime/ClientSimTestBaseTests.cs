@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 
-namespace Tsvrc.TestKit.Tests
+namespace Tsvrc.UdonTestKit.Tests
 {
     public class ClientSimTestBaseTests : ClientSimTestBase
     {

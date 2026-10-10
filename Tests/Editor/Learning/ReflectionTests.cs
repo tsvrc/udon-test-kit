@@ -1,7 +1,7 @@
 using System.Reflection;
 using NUnit.Framework;
 
-namespace Tsvrc.TestKit.Editor.Tests.Learning
+namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
     // GetField and GetMethod on a derived type miss a private member of its base class, so
     // PrivateFieldAccess searches base classes.

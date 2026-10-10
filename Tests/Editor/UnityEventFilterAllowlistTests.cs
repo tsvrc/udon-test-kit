@@ -6,12 +6,12 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Tsvrc.TestKit.Editor.Tests
+namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     // Runs against stand-in filter types shaped like the SDK's, so every warning can be reached.
     public class UnityEventFilterAllowlistTests
     {
-        private static readonly Regex AllowlistWarning = new Regex(@"^\[TestKit\] UnityEventFilterAllowlist: ");
+        private static readonly Regex AllowlistWarning = new Regex(@"^\[UdonTestKit\] UnityEventFilterAllowlist: ");
 
         private static string[] KnownListener => new[] { typeof(KnownListenerType).FullName };
 
