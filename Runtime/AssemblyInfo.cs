@@ -1,4 +1,4 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("UdonTestKit.Editor.Tests")]
-[assembly: InternalsVisibleTo("UdonTestKit.Tests")]
+[assembly: InternalsVisibleTo("Tsvrc.TestKit.Editor.Tests")]
+[assembly: InternalsVisibleTo("Tsvrc.TestKit.Tests")]

@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
 
-namespace UdonTestKit
+namespace Tsvrc.TestKit
 {
     /// <summary>
     /// Creates a Tests folder with an Edit Mode and a Play Mode test assembly, and a test doubles
@@ -17,18 +17,18 @@ namespace UdonTestKit
     /// </summary>
     public static class TestAssemblyCreator
     {
-        public const string MenuPath = "Assets/Create/TsVRC/Udon Test Kit/Test Assemblies";
+        public const string MenuPath = "Assets/Create/TsVRC/Test Kit/Test Assemblies";
 
         internal const string EditModeSuffix = ".Tests.EditMode";
         internal const string PlayModeSuffix = ".Tests.PlayMode";
         internal const string DoublesSuffix = ".Tests.Doubles";
 
-        internal static readonly string[] KitReferences = { "UdonTestKit", "UdonSharp.Runtime", "VRC.SDKBase", "VRC.SDK3", "VRC.ClientSim" };
+        internal static readonly string[] KitReferences = { "Tsvrc.TestKit", "UdonSharp.Runtime", "VRC.SDKBase", "VRC.SDK3", "VRC.ClientSim" };
 
         internal static readonly string[] SdkDlls = { "VRCSDKBase.dll", "VRCSDK3.dll" };
 
         internal const string AssemblyCSharpWarning =
-            "[UdonTestKit] Some scripts under Assets have no assembly definition, so they compile into " +
+            "[TestKit] Some scripts under Assets have no assembly definition, so they compile into " +
             "Assembly-CSharp, which the created test assemblies can't reference. Edit Mode tests for them can go " +
             "in an Editor folder without an assembly definition. Play Mode tests need those scripts in an assembly definition.";
 
@@ -54,7 +54,7 @@ namespace UdonTestKit
             string prefix = UniquePrefix(AssemblyPrefix(Application.productName), existing);
             string folder = Create(parentFolder, prefix, WorldAssemblyNames());
             AssetDatabase.Refresh();
-            Debug.Log($"[UdonTestKit] Created test assemblies in {folder}.");
+            Debug.Log($"[TestKit] Created test assemblies in {folder}.");
             if (HasScriptsInAssemblyCSharp())
             {
                 Debug.LogWarning(AssemblyCSharpWarning);
@@ -192,7 +192,7 @@ namespace UdonTestKit
         }
 
         internal const string ExampleSpy =
-@"using UdonTestKit;
+@"using Tsvrc.TestKit;
 
 // A spy with a callback named after what your code calls. Test doubles that tests add to
 // GameObjects go in this assembly: Unity can't add one from the Edit Mode test assembly.
@@ -204,7 +204,7 @@ public class ExampleSpy : CallbackSpy
 
         internal const string ExampleEditModeTests =
 @"using NUnit.Framework;
-using UdonTestKit;
+using Tsvrc.TestKit;
 
 public class ExampleEditModeTests
 {
@@ -224,7 +224,7 @@ public class ExampleEditModeTests
         internal const string ExamplePlayModeTests =
 @"using System.Collections;
 using NUnit.Framework;
-using UdonTestKit;
+using Tsvrc.TestKit;
 using UnityEngine.TestTools;
 using VRC.SDKBase;
 

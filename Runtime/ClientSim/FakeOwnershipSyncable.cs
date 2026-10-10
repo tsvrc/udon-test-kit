@@ -1,7 +1,7 @@
 using UnityEngine;
 using VRC.SDK3.ClientSim;
 
-namespace UdonTestKit
+namespace Tsvrc.TestKit
 {
     // ClientSim reads and writes a GameObject's owner only through an IClientSimSyncable on it.
     // Added by ClientSimSession.SetOwner.

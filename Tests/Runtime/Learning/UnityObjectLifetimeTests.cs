@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace UdonTestKit.Tests.Learning
+namespace Tsvrc.TestKit.Tests.Learning
 {
     // Object.Destroy takes effect only from the next frame, so a test yields a frame before
     // checking that something survived.

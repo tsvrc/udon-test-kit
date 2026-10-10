@@ -7,12 +7,12 @@ using UnityEditor.Compilation;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit.Editor.Tests
+namespace Tsvrc.TestKit.Editor.Tests
 {
     public class TestAssemblyCreatorTests
     {
         // Created by the selection tests, so they don't depend on where the kit is installed.
-        private const string SelectionFolder = "Assets/UdonTestKitSelectionTests";
+        private const string SelectionFolder = "Assets/TestKitSelectionTests";
         private const string SelectionFile = SelectionFolder + "/Selected.txt";
 
         private string _parent;
@@ -20,7 +20,7 @@ namespace UdonTestKit.Editor.Tests
         [SetUp]
         public void SetUp()
         {
-            _parent = Path.Combine(Path.GetTempPath(), "UdonTestKit.TestAssemblyCreatorTests");
+            _parent = Path.Combine(Path.GetTempPath(), "Tsvrc.TestKit.TestAssemblyCreatorTests");
             if (Directory.Exists(_parent))
             {
                 Directory.Delete(_parent, recursive: true);
@@ -113,7 +113,7 @@ namespace UdonTestKit.Editor.Tests
 
             // Assert
             Assert.That(definition.includePlatforms, Is.Empty);
-            Assert.That(definition.references, Has.Member("UdonTestKit").And.None.Contains("TestRunner"));
+            Assert.That(definition.references, Has.Member("Tsvrc.TestKit").And.None.Contains("TestRunner"));
             Assert.That(definition.precompiledReferences, Has.No.Member("nunit.framework.dll"));
             Assert.That(definition.defineConstraints, Is.EqualTo(new[] { "UNITY_INCLUDE_TESTS" }));
         }
@@ -123,11 +123,11 @@ namespace UdonTestKit.Editor.Tests
         {
             // Act
             AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.PlayMode",
-                TestAssemblyCreator.AssemblyKind.PlayModeTests, new[] { "MyWorld.Runtime", "UdonTestKit" }));
+                TestAssemblyCreator.AssemblyKind.PlayModeTests, new[] { "MyWorld.Runtime", "Tsvrc.TestKit" }));
 
             // Assert
             Assert.That(definition.references, Has.Member("MyWorld.Runtime"));
-            Assert.That(definition.references.Count(reference => reference == "UdonTestKit"), Is.EqualTo(1));
+            Assert.That(definition.references.Count(reference => reference == "Tsvrc.TestKit"), Is.EqualTo(1));
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace UdonTestKit.Editor.Tests
             List<string> world = TestAssemblyCreator.WorldAssemblyNames().ToList();
 
             // Assert
-            Assert.That(world, Has.None.StartsWith("UdonTestKit"));
+            Assert.That(world, Has.None.StartsWith("Tsvrc.TestKit"));
         }
 
         [Test]

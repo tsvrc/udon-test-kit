@@ -12,7 +12,7 @@ using VRC.SDK3.Components;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit
+namespace Tsvrc.TestKit
 {
     /// <summary>
     /// A ClientSim session for Play Mode tests, with real VRCPlayerApi players. Ending a session

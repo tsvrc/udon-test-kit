@@ -6,7 +6,7 @@ using NUnit.Framework;
 using VRC.SDK3.ClientSim.Persistence;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Helpers
+namespace Tsvrc.TestKit.Tests.Helpers
 {
     // Shared by the saved-data tests, and a way into ClientSim's saved-data internals, which have
     // no public API.
@@ -14,7 +14,7 @@ namespace UdonTestKit.Tests.Helpers
     {
         public const string PersistenceOffMessage =
             "The session created no ClientSimPlayerObjectStorage, so ClientSim's player persistence is off.";
-        public const string Key = "UdonTestKit.Key";
+        public const string Key = "Tsvrc.TestKit.Key";
         public const string NewerSave = "{\"1\":[]}";
         // Long enough for a live storage to save again.
         public const float WriteWindowSeconds = 1f;

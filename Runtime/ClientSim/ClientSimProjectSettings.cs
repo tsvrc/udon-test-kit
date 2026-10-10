@@ -7,7 +7,7 @@ using UnityEngine;
 using VRC.SDK3.ClientSim.Editor;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit
+namespace Tsvrc.TestKit
 {
     /// <summary>
     /// The project settings ClientSim checks before it starts
@@ -16,7 +16,7 @@ namespace UdonTestKit
     /// </summary>
     public static class ClientSimProjectSettings
     {
-        public const string FixMenuPath = "Tools/TsVRC/Udon Test Kit/Fix ClientSim Project Settings";
+        public const string FixMenuPath = "Tools/TsVRC/Test Kit/Fix ClientSim Project Settings";
 
         private const int BothInputSystems = 2;
 
@@ -36,8 +36,8 @@ namespace UdonTestKit
         {
             IReadOnlyList<string> fixedSettings = Fix(All);
             Debug.Log(fixedSettings.Count == 0
-                ? "[UdonTestKit] ClientSim's project settings were already correct."
-                : "[UdonTestKit] Changed ClientSim's project settings: " + string.Join(", ", fixedSettings) + ".");
+                ? "[TestKit] ClientSim's project settings were already correct."
+                : "[TestKit] Changed ClientSim's project settings: " + string.Join(", ", fixedSettings) + ".");
         }
 
         internal static IReadOnlyList<string> Fix(IEnumerable<Setting> settings)

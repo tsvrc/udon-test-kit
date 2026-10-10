@@ -1,11 +1,11 @@
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Learning
+namespace Tsvrc.TestKit.Tests.Learning
 {
     // ClientSim won't start without a scene descriptor, and its local player isn't enabled in the
     // frame it starts. ClientSimSession.Start adds a descriptor and waits.

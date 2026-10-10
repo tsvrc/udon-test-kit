@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim.Persistence;
 using VRC.SDK3.Persistence;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Learning
+namespace Tsvrc.TestKit.Tests.Learning
 {
     // The hidden object ClientSim saves a player's data with outlives ClientSim's teardown and
     // overwrites newer saves, and a change made before the local player is restored isn't saved.

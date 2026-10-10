@@ -3,7 +3,7 @@ using UnityEngine;
 using VRC.SDK3.ClientSim;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit.Tests.Helpers
+namespace Tsvrc.TestKit.Tests.Helpers
 {
     // ClientSim started and ended without ClientSimSession, so a learning test sees what ClientSim
     // does on its own.

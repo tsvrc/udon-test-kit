@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit
+namespace Tsvrc.TestKit
 {
     /// <summary>
     /// The calls a test's spies received, in the order they arrived, as "GameObjectName.CallbackName".

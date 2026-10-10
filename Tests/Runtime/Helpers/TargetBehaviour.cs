@@ -1,6 +1,6 @@
 using UdonSharp;
 
-namespace UdonTestKit.Tests.Helpers
+namespace Tsvrc.TestKit.Tests.Helpers
 {
     // An UdonSharpBehaviour with one public method, standing in for a world's own behaviour.
     public class TargetBehaviour : UdonSharpBehaviour

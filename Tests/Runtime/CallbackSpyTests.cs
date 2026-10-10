@@ -1,7 +1,7 @@
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 
-namespace UdonTestKit.Tests
+namespace Tsvrc.TestKit.Tests
 {
     public class CallbackSpyTests
     {

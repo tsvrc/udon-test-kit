@@ -3,7 +3,7 @@ using UnityEditor;
 using VRC.SDK3.ClientSim.Editor;
 using Object = UnityEngine.Object;
 
-namespace UdonTestKit.Editor.Tests.Learning
+namespace Tsvrc.TestKit.Editor.Tests.Learning
 {
     // ClientSim's own input type setter writes a value its own check rejects, so
     // ClientSimProjectSettings writes 2, both input systems, instead.

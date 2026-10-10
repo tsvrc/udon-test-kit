@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using VRC.Core;
 
-namespace UdonTestKit.Editor.Tests.Learning
+namespace Tsvrc.TestKit.Editor.Tests.Learning
 {
     // The VRChat SDK's UnityEventFilter throws outside Play Mode, so its other tests are Play Mode tests.
     public class UnityEventFilterOutsidePlayModeTests

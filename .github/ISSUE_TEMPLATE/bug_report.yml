@@ -1,11 +1,11 @@
 name: Bug report
-description: Something in Udon Test Kit isn't working as documented.
+description: Something in Test Kit isn't working as documented.
 labels: [bug]
 body:
   - type: input
     id: kit-version
     attributes:
-      label: Udon Test Kit version
+      label: Test Kit version
       description: The version shown in the Creator Companion, or in the kit's package.json.
     validations:
       required: true

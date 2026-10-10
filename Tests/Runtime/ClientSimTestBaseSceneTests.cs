@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -10,7 +10,7 @@ using VRC.SDK3.ClientSim;
 using VRC.SDK3.Components;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests
+namespace Tsvrc.TestKit.Tests
 {
     [PrebuildSetup(typeof(TestWorldScene)), PostBuildCleanup(typeof(TestWorldScene))]
     public class ClientSimTestBaseWorldSceneTests : ClientSimTestBase
@@ -31,7 +31,7 @@ namespace UdonTestKit.Tests
 
     public class ClientSimTestBasePerTestSceneTests : ClientSimTestBase
     {
-        private const string SceneName = "UdonTestKit.PerTestScene";
+        private const string SceneName = "Tsvrc.TestKit.PerTestScene";
 
         private readonly List<int> _sceneHandles = new List<int>();
 
@@ -72,7 +72,7 @@ namespace UdonTestKit.Tests
 
     public class ClientSimTestBasePerFixtureSceneTests : ClientSimTestBase
     {
-        private const string SceneName = "UdonTestKit.PerFixtureScene";
+        private const string SceneName = "Tsvrc.TestKit.PerFixtureScene";
 
         private int? _firstSceneHandle;
 

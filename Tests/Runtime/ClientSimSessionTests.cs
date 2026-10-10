@@ -9,7 +9,7 @@ using VRC.SDK3.ClientSim;
 using VRC.SDK3.Components;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests
+namespace Tsvrc.TestKit.Tests
 {
     public class ClientSimSessionTests : ClientSimTestBase
     {

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 
-namespace UdonTestKit.Tests
+namespace Tsvrc.TestKit.Tests
 {
     // Nothing here applies the allowlist: it ran when the editor loaded.
     public class UnityEventFilterAllowlistTests

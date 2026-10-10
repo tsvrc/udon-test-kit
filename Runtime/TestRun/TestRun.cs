@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
 
-namespace UdonTestKit
+namespace Tsvrc.TestKit
 {
     /// <summary>
     /// Whether a Unity Test Framework run is in progress: from when the run reports its start until
@@ -17,7 +17,7 @@ namespace UdonTestKit
     [InitializeOnLoad]
     public static class TestRun
     {
-        private const string StartedKey = "UdonTestKit.TestRun.Started";
+        private const string StartedKey = "Tsvrc.TestKit.TestRun.Started";
 
         static TestRun()
         {

@@ -1,10 +1,10 @@
 using System.Collections;
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace UdonTestKit.Tests.Learning
+namespace Tsvrc.TestKit.Tests.Learning
 {
     // Outside Udon, as in a test, SendCustomEvent calls the public method with that exact name and
     // silently ignores a name it doesn't have, and delayed events never arrive. So CallbackSpy

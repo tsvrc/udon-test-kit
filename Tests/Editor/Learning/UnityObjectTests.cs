@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim.Persistence;
 
-namespace UdonTestKit.Editor.Tests.Learning
+namespace Tsvrc.TestKit.Editor.Tests.Learning
 {
     // FindObjectsOfTypeAll also returns prefab assets, DestroyImmediate refuses an asset, and a
     // destroyed object is null only through Unity's ==. ClientSimSession.SavedDataObjects and the

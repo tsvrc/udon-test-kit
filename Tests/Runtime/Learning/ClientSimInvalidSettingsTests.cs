@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 using VRC.SDK3.ClientSim.Editor;
 
-namespace UdonTestKit.Tests.Learning
+namespace Tsvrc.TestKit.Tests.Learning
 {
     // When ClientSim's settings check fails, ClientSim opens its settings window as it starts, and
     // in batch mode the window logs errors. ClientSimProjectSettings.AssertValid fails first.

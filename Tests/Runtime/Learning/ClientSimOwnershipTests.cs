@@ -1,12 +1,12 @@
 using System.Collections;
 using NUnit.Framework;
-using UdonTestKit.Tests.Helpers;
+using Tsvrc.TestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
 using VRC.SDKBase;
 
-namespace UdonTestKit.Tests.Learning
+namespace Tsvrc.TestKit.Tests.Learning
 {
     // In ClientSim the master owns every GameObject without VRCObjectSync or VRCObjectPool, including
     // one holding an UdonSharpBehaviour, and Networking.SetOwner can't change that. In VRChat every

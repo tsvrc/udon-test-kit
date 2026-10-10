@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace UdonTestKit.Tests
+namespace Tsvrc.TestKit.Tests
 {
     public class TestRunTests
     {

@@ -1,9 +1,9 @@
 {
-    "name": "UdonTestKit.Tests",
-    "rootNamespace": "UdonTestKit.Tests",
+    "name": "Tsvrc.TestKit.Tests",
+    "rootNamespace": "Tsvrc.TestKit.Tests",
     "references": [
         "UnityEngine.TestRunner",
-        "UdonTestKit",
+        "Tsvrc.TestKit",
         "UdonSharp.Runtime",
         "VRC.SDKBase",
         "VRC.SDK3",
@@ -23,7 +23,7 @@
     "autoReferenced": false,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS",
-        "UDON_TEST_KIT_TESTS"
+        "TSVRC_TEST_KIT_TESTS"
     ],
     "versionDefines": [],
     "noEngineReferences": false
