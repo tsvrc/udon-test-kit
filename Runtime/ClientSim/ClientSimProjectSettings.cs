@@ -16,7 +16,7 @@ namespace UdonTestKit
     /// </summary>
     public static class ClientSimProjectSettings
     {
-        public const string FixMenuPath = "Tools/Udon Test Kit/Fix ClientSim Project Settings";
+        public const string FixMenuPath = "Tools/TsVRC/Udon Test Kit/Fix ClientSim Project Settings";
 
         private const int BothInputSystems = 2;
 

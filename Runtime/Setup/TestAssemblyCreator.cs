@@ -17,7 +17,7 @@ namespace UdonTestKit
     /// </summary>
     public static class TestAssemblyCreator
     {
-        public const string MenuPath = "Assets/Create/Udon Test Kit/Test Assemblies";
+        public const string MenuPath = "Assets/Create/TsVRC/Udon Test Kit/Test Assemblies";
 
         internal const string EditModeSuffix = ".Tests.EditMode";
         internal const string PlayModeSuffix = ".Tests.PlayMode";

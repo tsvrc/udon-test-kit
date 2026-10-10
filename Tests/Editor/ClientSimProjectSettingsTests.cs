@@ -45,7 +45,7 @@ namespace UdonTestKit.Editor.Tests
 
             // Assert
             Assert.That(failure.Message, Does.Contain("on: layers, matrix."));
-            Assert.That(failure.Message, Does.Contain("Tools > Udon Test Kit > Fix ClientSim Project Settings"));
+            Assert.That(failure.Message, Does.Contain("Tools > TsVRC > Udon Test Kit > Fix ClientSim Project Settings"));
         }
 
         [Test]
