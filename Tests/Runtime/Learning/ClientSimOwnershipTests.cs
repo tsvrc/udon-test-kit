@@ -62,6 +62,42 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             Assert.That(Networking.IsOwner(remote, _target), Is.False);
         }
 
+        // ClientSim hands a leaving player's GameObjects to the master only for owners registered with
+        // its ClientSimSyncedObjectManager, as the owners of VRCObjectSync and VRCObjectPool are.
+        // ClientSimSession.SetOwner registers the owner it adds for this reason.
+        [UnityTest]
+        public IEnumerator RemovePlayer_OwnerOfAnUnregisteredSyncable_StaysItsOwner()
+        {
+            // Arrange
+            yield return _clientSim.Start();
+            ClientSimMain.SpawnRemotePlayer(RemoteName);
+            VRCPlayerApi remote = ClientSimSession.FindPlayerByName(RemoteName);
+            _target = new GameObject(nameof(ClientSimOwnershipTests));
+            var owner = _target.AddComponent<UnregisteredSyncable>();
+            owner.SetOwner(remote.playerId);
+
+            // Act
+            ClientSimMain.RemovePlayer(remote);
+
+            // Assert
+            Assert.That(owner.GetOwner(), Is.EqualTo(remote.playerId));
+        }
+
+        // ClientSim marks its synced object manager DontSave, and FindObjectOfType skips DontSave
+        // objects, so ClientSimSession.SetOwner finds the manager with FindObjectsOfTypeAll.
+        [UnityTest]
+        public IEnumerator FindObjectOfType_ClientSimSyncedObjectManagerWhileRunning_FindsNothing()
+        {
+            // Arrange
+            yield return _clientSim.Start();
+
+            // Act
+            var manager = Object.FindObjectOfType<ClientSimSyncedObjectManager>(true);
+
+            // Assert
+            Assert.That(manager == null, "FindObjectOfType found ClientSim's synced object manager.");
+        }
+
         private static GameObject CreateTarget()
         {
             var target = new GameObject(nameof(ClientSimOwnershipTests));

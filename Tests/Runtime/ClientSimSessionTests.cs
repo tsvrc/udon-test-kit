@@ -249,6 +249,22 @@ namespace Tsvrc.UdonTestKit.Tests
             Assert.That(_owned.GetComponents<IClientSimSyncable>(), Has.Length.EqualTo(1));
         }
 
+        [UnityTest]
+        public IEnumerator RemovePlayer_OwnerOfAGameObjectGivenBySetOwner_MasterBecomesTheOwner()
+        {
+            // Arrange
+            yield return Session.Start();
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
+            _owned = new GameObject(nameof(ClientSimSessionTests));
+            Session.SetOwner(remote, _owned);
+
+            // Act
+            Session.RemovePlayer(remote);
+
+            // Assert
+            Assert.That(Networking.IsOwner(Networking.LocalPlayer, _owned), Is.True);
+        }
+
         private static IEnumerable<VRCSceneDescriptor> SceneDescriptors() =>
             Resources.FindObjectsOfTypeAll<VRCSceneDescriptor>().Where(descriptor => descriptor.gameObject.scene.IsValid());
 

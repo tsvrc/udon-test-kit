@@ -103,7 +103,8 @@ namespace Tsvrc.UdonTestKit
         /// Makes <paramref name="player"/> the owner of <paramref name="obj"/>, as Networking.SetOwner
         /// does in VRChat. ClientSim only lets GameObjects with VRCObjectSync or VRCObjectPool change
         /// owner, and the master owns all others. After this, Networking.SetOwner moves
-        /// <paramref name="obj"/>'s ownership too, such as when the code under test calls it.
+        /// <paramref name="obj"/>'s ownership too, such as when the code under test calls it, and
+        /// when its owner leaves, the master becomes the owner.
         /// </summary>
         public void SetOwner(VRCPlayerApi player, GameObject obj)
         {
@@ -111,7 +112,15 @@ namespace Tsvrc.UdonTestKit
             {
                 // Read before adding the component, which has no owner until it's set.
                 int currentOwner = Networking.GetOwner(obj).playerId;
-                obj.AddComponent<FakeOwnershipSyncable>().SetOwner(currentOwner);
+                var owner = obj.AddComponent<FakeOwnershipSyncable>();
+                owner.SetOwner(currentOwner);
+                // ClientSim hands a leaving player's GameObjects to the master only for owners
+                // registered with it, as the owners of VRCObjectSync and VRCObjectPool are. Its
+                // manager is DontSave, which FindObjectOfType skips, and FindObjectsOfTypeAll also
+                // returns the manager's prefab asset, whose scene isn't valid.
+                Resources.FindObjectsOfTypeAll<ClientSimSyncedObjectManager>()
+                    .First(manager => manager.gameObject.scene.IsValid())
+                    .AddSyncedObject(owner);
             }
             Networking.SetOwner(player, obj);
         }
