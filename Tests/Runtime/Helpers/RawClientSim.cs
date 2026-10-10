@@ -15,7 +15,9 @@ namespace UdonTestKit.Tests.Helpers
         public void Begin(bool withDescriptor = true, ClientSimEventDispatcher events = null)
         {
             if (withDescriptor)
+            {
                 _descriptor = ClientSimSession.CreateSceneDescriptor(Vector3.zero);
+            }
 
             var settings = new ClientSimSettings
             {
@@ -42,11 +44,15 @@ namespace UdonTestKit.Tests.Helpers
         public void End()
         {
             if (ClientSimMain.HasInstance())
+            {
                 ClientSimMain.RemoveInstance();
+            }
             ClientSimRuntimeLoader.EndUnityTesting();
 
             if (_descriptor != null)
+            {
                 Object.DestroyImmediate(_descriptor);
+            }
             _descriptor = null;
         }
     }

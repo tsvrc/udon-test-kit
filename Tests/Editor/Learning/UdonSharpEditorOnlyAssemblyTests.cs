@@ -14,7 +14,9 @@ namespace UdonTestKit.Editor.Tests.Learning
         public void TearDown()
         {
             if (_host != null)
+            {
                 Object.DestroyImmediate(_host);
+            }
         }
 
         [Test]

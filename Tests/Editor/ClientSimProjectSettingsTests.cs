@@ -180,12 +180,18 @@ namespace UdonTestKit.Editor.Tests
         {
             property.serializedObject.Update();
             if (value is int number)
+            {
                 property.intValue = number;
+            }
             else
+            {
                 property.stringValue = (string)value;
+            }
             property.serializedObject.ApplyModifiedProperties();
             if (saveToDisk)
+            {
                 AssetDatabase.SaveAssets();
+            }
         }
 
         private static ClientSimProjectSettings.Setting StandIn(string name, bool isValid, List<string> applied)

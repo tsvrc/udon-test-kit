@@ -36,8 +36,12 @@ namespace UdonTestKit.Tests.Learning
         public void TearDown()
         {
             foreach (UnityEngine.Object created in _created)
+            {
                 if (created != null)
+                {
                     UnityEngine.Object.DestroyImmediate(created);
+                }
+            }
             _created.Clear();
         }
 
@@ -157,7 +161,9 @@ namespace UdonTestKit.Tests.Learning
             finally
             {
                 if (kitEntry != null)
+                {
                     allowlist[listenerType] = kitEntry;
+                }
             }
         }
 
@@ -180,7 +186,9 @@ namespace UdonTestKit.Tests.Learning
             MethodInfo moveNext = enumerator.GetType().GetMethod("MoveNext", flags);
             PropertyInfo current = enumerator.GetType().GetProperty("Current", flags);
             while ((bool)moveNext.Invoke(enumerator, null))
+            {
                 yield return current.GetValue(enumerator);
+            }
         }
 
         private static IReadOnlyCollection<string> FindTestRunnerListenerTypeNames()
@@ -197,7 +205,9 @@ namespace UdonTestKit.Tests.Learning
 
                 var unityEvent = (UnityEventBase)field.GetValue(runner);
                 for (int i = 0; i < unityEvent.GetPersistentEventCount(); i++)
+                {
                     typeNames.Add(unityEvent.GetPersistentTarget(i).GetType().FullName);
+                }
             }
 
             return typeNames;

@@ -25,9 +25,13 @@ namespace UdonTestKit.Tests
         {
             _slowSession?.End();
             if (_sceneDescriptor != null)
+            {
                 UnityEngine.Object.DestroyImmediate(_sceneDescriptor);
+            }
             if (_owned != null)
+            {
                 UnityEngine.Object.DestroyImmediate(_owned);
+            }
             _restore?.Invoke();
             _restore = null;
         }
@@ -79,7 +83,9 @@ namespace UdonTestKit.Tests
             // Act
             TimeoutException failure;
             while (MoveNext(start, out failure))
+            {
                 yield return start.Current;
+            }
 
             // Assert
             Assert.That(failure, Is.Not.Null, "Start finished instead of timing out.");

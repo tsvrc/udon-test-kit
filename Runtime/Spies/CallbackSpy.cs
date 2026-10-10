@@ -22,7 +22,9 @@ namespace UdonTestKit
         protected void Record([CallerMemberName] string callback = null)
         {
             if (Calls == null)
+            {
                 throw new InvalidOperationException($"{name} wasn't created by a CallLog, so it has nowhere to record {callback}. Use CallLog.CreateSpy.");
+            }
             Calls.Add($"{name}.{callback}");
         }
     }

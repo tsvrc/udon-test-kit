@@ -38,7 +38,9 @@ namespace UdonTestKit
             {
                 TMember member = lookup(current);
                 if (member != null)
+                {
                     return member;
+                }
             }
 
             Assert.Fail($"{kind} '{name}' not found on {type.Name}.");

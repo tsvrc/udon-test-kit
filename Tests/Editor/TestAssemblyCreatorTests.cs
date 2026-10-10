@@ -22,7 +22,9 @@ namespace UdonTestKit.Editor.Tests
         {
             _parent = Path.Combine(Path.GetTempPath(), "UdonTestKit.TestAssemblyCreatorTests");
             if (Directory.Exists(_parent))
+            {
                 Directory.Delete(_parent, recursive: true);
+            }
             Directory.CreateDirectory(_parent);
         }
 

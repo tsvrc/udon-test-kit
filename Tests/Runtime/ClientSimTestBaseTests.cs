@@ -15,7 +15,9 @@ namespace UdonTestKit.Tests
             bool check = _checkSessionInTearDown;
             _checkSessionInTearDown = false;
             if (check)
+            {
                 Assert.That(ClientSimMain.HasInstance(), Is.True, "The base class ended the session before this teardown.");
+            }
         }
 
         [UnityTest]

@@ -16,8 +16,12 @@ namespace UdonTestKit.Tests
         public void TearDown()
         {
             foreach (UnityEngine.Object created in _created)
+            {
                 if (created != null)
+                {
                     UnityEngine.Object.DestroyImmediate(created);
+                }
+            }
             _created.Clear();
         }
 

@@ -49,7 +49,9 @@ namespace UdonTestKit
             ClientSimProjectSettings.AssertValid();
 
             if (Object.FindObjectOfType<VRC_SceneDescriptor>() == null)
+            {
                 _addedDescriptor = CreateSceneDescriptor(Vector3.zero);
+            }
 
             var settings = new ClientSimSettings
             {
@@ -77,7 +79,9 @@ namespace UdonTestKit
             while (!(ready && restored))
             {
                 if (Time.realtimeSinceStartup > deadline)
+                {
                     throw new TimeoutException($"ClientSim didn't get ready within {_readyTimeoutSeconds} seconds.");
+                }
                 yield return null;
             }
         }
@@ -161,10 +165,12 @@ namespace UdonTestKit
 
             var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_" + Regex.Escape(sceneName) + @"\.json$");
             foreach (string file in Directory.GetFiles(storageRoot, "*.json", SearchOption.AllDirectories))
+            {
                 if (sceneFile.IsMatch(Path.GetFileName(file)))
                 {
                     File.Delete(file);
                 }
+            }
         }
 
         // ClientSim keeps each player's saved data on a hidden root object that its own teardown

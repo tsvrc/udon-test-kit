@@ -42,7 +42,9 @@ namespace UdonTestKit.Tests.Learning
             ClientSimSession.DestroySavedDataObjects();
 
             foreach (ClientSimSettingsWindow window in Resources.FindObjectsOfTypeAll<ClientSimSettingsWindow>())
+            {
                 UnityEngine.Object.DestroyImmediate(window);
+            }
 
             Application.logMessageReceived -= RecordError;
             LogAssert.ignoreFailingMessages = false;
@@ -94,7 +96,9 @@ namespace UdonTestKit.Tests.Learning
         private void RecordError(string message, string stackTrace, LogType type)
         {
             if (type == LogType.Error)
+            {
                 _loggedErrors.Add(message);
+            }
         }
 
         private static FieldInfo CheckHookField() => HookField("checkValidSettingsHook");

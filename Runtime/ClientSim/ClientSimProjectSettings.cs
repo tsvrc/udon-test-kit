@@ -61,7 +61,9 @@ namespace UdonTestKit
         internal static void AssertValid(Func<bool> clientSimCheck, IEnumerable<Setting> settings)
         {
             if (clientSimCheck())
+            {
                 return;
+            }
 
             string[] invalid = settings.Where(setting => !setting.IsValid()).Select(setting => setting.Name).ToArray();
             Assert.Fail("ClientSim's project settings check fails" +

@@ -13,7 +13,9 @@ namespace UdonTestKit.Editor.Tests
         public void TearDown()
         {
             if (_outputFolder != null && Directory.Exists(_outputFolder))
+            {
                 Directory.Delete(_outputFolder, recursive: true);
+            }
         }
 
         [Test]

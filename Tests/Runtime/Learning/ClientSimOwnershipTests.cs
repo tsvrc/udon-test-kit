@@ -23,7 +23,9 @@ namespace UdonTestKit.Tests.Learning
         public void TearDown()
         {
             if (_target != null)
+            {
                 Object.DestroyImmediate(_target);
+            }
             _clientSim.End();
             ClientSimSession.DestroySavedDataObjects();
         }

@@ -16,9 +16,13 @@ namespace UdonTestKit.Editor.Tests
         public void TearDown()
         {
             if (_leaked != null)
+            {
                 Object.DestroyImmediate(_leaked);
+            }
             if (_storageRoot != null)
+            {
                 Directory.Delete(_storageRoot, recursive: true);
+            }
             _storageRoot = null;
         }
 

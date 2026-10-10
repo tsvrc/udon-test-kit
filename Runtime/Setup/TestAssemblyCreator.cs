@@ -143,7 +143,9 @@ namespace UdonTestKit
             var existing = new HashSet<string>(existingAssemblies);
             string candidate = prefix;
             for (int i = 2; new[] { EditModeSuffix, PlayModeSuffix, DoublesSuffix }.Any(suffix => existing.Contains(candidate + suffix)); i++)
+            {
                 candidate = prefix + i;
+            }
             return candidate;
         }
 

@@ -18,7 +18,9 @@ namespace UdonTestKit.Tests
         public IEnumerator StartOnce()
         {
             if (_starts > 0)
+            {
                 yield break;
+            }
             _starts++;
             yield return _session.Start();
             _localPlayerId = Networking.LocalPlayer.playerId;

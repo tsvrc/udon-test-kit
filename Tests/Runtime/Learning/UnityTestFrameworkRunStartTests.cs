@@ -26,7 +26,9 @@ namespace UdonTestKit.Tests.Learning
             static PlayModeDomainLoad()
             {
                 if (!EditorApplication.isPlayingOrWillChangePlaymode)
+                {
                     return;
+                }
                 SessionState.SetBool(RecordedKey, true);
                 SessionState.SetBool(RunStartedKey, TestRun.StartedInThisEditorSession);
             }

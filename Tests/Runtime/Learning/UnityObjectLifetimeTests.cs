@@ -15,7 +15,9 @@ namespace UdonTestKit.Tests.Learning
         public void TearDown()
         {
             if (_gameObject != null)
+            {
                 Object.DestroyImmediate(_gameObject);
+            }
         }
 
         [Test]
