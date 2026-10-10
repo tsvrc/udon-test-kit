@@ -1,18 +1,22 @@
 using System.Collections;
 using NUnit.Framework;
+using UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
+using VRC.SDK3.ClientSim;
 using VRC.SDKBase;
 
 namespace UdonTestKit.Tests.Learning
 {
-    // In ClientSim the master owns every GameObject without an IClientSimSyncable, and
-    // Networking.SetOwner can't change that. FakeOwnershipSyncable gives a GameObject its own owner.
+    // In ClientSim the master owns every GameObject without VRCObjectSync or VRCObjectPool, including
+    // one holding an UdonSharpBehaviour, and Networking.SetOwner can't change that. In VRChat every
+    // networked GameObject's owner can change. ClientSimSession.SetOwner gives a GameObject an owner
+    // of its own.
     public class ClientSimOwnershipTests
     {
         private const string RemoteName = "Remote";
 
-        private readonly ClientSimSession _session = new ClientSimSession();
+        private readonly RawClientSim _clientSim = new RawClientSim();
         private GameObject _target;
 
         [TearDown]
@@ -20,15 +24,16 @@ namespace UdonTestKit.Tests.Learning
         {
             if (_target != null)
                 Object.DestroyImmediate(_target);
-            _session.End();
+            _clientSim.End();
+            ClientSimSession.DestroySavedDataObjects();
         }
 
         [UnityTest]
-        public IEnumerator GetOwner_PlainGameObject_IsTheMaster()
+        public IEnumerator GetOwner_GameObjectWithAnUdonSharpBehaviour_IsTheMaster()
         {
             // Arrange
-            yield return _session.Start(localPlayerIsMaster: true);
-            _target = new GameObject(nameof(ClientSimOwnershipTests));
+            yield return _clientSim.Start();
+            _target = CreateTarget();
 
             // Act
             VRCPlayerApi owner = Networking.GetOwner(_target);
@@ -39,12 +44,13 @@ namespace UdonTestKit.Tests.Learning
         }
 
         [UnityTest]
-        public IEnumerator SetOwner_PlainGameObjectToRemotePlayer_MasterStaysOwner()
+        public IEnumerator SetOwner_GameObjectWithAnUdonSharpBehaviourToRemotePlayer_MasterStaysOwner()
         {
             // Arrange
-            yield return _session.Start(localPlayerIsMaster: true);
-            VRCPlayerApi remote = _session.SpawnRemotePlayer(RemoteName);
-            _target = new GameObject(nameof(ClientSimOwnershipTests));
+            yield return _clientSim.Start();
+            ClientSimMain.SpawnRemotePlayer(RemoteName);
+            VRCPlayerApi remote = ClientSimSession.FindPlayerByName(RemoteName);
+            _target = CreateTarget();
 
             // Act
             Networking.SetOwner(remote, _target);
@@ -52,6 +58,13 @@ namespace UdonTestKit.Tests.Learning
             // Assert
             Assert.That(Networking.IsOwner(Networking.LocalPlayer, _target), Is.True);
             Assert.That(Networking.IsOwner(remote, _target), Is.False);
+        }
+
+        private static GameObject CreateTarget()
+        {
+            var target = new GameObject(nameof(ClientSimOwnershipTests));
+            target.AddComponent<TargetBehaviour>();
+            return target;
         }
     }
 }

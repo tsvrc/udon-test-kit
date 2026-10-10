@@ -17,6 +17,7 @@ namespace UdonTestKit.Tests
 
         private ClientSimSession _slowSession;
         private GameObject _sceneDescriptor;
+        private GameObject _owned;
         private Action _restore;
 
         [TearDown]
@@ -25,6 +26,8 @@ namespace UdonTestKit.Tests
             _slowSession?.End();
             if (_sceneDescriptor != null)
                 UnityEngine.Object.DestroyImmediate(_sceneDescriptor);
+            if (_owned != null)
+                UnityEngine.Object.DestroyImmediate(_owned);
             _restore?.Invoke();
             _restore = null;
         }
@@ -190,6 +193,54 @@ namespace UdonTestKit.Tests
             yield return Session.Start();
 
             Assert.That(ClientSimSession.FindPlayerByName("NoSuchPlayer"), Is.Null);
+        }
+
+        [UnityTest]
+        public IEnumerator SetOwner_RemotePlayer_IsTheOwnerInsteadOfTheLocalMaster()
+        {
+            // Arrange
+            yield return Session.Start();
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
+            _owned = new GameObject(nameof(ClientSimSessionTests));
+
+            // Act
+            Session.SetOwner(remote, _owned);
+
+            // Assert
+            Assert.That(Networking.GetOwner(_owned), Is.EqualTo(remote));
+            Assert.That(Networking.IsOwner(Networking.LocalPlayer, _owned), Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator NetworkingSetOwner_AfterSessionSetOwner_MovesTheOwnership()
+        {
+            // Arrange
+            yield return Session.Start();
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
+            _owned = new GameObject(nameof(ClientSimSessionTests));
+            Session.SetOwner(remote, _owned);
+
+            // Act
+            Networking.SetOwner(Networking.LocalPlayer, _owned);
+
+            // Assert
+            Assert.That(Networking.IsOwner(Networking.LocalPlayer, _owned), Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator SetOwner_CalledTwice_AddsOneOwnershipComponent()
+        {
+            // Arrange
+            yield return Session.Start();
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
+            _owned = new GameObject(nameof(ClientSimSessionTests));
+
+            // Act
+            Session.SetOwner(remote, _owned);
+            Session.SetOwner(Networking.LocalPlayer, _owned);
+
+            // Assert
+            Assert.That(_owned.GetComponents<IClientSimSyncable>(), Has.Length.EqualTo(1));
         }
 
         private static IEnumerable<VRCSceneDescriptor> SceneDescriptors() =>

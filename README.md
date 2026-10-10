@@ -59,6 +59,20 @@ public class PlayerCountTests : ClientSimTestBase
 `RemovePlayer` take effect before they return, and `ClientSimSession.FindPlayerByName` finds a
 player by display name.
 
+`Session.SetOwner(player, gameObject)` makes a player the owner of a GameObject. ClientSim only
+lets GameObjects with `VRCObjectSync` or `VRCObjectPool` change owner, and the master owns all
+others, so `Networking.SetOwner` does nothing on them. After `Session.SetOwner`, it works on that
+GameObject too, such as when the code you're testing takes ownership. To test what happens when the
+local player isn't the owner:
+
+```csharp
+yield return Session.Start();
+VRCPlayerApi remote = Session.SpawnRemotePlayer("Remote");
+Session.SetOwner(remote, door.gameObject);
+
+door.Open(); // runs the code path for a player who doesn't own the door
+```
+
 To skip the base class, create a `ClientSimSession` yourself and call its `End` in your teardown.
 One session can also serve every test in a class: start it in a `[UnitySetUp]` when it isn't
 running yet, and end it in `[OneTimeTearDown]`. Tests that share a session also share whatever
@@ -140,10 +154,6 @@ Companion, `Assets` through a `.unitypackage`, or a git clone.
 `CallbackRecorder` is an `UdonSharpBehaviour` that counts calls to `CallbackA` and `CallbackB`,
 and adds `"GameObjectName.CallbackX"` to its `Log` list when you set one. Use it as the target of
 code that calls behaviours by method name, such as `SendCustomEvent`.
-
-`FakeOwnershipSyncable` gives a GameObject an owner of its own. In ClientSim the master owns every
-plain GameObject, and `Networking.SetOwner` can't change that. Add this component, then call its
-`SetOwner(playerId)` or `Networking.SetOwner`. Until then nobody owns the GameObject.
 
 `PrivateFieldAccess` reads and writes fields and calls methods by name, whatever their access
 level, including private members of a base class. A name that isn't found fails the test.

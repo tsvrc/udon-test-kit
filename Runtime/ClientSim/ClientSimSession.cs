@@ -95,6 +95,23 @@ namespace UdonTestKit
             ClientSimMain.RemovePlayer(player);
         }
 
+        /// <summary>
+        /// Makes <paramref name="player"/> the owner of <paramref name="obj"/>, as Networking.SetOwner
+        /// does in VRChat. ClientSim only lets GameObjects with VRCObjectSync or VRCObjectPool change
+        /// owner, and the master owns all others. After this, Networking.SetOwner moves
+        /// <paramref name="obj"/>'s ownership too, such as when the code under test calls it.
+        /// </summary>
+        public void SetOwner(VRCPlayerApi player, GameObject obj)
+        {
+            if (obj.GetComponent<IClientSimSyncable>() == null)
+            {
+                // Read before adding the component, which has no owner until it's set.
+                int currentOwner = Networking.GetOwner(obj).playerId;
+                obj.AddComponent<FakeOwnershipSyncable>().SetOwner(currentOwner);
+            }
+            Networking.SetOwner(player, obj);
+        }
+
         /// <summary>Returns the player with this display name, or null.</summary>
         public static VRCPlayerApi FindPlayerByName(string displayName)
         {
