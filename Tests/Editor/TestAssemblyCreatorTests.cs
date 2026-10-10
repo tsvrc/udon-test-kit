@@ -11,7 +11,9 @@ namespace UdonTestKit.Editor.Tests
 {
     public class TestAssemblyCreatorTests
     {
-        private const string KitTestsFolder = "Assets/udon-test-kit/Tests";
+        // Created by the selection tests, so they don't depend on where the kit is installed.
+        private const string SelectionFolder = "Assets/UdonTestKitSelectionTests";
+        private const string SelectionFile = SelectionFolder + "/Selected.txt";
 
         private string _parent;
 
@@ -29,6 +31,7 @@ namespace UdonTestKit.Editor.Tests
         {
             Directory.Delete(_parent, recursive: true);
             Selection.activeObject = null;
+            AssetDatabase.DeleteAsset(SelectionFolder);
         }
 
         [Test]
@@ -138,22 +141,22 @@ namespace UdonTestKit.Editor.Tests
         public void SelectedFolder_FolderSelected_IsThatFolder()
         {
             // Arrange
-            Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(KitTestsFolder);
-            Assume.That(Selection.activeObject, Is.Not.Null, $"{KitTestsFolder} isn't in this project.");
+            CreateSelectionFolder();
+            Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(SelectionFolder);
 
             // Act and Assert
-            Assert.That(TestAssemblyCreator.SelectedFolder(), Is.EqualTo(KitTestsFolder));
+            Assert.That(TestAssemblyCreator.SelectedFolder(), Is.EqualTo(SelectionFolder));
         }
 
         [Test]
         public void SelectedFolder_FileSelected_IsTheFileFolder()
         {
             // Arrange
-            Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(KitTestsFolder + "/Editor/UdonTestKit.Editor.Tests.asmdef");
-            Assume.That(Selection.activeObject, Is.Not.Null, "The kit's Edit Mode assembly definition isn't in this project.");
+            CreateSelectionFolder();
+            Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(SelectionFile);
 
             // Act and Assert
-            Assert.That(TestAssemblyCreator.SelectedFolder(), Is.EqualTo(KitTestsFolder + "/Editor"));
+            Assert.That(TestAssemblyCreator.SelectedFolder(), Is.EqualTo(SelectionFolder));
         }
 
         [Test]
@@ -181,6 +184,13 @@ namespace UdonTestKit.Editor.Tests
         public void AssemblyPrefix_ProductName_KeepsOnlyLettersAndDigits(string productName, string expected)
         {
             Assert.That(TestAssemblyCreator.AssemblyPrefix(productName), Is.EqualTo(expected));
+        }
+
+        private static void CreateSelectionFolder()
+        {
+            AssetDatabase.CreateFolder("Assets", Path.GetFileName(SelectionFolder));
+            File.WriteAllText(SelectionFile, "");
+            AssetDatabase.ImportAsset(SelectionFile);
         }
 
         private static AssemblyDefinition Parse(string json)
