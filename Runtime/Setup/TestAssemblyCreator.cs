@@ -10,25 +10,35 @@ using UnityEngine;
 namespace UdonTestKit
 {
     /// <summary>
-    /// Creates a Tests folder with an Edit Mode and a Play Mode test assembly, each referencing
-    /// everything a test needs: Unity Test Framework, the kit, UdonSharp, the VRChat SDK,
-    /// ClientSim, and the world's own assemblies under Assets. Each gets an example test.
+    /// Creates a Tests folder with an Edit Mode and a Play Mode test assembly, and a test doubles
+    /// assembly both of them reference, for behaviours the tests add to GameObjects, such as spies.
+    /// They reference the kit, UdonSharp, the VRChat SDK, ClientSim, and the world's own assemblies
+    /// under Assets. Each gets an example.
     /// </summary>
     public static class TestAssemblyCreator
     {
         public const string MenuPath = "Assets/Create/Udon Test Kit/Test Assemblies";
 
-        internal static readonly string[] SharedReferences =
-        {
-            "UnityEngine.TestRunner", "UdonTestKit", "UdonSharp.Runtime", "VRC.SDKBase", "VRC.SDK3", "VRC.ClientSim",
-        };
+        internal const string EditModeSuffix = ".Tests.EditMode";
+        internal const string PlayModeSuffix = ".Tests.PlayMode";
+        internal const string DoublesSuffix = ".Tests.Doubles";
 
-        internal static readonly string[] PrecompiledReferences = { "nunit.framework.dll", "VRCSDKBase.dll", "VRCSDK3.dll" };
+        internal static readonly string[] KitReferences = { "UdonTestKit", "UdonSharp.Runtime", "VRC.SDKBase", "VRC.SDK3", "VRC.ClientSim" };
+
+        internal static readonly string[] SdkDlls = { "VRCSDKBase.dll", "VRCSDK3.dll" };
 
         internal const string AssemblyCSharpWarning =
             "[UdonTestKit] Some scripts under Assets have no assembly definition, so they compile into " +
             "Assembly-CSharp, which the created test assemblies can't reference. Edit Mode tests for them can go " +
             "in an Editor folder without an assembly definition. Play Mode tests need those scripts in an assembly definition.";
+
+        internal enum AssemblyKind
+        {
+            EditModeTests,
+            PlayModeTests,
+            // Targets every platform: Unity won't add a behaviour from an Editor-only assembly to a GameObject.
+            Doubles,
+        }
 
         [MenuItem(MenuPath, priority = 90)]
         private static void CreateFromMenu()
@@ -62,32 +72,37 @@ namespace UdonTestKit
         {
             string testsFolder = UniqueFolder(Path.Combine(parentFolder, "Tests"));
             List<string> world = worldAssemblies.ToList();
+            string doubles = assemblyPrefix + DoublesSuffix;
+            List<string> worldAndDoubles = world.Append(doubles).ToList();
 
-            WriteAssembly(Path.Combine(testsFolder, "EditMode"), assemblyPrefix + ".Tests.EditMode", editorOnly: true, world,
+            WriteAssembly(Path.Combine(testsFolder, "Doubles"), doubles, AssemblyKind.Doubles, world,
+                "ExampleSpy.cs", ExampleSpy);
+            WriteAssembly(Path.Combine(testsFolder, "EditMode"), assemblyPrefix + EditModeSuffix, AssemblyKind.EditModeTests, worldAndDoubles,
                 "ExampleEditModeTests.cs", ExampleEditModeTests);
-            WriteAssembly(Path.Combine(testsFolder, "PlayMode"), assemblyPrefix + ".Tests.PlayMode", editorOnly: false, world,
+            WriteAssembly(Path.Combine(testsFolder, "PlayMode"), assemblyPrefix + PlayModeSuffix, AssemblyKind.PlayModeTests, worldAndDoubles,
                 "ExamplePlayModeTests.cs", ExamplePlayModeTests);
 
             return testsFolder.Replace('\\', '/');
         }
 
-        internal static string AssemblyDefinitionJson(string name, bool editorOnly, IEnumerable<string> worldAssemblies)
+        internal static string AssemblyDefinitionJson(string name, AssemblyKind kind, IEnumerable<string> otherReferences)
         {
-            IEnumerable<string> references = editorOnly
-                ? SharedReferences.Concat(new[] { "UnityEditor.TestRunner" })
-                : SharedReferences;
-            references = references.Concat(worldAssemblies).Distinct();
+            IEnumerable<string> testRunner = kind == AssemblyKind.EditModeTests ? new[] { "UnityEngine.TestRunner", "UnityEditor.TestRunner" }
+                : kind == AssemblyKind.PlayModeTests ? new[] { "UnityEngine.TestRunner" }
+                : Enumerable.Empty<string>();
+            IEnumerable<string> references = testRunner.Concat(KitReferences).Concat(otherReferences).Distinct();
+            IEnumerable<string> dlls = kind == AssemblyKind.Doubles ? SdkDlls : SdkDlls.Prepend("nunit.framework.dll");
 
             var json = new StringBuilder();
             json.AppendLine("{");
             json.AppendLine($"    \"name\": \"{name}\",");
             json.AppendLine($"    \"rootNamespace\": \"\",");
             json.AppendLine($"    \"references\": [{JsonList(references)}],");
-            json.AppendLine($"    \"includePlatforms\": [{(editorOnly ? "\"Editor\"" : "")}],");
+            json.AppendLine($"    \"includePlatforms\": [{(kind == AssemblyKind.EditModeTests ? "\"Editor\"" : "")}],");
             json.AppendLine("    \"excludePlatforms\": [],");
             json.AppendLine("    \"allowUnsafeCode\": false,");
             json.AppendLine("    \"overrideReferences\": true,");
-            json.AppendLine($"    \"precompiledReferences\": [{JsonList(PrecompiledReferences)}],");
+            json.AppendLine($"    \"precompiledReferences\": [{JsonList(dlls)}],");
             json.AppendLine("    \"autoReferenced\": false,");
             json.AppendLine("    \"defineConstraints\": [\"UNITY_INCLUDE_TESTS\"],");
             json.AppendLine("    \"versionDefines\": [],");
@@ -125,16 +140,16 @@ namespace UdonTestKit
         {
             var existing = new HashSet<string>(existingAssemblies);
             string candidate = prefix;
-            for (int i = 2; existing.Contains(candidate + ".Tests.EditMode") || existing.Contains(candidate + ".Tests.PlayMode"); i++)
+            for (int i = 2; new[] { EditModeSuffix, PlayModeSuffix, DoublesSuffix }.Any(suffix => existing.Contains(candidate + suffix)); i++)
                 candidate = prefix + i;
             return candidate;
         }
 
-        private static void WriteAssembly(string folder, string name, bool editorOnly, IEnumerable<string> worldAssemblies,
+        private static void WriteAssembly(string folder, string name, AssemblyKind kind, IEnumerable<string> references,
             string exampleFileName, string exampleSource)
         {
             Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, name + ".asmdef"), AssemblyDefinitionJson(name, editorOnly, worldAssemblies));
+            File.WriteAllText(Path.Combine(folder, name + ".asmdef"), AssemblyDefinitionJson(name, kind, references));
             File.WriteAllText(Path.Combine(folder, exampleFileName), exampleSource);
         }
 
@@ -166,6 +181,17 @@ namespace UdonTestKit
             return string.Join(", ", values.Select(value => "\"" + value + "\""));
         }
 
+        internal const string ExampleSpy =
+@"using UdonTestKit;
+
+// A spy with a callback named after what your code calls. Test doubles that tests add to
+// GameObjects go in this assembly: Unity can't add one from the Edit Mode test assembly.
+public class ExampleSpy : CallbackSpy
+{
+    public void OnExample() => Record();
+}
+";
+
         internal const string ExampleEditModeTests =
 @"using NUnit.Framework;
 using UdonTestKit;
@@ -173,14 +199,14 @@ using UdonTestKit;
 public class ExampleEditModeTests
 {
     [Test]
-    public void SendCustomEvent_CallbackA_IsRecorded()
+    public void SendCustomEvent_OnExample_IsRecorded()
     {
         using var calls = new CallLog();
-        CallbackSpy spy = calls.CreateSpy();
+        ExampleSpy spy = calls.CreateSpy<ExampleSpy>(""Example"");
 
-        spy.SendCustomEvent(nameof(CallbackSpy.CallbackA));
+        spy.SendCustomEvent(nameof(ExampleSpy.OnExample));
 
-        Assert.That(calls, Is.EqualTo(new[] { ""Spy.CallbackA"" }));
+        Assert.That(calls, Is.EqualTo(new[] { ""Example.OnExample"" }));
     }
 }
 ";

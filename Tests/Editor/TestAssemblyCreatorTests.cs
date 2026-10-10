@@ -35,7 +35,7 @@ namespace UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void Create_EmptyFolder_WritesBothAssembliesWithExamples()
+        public void Create_EmptyFolder_WritesTheThreeAssembliesWithExamples()
         {
             // Act
             string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new string[0]);
@@ -45,6 +45,20 @@ namespace UdonTestKit.Editor.Tests
             Assert.That(File.Exists(Path.Combine(tests, "EditMode", "ExampleEditModeTests.cs")));
             Assert.That(File.Exists(Path.Combine(tests, "PlayMode", "MyWorld.Tests.PlayMode.asmdef")));
             Assert.That(File.Exists(Path.Combine(tests, "PlayMode", "ExamplePlayModeTests.cs")));
+            Assert.That(File.Exists(Path.Combine(tests, "Doubles", "MyWorld.Tests.Doubles.asmdef")));
+            Assert.That(File.Exists(Path.Combine(tests, "Doubles", "ExampleSpy.cs")));
+        }
+
+        [TestCase("EditMode", "MyWorld.Tests.EditMode.asmdef")]
+        [TestCase("PlayMode", "MyWorld.Tests.PlayMode.asmdef")]
+        public void Create_EmptyFolder_TestAssemblyReferencesTheDoubles(string folder, string assemblyDefinition)
+        {
+            // Act
+            string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new[] { "MyWorld.Runtime" });
+
+            // Assert
+            AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, folder, assemblyDefinition)));
+            Assert.That(definition.references, Has.Member("MyWorld.Tests.Doubles").And.Member("MyWorld.Runtime"));
         }
 
         [Test]
@@ -64,12 +78,14 @@ namespace UdonTestKit.Editor.Tests
         public void AssemblyDefinitionJson_EditMode_IsEditorOnlyAndReferencesTheEditorRunner()
         {
             // Act
-            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.EditMode", editorOnly: true, new string[0]));
+            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.EditMode",
+                TestAssemblyCreator.AssemblyKind.EditModeTests, new string[0]));
 
             // Assert
             Assert.That(definition.name, Is.EqualTo("A.Tests.EditMode"));
             Assert.That(definition.includePlatforms, Is.EqualTo(new[] { "Editor" }));
             Assert.That(definition.references, Has.Member("UnityEditor.TestRunner"));
+            Assert.That(definition.precompiledReferences, Has.Member("nunit.framework.dll"));
             Assert.That(definition.defineConstraints, Is.EqualTo(new[] { "UNITY_INCLUDE_TESTS" }));
         }
 
@@ -77,19 +93,35 @@ namespace UdonTestKit.Editor.Tests
         public void AssemblyDefinitionJson_PlayMode_TargetsEveryPlatformWithoutTheEditorRunner()
         {
             // Act
-            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.PlayMode", editorOnly: false, new string[0]));
+            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.PlayMode",
+                TestAssemblyCreator.AssemblyKind.PlayModeTests, new string[0]));
 
             // Assert
             Assert.That(definition.includePlatforms, Is.Empty);
-            Assert.That(definition.references, Has.No.Member("UnityEditor.TestRunner"));
+            Assert.That(definition.references, Has.Member("UnityEngine.TestRunner").And.No.Member("UnityEditor.TestRunner"));
+            Assert.That(definition.precompiledReferences, Has.Member("nunit.framework.dll"));
+        }
+
+        [Test]
+        public void AssemblyDefinitionJson_Doubles_TargetsEveryPlatformWithoutTheTestRunnerOrNUnit()
+        {
+            // Act
+            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.Doubles",
+                TestAssemblyCreator.AssemblyKind.Doubles, new string[0]));
+
+            // Assert
+            Assert.That(definition.includePlatforms, Is.Empty);
+            Assert.That(definition.references, Has.Member("UdonTestKit").And.None.Contains("TestRunner"));
+            Assert.That(definition.precompiledReferences, Has.No.Member("nunit.framework.dll"));
+            Assert.That(definition.defineConstraints, Is.EqualTo(new[] { "UNITY_INCLUDE_TESTS" }));
         }
 
         [Test]
         public void AssemblyDefinitionJson_WorldAssemblies_AreReferencedOnce()
         {
             // Act
-            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.PlayMode", editorOnly: false,
-                new[] { "MyWorld.Runtime", "UdonTestKit" }));
+            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.PlayMode",
+                TestAssemblyCreator.AssemblyKind.PlayModeTests, new[] { "MyWorld.Runtime", "UdonTestKit" }));
 
             // Assert
             Assert.That(definition.references, Has.Member("MyWorld.Runtime"));
@@ -97,24 +129,24 @@ namespace UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void SharedReferences_EachIsAnAssemblyInThisProject()
+        public void KitReferences_EachIsAnAssemblyInThisProject()
         {
             // Arrange
             HashSet<string> assemblies = new HashSet<string>(CompilationPipeline.GetAssemblies(AssembliesType.Editor).Select(assembly => assembly.name));
 
             // Act and Assert
-            Assert.That(TestAssemblyCreator.SharedReferences.Append("UnityEditor.TestRunner"), Is.SubsetOf(assemblies));
+            Assert.That(TestAssemblyCreator.KitReferences.Append("UnityEngine.TestRunner").Append("UnityEditor.TestRunner"), Is.SubsetOf(assemblies));
         }
 
         [Test]
-        public void PrecompiledReferences_EachIsADllInThisProject()
+        public void SdkDlls_EachIsADllInThisProject()
         {
             // Arrange
             IEnumerable<string> dlls = CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.All)
                 .Select(Path.GetFileName);
 
             // Act and Assert
-            Assert.That(TestAssemblyCreator.PrecompiledReferences, Is.SubsetOf(dlls));
+            Assert.That(TestAssemblyCreator.SdkDlls, Is.SubsetOf(dlls));
         }
 
         [Test]
@@ -176,6 +208,12 @@ namespace UdonTestKit.Editor.Tests
 
             // Assert
             Assert.That(prefix, Is.EqualTo("MyWorld3"));
+        }
+
+        [Test]
+        public void UniquePrefix_OnlyTheDoublesAssemblyExists_NumbersThePrefix()
+        {
+            Assert.That(TestAssemblyCreator.UniquePrefix("MyWorld", new[] { "MyWorld.Tests.Doubles" }), Is.EqualTo("MyWorld2"));
         }
 
         [TestCase("My World 2", "MyWorld2")]

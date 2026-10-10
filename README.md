@@ -14,9 +14,14 @@ scene has no scene descriptor, and Unity Test Framework's test scene has none.
 
 1. Add the package to your world. The VRChat Creator Companion installs it in `Packages`.
 2. Select a folder in the Project window and choose **Assets > Create > Udon Test Kit > Test
-   Assemblies**. You get a `Tests` folder with an Edit Mode and a Play Mode test assembly, each
-   with an example test that passes. They reference Unity Test Framework, the kit, UdonSharp, the
-   VRChat SDK, ClientSim and every assembly definition of yours under `Assets`.
+   Assemblies**. You get a `Tests` folder with three assemblies, each with an example that works:
+   - `EditMode` and `PlayMode` hold your tests.
+   - `Doubles` holds behaviours your tests add to GameObjects, such as spies with callbacks of your
+     own. Both test assemblies reference it. Unity can't add a behaviour from the Edit Mode test
+     assembly, which only compiles for the Editor, so they go here.
+
+   They reference the kit, UdonSharp, the VRChat SDK, ClientSim and every assembly definition of
+   yours under `Assets`. Like the kit, they're left out of your world's builds.
 3. Run the tests from Unity's Test Runner window, or from the command line.
 
 Scripts without an assembly definition compile into `Assembly-CSharp`, which an assembly
@@ -181,9 +186,8 @@ Assert.That(calls, Is.EqualTo(new[] { "Listener.CallbackA" }));
   }
   ```
 
-  Create it with `calls.CreateSpy<DoorSpy>("Door")`, and it records `"Door.Open"`. Unity can't add a
-  behaviour from an Edit Mode test assembly to a GameObject, so put subclasses in an assembly that
-  targets every platform, such as your Play Mode tests'. `CallbackSpy` itself works in both.
+  Create it with `calls.CreateSpy<DoorSpy>("Door")`, and it records `"Door.Open"`. Put subclasses in
+  the `Doubles` assembly, so both Edit Mode and Play Mode tests can use them.
 
 Outside Udon, as in a test, a call by name reaches only a public, parameterless method with exactly
 that name. A misspelled name does nothing and raises no error, so check what the log recorded, not
