@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose something Udon Test Kit doesn't do yet.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to test?
+      description: What part of your world is hard or impossible to test with the kit today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would the test code look like? Sketch it if useful.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you're using today, or other approaches you ruled out.
+    validations:
+      required: false
