@@ -29,15 +29,15 @@ namespace Tsvrc.UdonTestKit
             new Setting("collision matrix", UpdateLayers.IsCollisionLayerMatrixSetup, UpdateLayers.SetupCollisionLayerMatrix),
         };
 
-        /// <summary>Applies the change for every setting that fails ClientSim's check, and logs
+        /// <summary>Applies the change for every setting that fails the ClientSim check, and logs
         /// which ones it changed.</summary>
         [MenuItem(FixMenuPath)]
         public static void Fix()
         {
             IReadOnlyList<string> fixedSettings = Fix(All);
             Debug.Log(fixedSettings.Count == 0
-                ? "[UdonTestKit] ClientSim's project settings were already correct."
-                : "[UdonTestKit] Changed ClientSim's project settings: " + string.Join(", ", fixedSettings) + ".");
+                ? "[UdonTestKit] The ClientSim project settings were already correct."
+                : "[UdonTestKit] Changed the ClientSim project settings: " + string.Join(", ", fixedSettings) + ".");
         }
 
         internal static IReadOnlyList<string> Fix(IEnumerable<Setting> settings)
@@ -66,7 +66,7 @@ namespace Tsvrc.UdonTestKit
             }
 
             string[] invalid = settings.Where(setting => !setting.IsValid()).Select(setting => setting.Name).ToArray();
-            Assert.Fail("ClientSim's project settings check fails" +
+            Assert.Fail("The ClientSim project settings check fails" +
                 (invalid.Length > 0 ? " on: " + string.Join(", ", invalid) : "") +
                 ". Fix them with " + FixMenuPath.Replace("/", " > ") + ".");
         }

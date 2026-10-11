@@ -6,7 +6,7 @@ merged. Questions go in [GitHub Discussions](https://github.com/orgs/tsvrc/discu
 
 ## Reporting a bug
 
-Use the bug report form. The kit relies on the VRChat SDK's internals, which ClientSim ships in, so
+Use the bug report form. The kit relies on internals of the VRChat SDK, which ClientSim ships in, so
 the SDK version matters most, and so does how you ran the test: the Test Runner window and batch
 mode fail in different ways. A failing test that shows the problem is the most useful thing you can
 attach.

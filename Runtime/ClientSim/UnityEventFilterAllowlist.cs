@@ -57,7 +57,7 @@ namespace Tsvrc.UdonTestKit
                 ?? throw new MissingMemberException($"could not read {filterType.Name}'s allowlist dictionary.");
             ConstructorInfo entryConstructor = filterType.GetNestedType("AllowedMethodFilter", BindingFlags.NonPublic)
                 ?.GetConstructor(new[] { typeof(List<string>), typeof(List<string>) })
-                ?? throw new MissingMemberException($"could not find {filterType.Name}.AllowedMethodFilter's constructor.");
+                ?? throw new MissingMemberException($"could not find the {filterType.Name}.AllowedMethodFilter constructor.");
 
             foreach (string typeName in listenerTypeNames)
             {

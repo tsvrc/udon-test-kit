@@ -3,7 +3,7 @@
     Runs a Unity project's tests in batch mode and prints a short report.
 
 .DESCRIPTION
-    Starts Unity once per test mode with Unity Test Framework's -runTests, then reads the
+    Starts Unity once per test mode with the Unity Test Framework -runTests option, then reads the
     results file Unity writes. Prints each failed, inconclusive and skipped test with its
     message, and counts the rest. Exits with 1 when a test failed or was inconclusive, or a run
     didn't finish.

@@ -5,7 +5,7 @@ using UdonSharp;
 namespace Tsvrc.UdonTestKit
 {
     /// <summary>
-    /// A test spy for code that calls an UdonSharpBehaviour's methods by name, such as
+    /// A test spy for code that calls methods on an UdonSharpBehaviour by name, such as
     /// SendCustomEvent: each call to one of its callbacks is added to the CallLog that created it,
     /// as "GameObjectName.CallbackName". Create spies with <see cref="CallLog.CreateSpy"/>.
     /// For callbacks with names of your own, subclass it in a non-Editor assembly and call
