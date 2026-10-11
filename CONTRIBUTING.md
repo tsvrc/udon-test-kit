@@ -72,7 +72,8 @@ what users call or see needs a matching pull request there.
 
 1. Sign off every commit (`git commit -s`) per the
    [Developer Certificate of Origin](https://developercertificate.org/). This certifies you wrote the
-   change, or otherwise have the right to submit it under this project's license (MIT).
+   change, or otherwise have the right to submit it under this project's license (MIT). A check
+   fails the pull request if any of its commits isn't signed off.
 2. You're responsible for everything in your change, including any part AI tooling (Claude,
    Copilot, or similar) helped write: read, understand and test all of it before submitting, the
    same as if you'd written it yourself. A pull request that's mostly unreviewed AI output, and
