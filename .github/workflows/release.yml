@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # The package is these files only. Tests and contributor docs stay in the repository.
+      PACKAGE_FILES: >-
+        package.json package.json.meta README.md README.md.meta LICENSE.md LICENSE.md.meta
+        Runtime Runtime.meta Scripts~
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read the package name and version
+        run: |
+          echo "NAME=$(jq -r .name package.json)" >> "$GITHUB_ENV"
+          echo "VERSION=$(jq -r .version package.json)" >> "$GITHUB_ENV"
+
+      - name: Check the version is new
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" > /dev/null; then
+            echo "::error::$VERSION is already released. Bump the version in package.json."
+            exit 1
+          fi
+
+      - name: Create the zip
+        run: zip -r "$NAME-$VERSION.zip" $PACKAGE_FILES
+
+      - name: Create the unitypackage
+        # The Packages/ prefix makes Unity install it where the Creator Companion does.
+        run: |
+          mkdir unitypackage
+          find $PACKAGE_FILES -name '*.meta' | while read -r meta; do
+            asset="${meta%.meta}"
+            dir="unitypackage/$(sed -n 's/^guid: \([0-9a-f]*\).*/\1/p' "$meta")"
+            mkdir "$dir"
+            cp "$meta" "$dir/asset.meta"
+            if [ -f "$asset" ]; then cp "$asset" "$dir/asset"; fi
+            printf 'Packages/%s/%s' "$NAME" "$asset" > "$dir/pathname"
+          done
+          tar -czf "$NAME-$VERSION.unitypackage" -C unitypackage .
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$VERSION" "$NAME-$VERSION.zip" "$NAME-$VERSION.unitypackage" \
+            --target "$GITHUB_SHA" --generate-notes
+
+      - name: Update the VPM listing
+        env:
+          GH_TOKEN: ${{ secrets.VPM_LISTING_TOKEN }}
+        run: gh api repos/tsvrc/vpm/dispatches -f event_type=package-released
