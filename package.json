@@ -14,9 +14,9 @@
   ],
   "license": "MIT",
   "author": {
-    "name": "TsVRC",
+    "name": "Antony Seas",
     "email": "contact@tsvrc.com",
-    "url": "https://tsvrc.com"
+    "url": "https://github.com/ToniSeas"
   },
   "dependencies": {
     "com.unity.test-framework": "1.1.33"
