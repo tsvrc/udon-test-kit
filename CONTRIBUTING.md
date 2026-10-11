@@ -13,15 +13,15 @@ attach.
 
 ## Setup
 
-The kit's tests need a VRChat world project to run in.
+The kit tests need a VRChat world project to run in.
 
 1. Create a world project with Unity 2022.3 and VRChat Worlds SDK 3.8.2 or later, through the
    [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
-2. Clone this repository into the project's `Assets` folder, for example as
-   `Assets/udon-test-kit`. Don't install the kit through the Creator Companion as well: two
-   assemblies named `Tsvrc.UdonTestKit` stop the project compiling.
-3. Add `TSVRC_UDON_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The kit's
-   own tests compile only when it's defined, so they never show up in a world that uses the kit.
+2. Clone this repository into the `Assets` folder of that project, for example as
+   `Assets/udon-test-kit`. Don't install the kit through the Creator Companion as well: two copies
+   stop the project compiling.
+3. Add `TSVRC_UDON_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The
+   kit tests compile only when it's defined, so they never show up in a world that uses the kit.
 
 ## Running tests
 
@@ -64,20 +64,20 @@ A change to what the kit does needs a test that fails without it.
 
 ## Documentation
 
-The kit's documentation is on [tsvrc.com](https://tsvrc.com/docs/udon-test-kit/intro), built from
+The kit documentation is on [tsvrc.com](https://tsvrc.com/docs/udon-test-kit/intro), built from
 `docs/udon-test-kit/` in the [tsvrc/docs](https://github.com/tsvrc/docs) repository. A change to
 what users call or see needs a matching pull request there.
 
 ## Submitting a pull request
 
 1. Sign off every commit (`git commit -s`) per the
-   [Developer Certificate of Origin](https://developercertificate.org/). This certifies you wrote the
-   change, or otherwise have the right to submit it under this project's license (MIT). A check
-   fails the pull request if any of its commits isn't signed off.
-2. You're responsible for everything in your change, including any part AI tooling (Claude,
-   Copilot, or similar) helped write: read, understand and test all of it before submitting, the
-   same as if you'd written it yourself. A pull request that's mostly unreviewed AI output, and
-   would take longer to review than it saves, will be closed.
+   [Developer Certificate of Origin](https://developercertificate.org/). It certifies you wrote the
+   change, or otherwise have the right to submit it under the MIT license, so only you can add it,
+   never a tool. A check fails the pull request if any of its commits isn't signed off.
+2. If AI tools helped, say which parts and how in the pull request description. You're the author
+   either way: read, understand and test all of it before you submit it, and be ready to explain it
+   in review. A pull request that's mostly unreviewed AI output, and would take longer to review
+   than it saves, will be closed.
 3. Open the pull request, describing what it changes and why. Community conduct is covered by the
    [org-wide Code of Conduct](https://github.com/tsvrc/.github/blob/main/CODE_OF_CONDUCT.md).
 

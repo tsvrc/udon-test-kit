@@ -1,39 +1,24 @@
 name: Bug report
-description: Something in Udon Test Kit isn't working as documented.
+description: Something in Udon Test Kit doesn't work as documented.
 labels: [bug]
 body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: >-
+        What you did, what you expected, and what happened instead, with the test failure message
+        or any error from the Unity log. A minimal failing test helps most. Say whether it ran from
+        the Test Runner window or the command line.
+    validations:
+      required: true
   - type: input
     id: kit-version
     attributes:
       label: Udon Test Kit version
-      description: The version shown in the Creator Companion, or in the kit's package.json.
-    validations:
-      required: true
+      description: Shown in the Creator Companion, or in package.json of the kit.
   - type: input
     id: sdk-version
     attributes:
       label: VRChat Worlds SDK version
-    validations:
-      required: true
-  - type: textarea
-    id: repro
-    attributes:
-      label: Steps to reproduce
-      description: >-
-        A minimal test that fails is the most useful thing here. Say whether you ran it from the
-        Test Runner window or from the command line.
-    validations:
-      required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected behavior
-    validations:
-      required: true
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual behavior
-      description: Include the test's failure message and any errors from the Unity log.
-    validations:
-      required: true
+      description: The kit relies on SDK internals, so this matters most.

@@ -11,12 +11,12 @@ If that's not accessible to you for some reason, contact
 
 ## Scope
 
-This covers the kit's own code: `Runtime/` and `Scripts~/Invoke-UnityTests.ps1`. The kit runs only
+This covers the kit code: `Runtime/` and `Scripts~/Invoke-UnityTests.ps1`. The kit runs only
 in the Unity Editor and in test runs, never in a world build, but it does write project settings,
 delete the ClientSim saved data files and start Unity from the command line.
 
 It doesn't cover the VRChat platform, the VRChat Worlds SDK, ClientSim, UdonSharp or Unity Test
-Framework. Report those to [VRChat's support channels](https://hello.vrchat.com/) or to Unity.
+Framework. Report those to [VRChat support](https://hello.vrchat.com/) or to Unity.
 
 ## Supported versions
 
