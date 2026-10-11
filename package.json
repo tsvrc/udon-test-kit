@@ -1,7 +1,7 @@
 {
   "name": "com.tsvrc.udon-test-kit",
   "displayName": "Udon Test Kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "unity": "2022.3",
   "description": "Automated tests for VRChat worlds with Unity Test Framework: Play Mode tests run your UdonSharp behaviours in a real ClientSim session, with real players.",
   "keywords": [
@@ -14,9 +14,9 @@
   ],
   "license": "MIT",
   "author": {
-    "name": "TsVRC",
+    "name": "Antony Seas",
     "email": "contact@tsvrc.com",
-    "url": "https://tsvrc.com"
+    "url": "https://github.com/ToniSeas"
   },
   "dependencies": {
     "com.unity.test-framework": "1.1.33"
