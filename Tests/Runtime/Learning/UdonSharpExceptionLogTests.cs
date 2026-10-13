@@ -7,8 +7,8 @@ using VRC.Udon;
 
 namespace Tsvrc.UdonTestKit.Tests.Learning
 {
-    // UdonSharp logs an exception thrown in Udon a second time on a later frame.
-    // Relied on by: UdonHost.ExpectUdonException (waits for the second log, which would fail the next test).
+    // UdonSharp logs an exception thrown in Udon a second time, on a later frame, where it would fail
+    // the next test. So UdonHost.ExpectUdonException waits for that copy.
     public class UdonSharpExceptionLogTests : UdonTestBase
     {
         [UnityTest]

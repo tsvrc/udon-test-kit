@@ -7,8 +7,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 {
     // An UdonBehaviour added to a GameObject at runtime loads its program from the private
     // serializedProgramAsset field, which only the inspector fills in, and runs it once
-    // UdonManager.RegisterUdonBehaviour is called.
-    // Relied on by: UdonHost (Create does both).
+    // UdonManager.RegisterUdonBehaviour is called. So UdonHost.Create does both.
     public class UdonRuntimeBehaviourTests
     {
         private readonly List<GameObject> _hosts = new List<GameObject>();
@@ -64,7 +63,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 
         private UdonBehaviour Create(bool setSerializedProgram)
         {
-            AbstractUdonProgramSource program = UdonHost.FindProgram(typeof(UdonArrayProbe));
+            AbstractUdonProgramSource program = UdonHost.FindProgram(typeof(UdonProbe));
             var host = new GameObject(nameof(UdonRuntimeBehaviourTests));
             host.SetActive(false);
             _hosts.Add(host);
@@ -78,14 +77,11 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             return behaviour;
         }
 
-        // Whether _FindName ran and wrote its result.
+        // Whether _Run ran and counted the call.
         private static bool Runs(UdonBehaviour behaviour)
         {
-            behaviour.SetProgramVariable(nameof(UdonArrayProbe.Names), new[] { "Ev" });
-            behaviour.SetProgramVariable(nameof(UdonArrayProbe.SearchName), "Missing");
-            behaviour.SetProgramVariable(nameof(UdonArrayProbe.SearchStart), 0);
-            behaviour.SendCustomEvent(nameof(UdonArrayProbe._FindName));
-            return behaviour.GetProgramVariable(nameof(UdonArrayProbe.Found)) is int found && found == -1;
+            behaviour.SendCustomEvent(nameof(UdonProbe._Run));
+            return behaviour.GetProgramVariable(nameof(UdonProbe.Runs)) is int runs && runs == 1;
         }
     }
 }
