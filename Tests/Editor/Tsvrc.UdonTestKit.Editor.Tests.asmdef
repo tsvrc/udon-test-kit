@@ -5,6 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Tsvrc.UdonTestKit",
+        "Tsvrc.UdonTestKit.Tests",
         "Tsvrc.UdonTestKit.UdonSpies",
         "Tsvrc.UdonTestKit.Tests.UdonDoubles",
         "Tsvrc.UdonTestKit.Tests.TestsOnlyDoubles",

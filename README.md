@@ -14,6 +14,9 @@ sponsored by VRChat Inc.*
 
 ## Quick look
 
+The Play Mode test **Assets > Create > TsVRC > Udon Test Kit > Test Assemblies** writes as an
+example:
+
 ```csharp
 using System.Collections;
 using NUnit.Framework;
@@ -21,7 +24,7 @@ using Tsvrc.UdonTestKit;
 using UnityEngine.TestTools;
 using VRC.SDKBase;
 
-public class PlayerCountTests : ClientSimTestBase
+public class ExamplePlayModeTests : ClientSimTestBase
 {
     [UnityTest]
     public IEnumerator SpawnRemotePlayer_InClientSim_JoinsThePlayerList()

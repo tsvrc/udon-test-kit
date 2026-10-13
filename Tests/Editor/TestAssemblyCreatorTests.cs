@@ -250,6 +250,54 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(TestAssemblyCreator.AssemblyPrefix(productName), Is.EqualTo(expected));
         }
 
+        // The examples Create writes are also scripts under Tests/, which compile and run with the kit
+        // tests, so the examples a world gets work.
+        [Test]
+        public void ExampleSpy_WrittenByCreate_IsATestedScript()
+        {
+            Assert.That(SourceOf(typeof(ExampleSpy)), Is.EqualTo(Lines(TestAssemblyCreator.ExampleSpy)));
+        }
+
+        [Test]
+        public void ExampleEditModeTests_WrittenByCreate_IsATestedScript()
+        {
+            Assert.That(SourceOf(typeof(ExampleEditModeTests)), Is.EqualTo(Lines(TestAssemblyCreator.ExampleEditModeTests)));
+        }
+
+        [Test]
+        public void ExamplePlayModeTests_WrittenByCreate_IsATestedScript()
+        {
+            Assert.That(SourceOf(typeof(ExamplePlayModeTests)), Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
+        }
+
+        [Test]
+        public void ExamplePlayModeTests_InTheReadme_IsTheExampleCreateWrites()
+        {
+            // Arrange
+            string kitRoot = Path.GetDirectoryName(Path.GetDirectoryName(
+                CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName("Tsvrc.UdonTestKit")));
+            string readme = Lines(File.ReadAllText(Path.Combine(kitRoot, "README.md")));
+
+            // Act
+            int start = readme.IndexOf("```csharp\n") + "```csharp\n".Length;
+            string block = readme.Substring(start, readme.IndexOf("```", start) - start);
+
+            // Assert
+            Assert.That(block, Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
+        }
+
+        private static string SourceOf(System.Type script)
+        {
+            MonoScript source = AssetDatabase.FindAssets(script.Name + " t:MonoScript")
+                .Select(guid => AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(guid)))
+                .Single(candidate => candidate.GetClass() == script);
+            return Lines(source.text);
+        }
+
+        // A checkout on Windows can turn the line endings of a file, and of the examples in
+        // TestAssemblyCreator.cs, into CRLF.
+        private static string Lines(string text) => text.Replace("\r\n", "\n");
+
         private static Assembly CompiledAssembly(string name, string script, params string[] compiledReferences)
         {
             return new Assembly(name, $"Library/ScriptAssemblies/{name}.dll", new[] { script }, new string[0], new Assembly[0],
