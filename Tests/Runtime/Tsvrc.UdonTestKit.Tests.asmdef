@@ -4,6 +4,7 @@
     "references": [
         "UnityEngine.TestRunner",
         "Tsvrc.UdonTestKit",
+        "Tsvrc.UdonTestKit.UdonSpies",
         "Tsvrc.UdonTestKit.Tests.UdonDoubles",
         "UdonSharp.Runtime",
         "UdonSharp.Editor",
