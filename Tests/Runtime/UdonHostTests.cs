@@ -151,16 +151,17 @@ namespace Tsvrc.UdonTestKit.Tests
         public IEnumerator ExpectUdonException_UdonSharpLogsNoCopy_ExpectsOnlyTheHaltError()
         {
             // Arrange
-            if (VRChatExceptionWatching.VRChatDataFolderExists())
-            {
-                Assert.Ignore("VRChat is installed here, so UdonSharp logs the copy.");
-            }
-            using var watching = new VRChatExceptionWatching(on: true);
             using var udon = new UdonHost();
             UdonBehaviour probe = udon.Create<UdonProbe>("Probe");
 
-            // Act and assert: an expected error that never came would fail this test.
-            yield return UdonHost.ExpectUdonException(() => probe.SendCustomEvent(nameof(UdonProbe._Throw)));
+            // Act and assert: UdonSharp queues the error for its copy in the call that logs the error,
+            // so dropping the queue right after the throw keeps the copy from coming, and an expected
+            // error that never came would fail this test.
+            yield return UdonHost.ExpectUdonException(() =>
+            {
+                probe.SendCustomEvent(nameof(UdonProbe._Throw));
+                VRChatExceptionWatching.DropQueuedErrors();
+            });
         }
 
         private static IEnumerator WaitForStart(UdonBehaviour behaviour)
