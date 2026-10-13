@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UdonSharp;
-using UnityEditor;
+using UdonSharpEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.Udon;
@@ -18,14 +18,16 @@ namespace Tsvrc.UdonTestKit
     // what it created.
     public sealed class UdonHost : IDisposable
     {
-        private static readonly Dictionary<Type, AbstractUdonProgramSource> Programs = new Dictionary<Type, AbstractUdonProgramSource>();
-
         private readonly List<GameObject> _hosts = new List<GameObject>();
 
         // Creates a GameObject with this name, running the program of T.
         public UdonBehaviour Create<T>(string name, bool active = true) where T : UdonSharpBehaviour
         {
-            AbstractUdonProgramSource program = FindProgram(typeof(T));
+            UdonSharpProgramAsset program = UdonSharpEditorUtility.GetUdonSharpProgramAsset(typeof(T));
+            if (program == null)
+            {
+                throw new InvalidOperationException($"{typeof(T).Name} has no UdonSharp program asset, so it can't run as Udon. Create one with Assets > Create > VRChat > Udon > Udon C# Program Asset and set its Source Script.");
+            }
             var host = new GameObject(name);
             host.SetActive(false);
             _hosts.Add(host);
@@ -57,8 +59,8 @@ namespace Tsvrc.UdonTestKit
         }
 
         // The error Udon logs when it halts a behaviour, and the start of the copy UdonSharp logs later.
-        public const string HaltError = "An exception occurred during Udon execution, this UdonBehaviour will be halted";
-        public const string UdonSharpCopy = "Udon runtime exception detected!";
+        internal const string HaltError = "An exception occurred during Udon execution, this UdonBehaviour will be halted";
+        internal const string UdonSharpCopy = "Udon runtime exception detected!";
 
         // Runs act, which makes an Udon behaviour throw, and waits for the two errors that follow:
         // the one that halts the behaviour, and the copy UdonSharp logs on a later frame. Waiting keeps
@@ -90,26 +92,6 @@ namespace Tsvrc.UdonTestKit
             {
                 Application.logMessageReceived -= OnLog;
             }
-        }
-
-        // The program asset of an UdonSharp class.
-        public static AbstractUdonProgramSource FindProgram(Type type)
-        {
-            if (Programs.TryGetValue(type, out AbstractUdonProgramSource cached))
-            {
-                return cached;
-            }
-            foreach (string guid in AssetDatabase.FindAssets("t:UdonSharpProgramAsset"))
-            {
-                var program = AssetDatabase.LoadAssetAtPath<AbstractUdonProgramSource>(AssetDatabase.GUIDToAssetPath(guid));
-                var script = new SerializedObject(program).FindProperty("sourceCsScript").objectReferenceValue as MonoScript;
-                if (script != null && script.GetClass() == type)
-                {
-                    Programs[type] = program;
-                    return program;
-                }
-            }
-            throw new InvalidOperationException($"{type.Name} has no UdonSharp program asset.");
         }
     }
 }

@@ -6,8 +6,10 @@
         "Tsvrc.UdonTestKit",
         "Tsvrc.UdonTestKit.Tests.UdonDoubles",
         "UdonSharp.Runtime",
+        "UdonSharp.Editor",
         "VRC.SDKBase",
         "VRC.Udon",
+        "VRC.Udon.Editor",
         "VRC.SDK3",
         "VRC.ClientSim",
         "VRC.ClientSim.Editor"

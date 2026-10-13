@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UdonSharp;
+using UdonSharpEditor;
 using UnityEngine;
 using VRC.Udon;
 using VRC.Udon.Common;
@@ -64,7 +66,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 
         private UdonBehaviour Create(bool assignProgram)
         {
-            AbstractUdonProgramSource program = UdonHost.FindProgram(typeof(UdonProbe));
+            UdonSharpProgramAsset program = UdonSharpEditorUtility.GetUdonSharpProgramAsset(typeof(UdonProbe));
             var host = new GameObject(nameof(UdonRuntimeBehaviourTests));
             host.SetActive(false);
             _hosts.Add(host);
