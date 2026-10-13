@@ -62,6 +62,11 @@ Match the style of the surrounding file. A few things aren't obvious from readin
 - Kit code in `Runtime/` calls `UnityEditor` directly, without `#if UNITY_EDITOR`. The `Tsvrc.UdonTestKit`
   assembly compiles only when `UNITY_INCLUDE_TESTS` is defined, which keeps it out of player
   builds, and `PlayerBuildTests` fails if that stops being true.
+- Code that runs as Udon is the exception. UdonSharp compiles only player assemblies for a world
+  upload, so `UdonCallLog` is in `Tsvrc.UdonTestKit.UdonSpies`, and the test doubles that run as
+  Udon are in `Tests/UdonDoubles/`. Both are player assemblies with a U# assembly definition, and
+  each behaviour in them needs a program asset: **Create > U# Script** makes the script and its
+  program asset together.
 - Test names read `Method_Condition_Result`, such as `Fix_AllSettingsValid_AppliesNothing`, and the
   body is split with `// Arrange`, `// Act` and `// Assert` comments.
 - A comment says why the code does something when that isn't obvious, usually the SDK or ClientSim

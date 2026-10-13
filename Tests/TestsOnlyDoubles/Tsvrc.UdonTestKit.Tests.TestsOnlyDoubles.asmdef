@@ -1,0 +1,19 @@
+{
+    "name": "Tsvrc.UdonTestKit.Tests.TestsOnlyDoubles",
+    "rootNamespace": "Tsvrc.UdonTestKit.Tests",
+    "references": [
+        "UdonSharp.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "TSVRC_UDON_TEST_KIT_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -124,7 +124,7 @@ namespace Tsvrc.UdonTestKit
                     .Select(assembly => assembly.name));
 
             return CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies)
-                .Where(assembly => assembly.name != "Assembly-CSharp" && !testAssemblies.Contains(assembly.name))
+                .Where(assembly => assembly.name != "Assembly-CSharp" && !testAssemblies.Contains(assembly.name) && !assembly.name.StartsWith("Tsvrc.UdonTestKit"))
                 .Where(assembly => assembly.sourceFiles.Any(file => file.StartsWith("Assets/")))
                 .Select(assembly => assembly.name)
                 .OrderBy(name => name);
