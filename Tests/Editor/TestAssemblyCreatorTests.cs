@@ -218,6 +218,18 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void SelectedFolder_FileOutsideAssetsSelected_IsAssets()
+        {
+            // Arrange
+            Object packageFile = AssetDatabase.LoadAssetAtPath<Object>("Packages/com.unity.test-framework/package.json");
+            Assert.That(packageFile, Is.Not.Null, "No package file to select.");
+            Selection.activeObject = packageFile;
+
+            // Act and Assert
+            Assert.That(TestAssemblyCreator.SelectedFolder(), Is.EqualTo("Assets"));
+        }
+
+        [Test]
         public void UniquePrefix_NoTestAssembliesYet_KeepsThePrefix()
         {
             Assert.That(TestAssemblyCreator.UniquePrefix("MyWorld", new[] { "MyWorld.Runtime" }), Is.EqualTo("MyWorld"));
