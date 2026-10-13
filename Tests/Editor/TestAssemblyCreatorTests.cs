@@ -155,10 +155,34 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void WorldAssemblyNames_InThisProject_LeavesOutTestAssembliesAndTheKit()
         {
             // Act
-            List<string> world = TestAssemblyCreator.WorldAssemblyNames().ToList();
+            List<string> world = TestAssemblyCreator.WorldAssemblyNames(CompilationPipeline.GetAssemblies(AssembliesType.Editor),
+                CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies)).ToList();
 
             // Assert
             Assert.That(world, Has.None.StartsWith("Tsvrc.UdonTestKit"));
+        }
+
+        [Test]
+        public void WorldAssemblyNames_PlayerAssemblies_ListsOnlyTheWorldsOwnUnderAssets()
+        {
+            // Arrange
+            Assembly world = CompiledAssembly("MyWorld.Runtime", "Assets/MyWorld/Door.cs");
+            Assembly tests = CompiledAssembly("MyWorld.Tests", "Assets/Tests/DoorTests.cs", "Library/nunit.framework.dll");
+            Assembly package = CompiledAssembly("VRC.SDK3", "Packages/com.vrchat.worlds/Runtime/Sdk.cs");
+            Assembly assemblyCSharp = CompiledAssembly("Assembly-CSharp", "Assets/Loose.cs");
+
+            // Act
+            IEnumerable<string> names = TestAssemblyCreator.WorldAssemblyNames(new[] { tests }, new[] { world, tests, package, assemblyCSharp });
+
+            // Assert
+            Assert.That(names, Is.EqualTo(new[] { "MyWorld.Runtime" }));
+        }
+
+        [TestCase("Assets/Loose.cs", ExpectedResult = true)]
+        [TestCase("Packages/com.example/Loose.cs", ExpectedResult = false)]
+        public bool HasScriptsInAssemblyCSharp_AssemblyCSharpScript_IsTrueOnlyUnderAssets(string script)
+        {
+            return TestAssemblyCreator.HasScriptsInAssemblyCSharp(new[] { CompiledAssembly("Assembly-CSharp", script) });
         }
 
         [Test]
@@ -224,6 +248,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void AssemblyPrefix_ProductName_KeepsOnlyLettersAndDigits(string productName, string expected)
         {
             Assert.That(TestAssemblyCreator.AssemblyPrefix(productName), Is.EqualTo(expected));
+        }
+
+        private static Assembly CompiledAssembly(string name, string script, params string[] compiledReferences)
+        {
+            return new Assembly(name, $"Library/ScriptAssemblies/{name}.dll", new[] { script }, new string[0], new Assembly[0],
+                compiledReferences, AssemblyFlags.None);
         }
 
         private static void CreateSelectionFolder()

@@ -19,6 +19,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void IsActive_DuringARun_IsTrue()
+        {
+            Assert.That(TestRun.IsActive, Is.True);
+        }
+
+        [Test]
         public void RunFinished_AfterRunStarted_ClearsIt()
         {
             // Arrange

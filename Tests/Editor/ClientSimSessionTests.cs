@@ -74,6 +74,16 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(File.Exists(otherScene), Is.True);
         }
 
+        [Test]
+        public void DeleteSavedData_NoStorageFolder_DoesNotThrow()
+        {
+            // Arrange
+            string missing = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.ClientSimSessionTests.Missing");
+
+            // Act and assert
+            Assert.That(() => ClientSimSession.DeleteSavedData(missing, "World"), Throws.Nothing);
+        }
+
         private string CreateFile(string folder, string name)
         {
             string path = Path.Combine(_storageRoot, folder, name);

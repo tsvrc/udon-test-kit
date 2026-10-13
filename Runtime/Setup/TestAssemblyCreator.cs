@@ -50,22 +50,22 @@ namespace Tsvrc.UdonTestKit
         /// returns its path. An existing Tests folder is left alone; the new one gets a number.</summary>
         public static string Create(string parentFolder = "Assets")
         {
-            IEnumerable<string> existing = CompilationPipeline.GetAssemblies(AssembliesType.Editor).Select(assembly => assembly.name);
-            string prefix = UniquePrefix(AssemblyPrefix(Application.productName), existing);
-            string folder = Create(parentFolder, prefix, WorldAssemblyNames());
+            Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
+            Assembly[] player = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
+            string prefix = UniquePrefix(AssemblyPrefix(Application.productName), editor.Select(assembly => assembly.name));
+            string folder = Create(parentFolder, prefix, WorldAssemblyNames(editor, player));
             AssetDatabase.Refresh();
             Debug.Log($"[UdonTestKit] Created test assemblies in {folder}.");
-            if (HasScriptsInAssemblyCSharp())
+            if (HasScriptsInAssemblyCSharp(player))
             {
                 Debug.LogWarning(AssemblyCSharpWarning);
             }
             return folder;
         }
 
-        internal static bool HasScriptsInAssemblyCSharp()
+        internal static bool HasScriptsInAssemblyCSharp(IEnumerable<Assembly> playerAssemblies)
         {
-            return CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies)
-                .Any(assembly => assembly.name == "Assembly-CSharp" && assembly.sourceFiles.Any(file => file.StartsWith("Assets/")));
+            return playerAssemblies.Any(assembly => assembly.name == "Assembly-CSharp" && assembly.sourceFiles.Any(file => file.StartsWith("Assets/")));
         }
 
         // Writes the Tests folder into parentFolder and returns its path, without refreshing the
@@ -116,14 +116,13 @@ namespace Tsvrc.UdonTestKit
         // The world's own assemblies: assembly definitions with source files under Assets, other
         // than test assemblies. Scripts without an assembly definition compile into
         // Assembly-CSharp, which an assembly definition can't reference.
-        internal static IEnumerable<string> WorldAssemblyNames()
+        internal static IEnumerable<string> WorldAssemblyNames(IEnumerable<Assembly> editorAssemblies, IEnumerable<Assembly> playerAssemblies)
         {
-            HashSet<string> testAssemblies = new HashSet<string>(
-                CompilationPipeline.GetAssemblies(AssembliesType.Editor)
-                    .Where(assembly => assembly.allReferences.Any(path => Path.GetFileName(path) == "nunit.framework.dll"))
-                    .Select(assembly => assembly.name));
+            HashSet<string> testAssemblies = new HashSet<string>(editorAssemblies
+                .Where(assembly => assembly.allReferences.Any(path => Path.GetFileName(path) == "nunit.framework.dll"))
+                .Select(assembly => assembly.name));
 
-            return CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies)
+            return playerAssemblies
                 .Where(assembly => assembly.name != "Assembly-CSharp" && !testAssemblies.Contains(assembly.name) && !assembly.name.StartsWith("Tsvrc.UdonTestKit"))
                 .Where(assembly => assembly.sourceFiles.Any(file => file.StartsWith("Assets/")))
                 .Select(assembly => assembly.name)
