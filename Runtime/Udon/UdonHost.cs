@@ -73,14 +73,13 @@ namespace Tsvrc.UdonTestKit
         internal const string HaltError = "An exception occurred during Udon execution, this UdonBehaviour will be halted";
         internal const string UdonSharpCopy = "Udon runtime exception detected!";
 
-        /// <summary>Runs <paramref name="act"/>, which makes an Udon behaviour throw, and expects the two
-        /// errors that follow: the one Udon logs as it halts the behaviour, and the copy UdonSharp logs on
-        /// a later frame. Yield it from a <c>[UnityTest]</c>: it ends once the copy is logged, which keeps
-        /// the copy out of the next test.</summary>
+        /// <summary>Runs <paramref name="act"/>, which makes an Udon behaviour throw, and expects the error
+        /// Udon logs as it halts the behaviour. Yield it from a <c>[UnityTest]</c>: it then waits a few
+        /// frames for the copy of that error UdonSharp logs on a later frame, and expects the copy too,
+        /// which keeps it out of the next test.</summary>
         public static IEnumerator ExpectUdonException(Action act)
         {
             LogAssert.Expect(LogType.Error, new Regex(Regex.Escape(HaltError)));
-            LogAssert.Expect(LogType.Error, new Regex(Regex.Escape(UdonSharpCopy)));
 
             bool copied = false;
             void OnLog(string message, string stackTrace, LogType type)
@@ -103,6 +102,13 @@ namespace Tsvrc.UdonTestKit
             finally
             {
                 Application.logMessageReceived -= OnLog;
+            }
+
+            // UdonSharp doesn't log the copy when it watches the VRChat client's log and finds no
+            // VRChat installation, so the copy is expected only once it came.
+            if (copied)
+            {
+                LogAssert.Expect(LogType.Error, new Regex(Regex.Escape(UdonSharpCopy)));
             }
         }
     }
