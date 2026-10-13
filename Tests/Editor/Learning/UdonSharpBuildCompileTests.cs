@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
+using Tsvrc.UdonTestKit.Tests;
 using UdonSharp;
 using UdonSharp.Compiler;
 using UnityEditor;
@@ -16,7 +17,9 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     // compile reads every assembly that has a U# assembly definition, but the upload compile reads only
     // player assemblies, not tests-only ones. A program asset whose script is outside the assemblies
     // the upload compile reads makes it log an error and compile nothing, and the build still goes on.
-    // So UdonCallLog and the kit's own Udon test doubles are in player assemblies.
+    // So UdonCallLog and the kit's own Udon test doubles are in player assemblies. The upload compile
+    // leaves out code inside #if UNITY_EDITOR, so UdonSharpUploadCompile compiles for the Editor again
+    // after it.
     public class UdonSharpBuildCompileTests
     {
         private const string CompiledLog = "Compile of ";
@@ -71,6 +74,20 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(Errors, Is.Empty);
             Assert.That(Messages, Has.Some.Contains(CompiledLog));
             Assert.That(buildGoesOn, Is.True);
+        }
+
+        [Test]
+        public void BuildRequested_CodeInsideIfUnityEditor_IsLeftOutOfTheProgram()
+        {
+            // Arrange
+            Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.Member(UdonProbe.EditorOnlyMarker),
+                "The Editor compile left the marker out.");
+
+            // Act
+            RequestBuild();
+
+            // Assert
+            Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.No.Member(UdonProbe.EditorOnlyMarker));
         }
 
         private IEnumerable<string> Messages => _logs.Select(log => log.message);
