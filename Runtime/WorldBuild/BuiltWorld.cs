@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using UnityEditor;
+using UnityEngine;
 using VRC.SDK3.Editor.Builder;
 
 namespace Tsvrc.UdonTestKit
@@ -68,6 +69,8 @@ namespace Tsvrc.UdonTestKit
         private static string Read(string worldFile)
         {
             string tools = Path.Combine(EditorApplication.applicationContentsPath, "Tools");
+            // The Windows Editor ships these tools as .exe files, the Linux Editor without an extension.
+            string extension = Application.platform == RuntimePlatform.WindowsEditor ? ".exe" : "";
             string folder = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.BuiltWorld");
             if (Directory.Exists(folder))
             {
@@ -78,11 +81,11 @@ namespace Tsvrc.UdonTestKit
             {
                 string bundle = Path.Combine(folder, "world");
                 File.Copy(worldFile, bundle);
-                Run(Path.Combine(tools, "WebExtract.exe"), $"\"{bundle}\"");
+                Run(Path.Combine(tools, "WebExtract" + extension), $"\"{bundle}\"");
                 var text = new StringBuilder();
                 foreach (string extracted in Directory.GetFiles(bundle + "_data"))
                 {
-                    Run(Path.Combine(tools, "binary2text.exe"), $"\"{extracted}\" \"{extracted}.txt\"");
+                    Run(Path.Combine(tools, "binary2text" + extension), $"\"{extracted}\" \"{extracted}.txt\"");
                     text.Append(File.ReadAllText(extracted + ".txt"));
                 }
                 return text.ToString();
