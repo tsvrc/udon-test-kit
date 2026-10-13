@@ -30,10 +30,8 @@ namespace Tsvrc.UdonTestKit
             // An UdonBehaviour added at runtime runs nothing until it has its compiled program and
             // UdonManager registers it.
             var host = new GameObject(name);
-            host.SetActive(false);
             _hosts.Add(host);
             var behaviour = host.AddComponent<UdonBehaviour>();
-            behaviour.programSource = program;
             behaviour.AssignProgramAndVariables(program.SerializedProgramAsset, new UdonVariableTable());
             host.SetActive(active);
             UdonManager.Instance.RegisterUdonBehaviour(behaviour);
