@@ -32,9 +32,16 @@ Run both modes before opening a pull request. In the Editor, use the EditMode an
 .\Scripts~\Invoke-UnityTests.ps1
 ```
 
-The script runs the tests of every assembly definition under `Assets`, which is why the kit lives
-there while you develop it. Its options are in the
-[Invoke-UnityTests.ps1 reference](https://tsvrc.com/docs/udon-test-kit/reference/invoke-unity-tests).
+On Linux, from Bash:
+
+```bash
+./Scripts~/run_unity_tests.sh
+```
+
+Both scripts run the tests of every assembly definition under `Assets`, which is why the kit lives
+there while you develop it. The options of the PowerShell script are in the
+[Invoke-UnityTests.ps1 reference](https://tsvrc.com/docs/udon-test-kit/reference/invoke-unity-tests),
+and `run_unity_tests.sh --help` lists the same ones for Bash.
 
 ## Learning tests
 
