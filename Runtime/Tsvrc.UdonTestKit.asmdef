@@ -20,7 +20,8 @@
         "nunit.framework.dll",
         "VRCSDKBase.dll",
         "VRCSDK3.dll",
-        "VRCCore-Editor.dll"
+        "VRCCore-Editor.dll",
+        "VRC.Udon.Common.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [

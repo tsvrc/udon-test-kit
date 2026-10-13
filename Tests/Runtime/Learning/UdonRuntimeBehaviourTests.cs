@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using VRC.Udon;
+using VRC.Udon.Common;
 
 namespace Tsvrc.UdonTestKit.Tests.Learning
 {
-    // An UdonBehaviour added to a GameObject at runtime loads its program from the private
-    // serializedProgramAsset field, which only the inspector fills in, and runs it once
+    // An UdonBehaviour added to a GameObject at runtime doesn't load the compiled program of its
+    // programSource. It runs a program given to AssignProgramAndVariables, once
     // UdonManager.RegisterUdonBehaviour is called. So UdonHost.Create does both.
     public class UdonRuntimeBehaviourTests
     {
@@ -29,7 +30,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
         public void RegisterUdonBehaviour_ProgramSourceOnly_RunsNothing()
         {
             // Arrange
-            UdonBehaviour behaviour = Create(setSerializedProgram: false);
+            UdonBehaviour behaviour = Create(assignProgram: false);
 
             // Act
             UdonManager.Instance.RegisterUdonBehaviour(behaviour);
@@ -39,20 +40,20 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
         }
 
         [Test]
-        public void SerializedProgramSet_NotRegistered_RunsNothing()
+        public void AssignProgramAndVariables_NotRegistered_RunsNothing()
         {
             // Arrange
-            UdonBehaviour behaviour = Create(setSerializedProgram: true);
+            UdonBehaviour behaviour = Create(assignProgram: true);
 
             // Act and assert
             Assert.That(Runs(behaviour), Is.False);
         }
 
         [Test]
-        public void RegisterUdonBehaviour_SerializedProgramSet_RunsIt()
+        public void RegisterUdonBehaviour_ProgramAssigned_RunsIt()
         {
             // Arrange
-            UdonBehaviour behaviour = Create(setSerializedProgram: true);
+            UdonBehaviour behaviour = Create(assignProgram: true);
 
             // Act
             UdonManager.Instance.RegisterUdonBehaviour(behaviour);
@@ -61,7 +62,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             Assert.That(Runs(behaviour), Is.True);
         }
 
-        private UdonBehaviour Create(bool setSerializedProgram)
+        private UdonBehaviour Create(bool assignProgram)
         {
             AbstractUdonProgramSource program = UdonHost.FindProgram(typeof(UdonProbe));
             var host = new GameObject(nameof(UdonRuntimeBehaviourTests));
@@ -69,9 +70,9 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             _hosts.Add(host);
             var behaviour = host.AddComponent<UdonBehaviour>();
             behaviour.programSource = program;
-            if (setSerializedProgram)
+            if (assignProgram)
             {
-                UdonHost.SerializedProgramField.SetValue(behaviour, program.SerializedProgramAsset);
+                behaviour.AssignProgramAndVariables(program.SerializedProgramAsset, new UdonVariableTable());
             }
             host.SetActive(true);
             return behaviour;

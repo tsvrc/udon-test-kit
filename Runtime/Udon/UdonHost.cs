@@ -1,27 +1,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using UdonSharp;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.Udon;
+using VRC.Udon.Common;
 using Object = UnityEngine.Object;
 
 namespace Tsvrc.UdonTestKit
 {
     // Runs UdonSharp behaviours as their compiled Udon programs instead of as their C# classes, so a
-    // test sees what Udon does. An UdonBehaviour added at runtime runs nothing until its private
-    // serializedProgramAsset is set and UdonManager registers it, so Create does both. Disposing it
-    // destroys what it created.
+    // test sees what Udon does. An UdonBehaviour added at runtime runs nothing until its compiled
+    // program is assigned and UdonManager registers it, so Create does both. Disposing it destroys
+    // what it created.
     public sealed class UdonHost : IDisposable
     {
-        internal static readonly FieldInfo SerializedProgramField =
-            typeof(UdonBehaviour).GetField("serializedProgramAsset", BindingFlags.NonPublic | BindingFlags.Instance)
-            ?? throw new InvalidOperationException("UdonBehaviour has no serializedProgramAsset field in this VRChat SDK, so UdonHost can't give it a program.");
-
         private static readonly Dictionary<Type, AbstractUdonProgramSource> Programs = new Dictionary<Type, AbstractUdonProgramSource>();
 
         private readonly List<GameObject> _hosts = new List<GameObject>();
@@ -35,7 +31,7 @@ namespace Tsvrc.UdonTestKit
             _hosts.Add(host);
             var behaviour = host.AddComponent<UdonBehaviour>();
             behaviour.programSource = program;
-            SerializedProgramField.SetValue(behaviour, program.SerializedProgramAsset);
+            behaviour.AssignProgramAndVariables(program.SerializedProgramAsset, new UdonVariableTable());
             host.SetActive(active);
             UdonManager.Instance.RegisterUdonBehaviour(behaviour);
             return behaviour;
