@@ -50,8 +50,9 @@ Install **Udon Test Kit** (`com.tsvrc.udon-test-kit`) as described in
 ## Command-line test runner
 
 [`Scripts~/Invoke-UnityTests.ps1`](Scripts~/Invoke-UnityTests.ps1) runs the tests of a Unity project
-from PowerShell and prints only what failed. It's standalone: copy it into any Unity project, with
-or without the kit. See
+from PowerShell and prints only what failed. On Linux,
+[`Scripts~/run_unity_tests.sh`](Scripts~/run_unity_tests.sh) does the same from Bash. Each one is
+standalone: copy it into any Unity project, with or without the kit. See
 [Run tests from the command line](https://tsvrc.com/docs/udon-test-kit/how-to/running-tests-from-the-command-line).
 
 ## Contributing
