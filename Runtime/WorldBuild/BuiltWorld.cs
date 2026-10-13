@@ -29,10 +29,10 @@ namespace Tsvrc.UdonTestKit
         /// that ship with the Unity Editor.</summary>
         public string Text { get; }
 
-        /// <summary>Builds the open scene into a world file with the VRChat SDK's world exporter, without
-        /// the callbacks the SDK runs before a build, reads the file and deletes it. The exporter records
-        /// the path of the file in EditorPrefs, which belong to the user rather than the project, so the
-        /// path recorded before is put back.</summary>
+        /// <summary>Builds the open scene into a world file with the world exporter of the VRChat SDK,
+        /// without the callbacks the SDK runs before a build, reads the file and deletes it. The exporter
+        /// records the path of the file in EditorPrefs, which every Unity project of the user shares, so
+        /// the path recorded before is put back.</summary>
         public static BuiltWorld FromOpenScene()
         {
             string previousFile = EditorPrefs.GetString(WorldFileKey);
@@ -41,7 +41,7 @@ namespace Tsvrc.UdonTestKit
             {
                 if (!new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { }))
                 {
-                    throw new InvalidOperationException("The VRChat SDK's world exporter didn't build the open scene.");
+                    throw new InvalidOperationException("The world exporter of the VRChat SDK didn't build the open scene.");
                 }
                 file = EditorPrefs.GetString(WorldFileKey);
             }

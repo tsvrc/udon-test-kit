@@ -2,10 +2,14 @@ using NUnit.Framework;
 
 namespace Tsvrc.UdonTestKit
 {
-    // The base of a test class that runs behaviours as Udon: each test gets its own UdonHost, and
-    // what it created is destroyed after the test. A test that needs ClientSim starts Session.
+    /// <summary>
+    /// Base for tests that run behaviours as Udon: each test gets its own <see cref="Udon"/>, and what
+    /// it created is destroyed after the test. A test that needs ClientSim starts
+    /// <see cref="ClientSimTestBase.Session"/>.
+    /// </summary>
     public abstract class UdonTestBase : ClientSimTestBase
     {
+        /// <summary>Creates the behaviours of the current test.</summary>
         protected UdonHost Udon { get; private set; }
 
         [SetUp]

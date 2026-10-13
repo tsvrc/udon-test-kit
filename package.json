@@ -3,7 +3,7 @@
   "displayName": "Udon Test Kit",
   "version": "1.0.1",
   "unity": "2022.3",
-  "description": "Automated tests for VRChat worlds with Unity Test Framework: Play Mode tests run your UdonSharp behaviours in a real ClientSim session, with real players.",
+  "description": "Automated tests for VRChat worlds with Unity Test Framework: Play Mode tests run your UdonSharp behaviours, as C# or as their compiled Udon programs, in a real ClientSim session with real players.",
   "keywords": [
     "vrchat",
     "udon",

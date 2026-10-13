@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/github/license/tsvrc/udon-test-kit?style=flat&color=58a6ff&labelColor=161b22)](LICENSE.md)
 
 Automated tests for VRChat worlds with Unity Test Framework. Play Mode tests run your UdonSharp
-behaviours in a real ClientSim session, with real players.
+behaviours, as C# or as their compiled Udon programs, in a real ClientSim session with real players.
 
 Docs: [tsvrc.com/docs/udon-test-kit](https://tsvrc.com/docs/udon-test-kit/intro).
 

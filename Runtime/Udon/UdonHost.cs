@@ -12,18 +12,23 @@ using Object = UnityEngine.Object;
 
 namespace Tsvrc.UdonTestKit
 {
-    // Runs UdonSharp behaviours as their compiled Udon programs instead of as their C# classes, so a
-    // test sees what Udon does. An UdonBehaviour added at runtime runs nothing until its compiled
-    // program is assigned and UdonManager registers it, so Create does both. Disposing it destroys
-    // what it created.
+    /// <summary>
+    /// Runs UdonSharp behaviours as their compiled Udon programs, not as their C# classes, so a test sees
+    /// what Udon does. Disposing it destroys the GameObjects it created.
+    /// </summary>
     public sealed class UdonHost : IDisposable
     {
         private readonly List<GameObject> _hosts = new List<GameObject>();
 
-        // Creates a GameObject with this name, running the program of T.
+        /// <summary>Creates a GameObject named <paramref name="name"/> with an UdonBehaviour running the
+        /// compiled program of <typeparamref name="T"/>, from its UdonSharp program asset. When
+        /// <paramref name="active"/> is false, the GameObject is inactive and the behaviour starts once
+        /// it's activated.</summary>
         public UdonBehaviour Create<T>(string name, bool active = true) where T : UdonSharpBehaviour
         {
             UdonSharpProgramAsset program = ProgramAssetOf(typeof(T));
+            // An UdonBehaviour added at runtime runs nothing until it has its compiled program and
+            // UdonManager registers it.
             var host = new GameObject(name);
             host.SetActive(false);
             _hosts.Add(host);
@@ -57,7 +62,7 @@ namespace Tsvrc.UdonTestKit
             return program;
         }
 
-        // The calls an UdonCallLog recorded, in order.
+        /// <summary>The calls an <see cref="UdonCallLog"/> recorded, in the order they arrived.</summary>
         public static string[] Calls(UdonBehaviour log)
         {
             var calls = (string)log.GetProgramVariable(nameof(UdonCallLog.Calls));
@@ -68,9 +73,10 @@ namespace Tsvrc.UdonTestKit
         internal const string HaltError = "An exception occurred during Udon execution, this UdonBehaviour will be halted";
         internal const string UdonSharpCopy = "Udon runtime exception detected!";
 
-        // Runs act, which makes an Udon behaviour throw, and waits for the two errors that follow:
-        // the one that halts the behaviour, and the copy UdonSharp logs on a later frame. Waiting keeps
-        // that copy out of the next test.
+        /// <summary>Runs <paramref name="act"/>, which makes an Udon behaviour throw, and expects the two
+        /// errors that follow: the one Udon logs as it halts the behaviour, and the copy UdonSharp logs on
+        /// a later frame. Yield it from a <c>[UnityTest]</c>: it ends once the copy is logged, which keeps
+        /// the copy out of the next test.</summary>
         public static IEnumerator ExpectUdonException(Action act)
         {
             LogAssert.Expect(LogType.Error, new Regex(Regex.Escape(HaltError)));

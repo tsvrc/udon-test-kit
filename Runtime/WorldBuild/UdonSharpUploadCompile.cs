@@ -7,7 +7,7 @@ namespace Tsvrc.UdonTestKit
 {
     /// <summary>
     /// Compiles every UdonSharp program as the VRChat SDK does before a world build, so a test can
-    /// check that the world's programs compile for upload, not only for the Editor.
+    /// check that the programs of a world compile for upload as well as for the Editor.
     /// </summary>
     public static class UdonSharpUploadCompile
     {
