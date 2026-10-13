@@ -30,6 +30,10 @@
 
 .PARAMETER ResultsPath
     Folder for each mode's results file and Unity log. Defaults to a new folder under the temp folder.
+
+.PARAMETER UnityArguments
+    More arguments for Unity, such as -buildTarget win64. Every argument the script doesn't
+    recognize goes to Unity, after its own.
 #>
 [CmdletBinding(PositionalBinding = $false)]
 param(
@@ -38,7 +42,9 @@ param(
     [ValidateSet('EditMode', 'PlayMode', 'All')]
     [string] $TestMode = 'All',
     [string] $AssemblyNames,
-    [string] $ResultsPath = (Join-Path ([IO.Path]::GetTempPath()) "UnityTestResults\$(Get-Date -Format yyyyMMdd-HHmmss)")
+    [string] $ResultsPath = (Join-Path ([IO.Path]::GetTempPath()) "UnityTestResults\$(Get-Date -Format yyyyMMdd-HHmmss)"),
+    [Parameter(ValueFromRemainingArguments)]
+    [string[]] $UnityArguments
 )
 
 $ErrorActionPreference = 'Stop'
@@ -86,7 +92,7 @@ foreach ($mode in $modes) {
     # Unity.exe is a Windows GUI program: PowerShell waits for one, and sets $LASTEXITCODE, only
     # when its output is piped.
     & $UnityPath -batchmode -nographics -projectPath $ProjectPath -logFile $log `
-        -runTests -testPlatform $mode -testResults $results -assemblyNames $AssemblyNames | Out-Null
+        -runTests -testPlatform $mode -testResults $results -assemblyNames $AssemblyNames @UnityArguments | Out-Null
     if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
 
     if (-not (Test-Path -LiteralPath $results)) {

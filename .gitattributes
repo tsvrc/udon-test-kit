@@ -1,0 +1,2 @@
+# Bash fails on a carriage return, so shell scripts keep LF line endings in every checkout.
+*.sh text eol=lf
