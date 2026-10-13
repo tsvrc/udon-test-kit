@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Build.Player;
@@ -19,7 +20,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void CompilePlayerScripts_WindowsBuild_LeavesOutTheKit()
+        public void CompilePlayerScripts_WindowsBuild_HoldsOnlyTheUdonAssembliesOfTheKit()
         {
             // Arrange
             _outputFolder = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.PlayerBuildTests");
@@ -36,7 +37,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             TestContext.WriteLine("Player assemblies: " + string.Join(", ", result.assemblies));
             Assert.That(result.assemblies, Has.Some.StartsWith("VRC."),
                 "The world's player scripts didn't compile.");
-            Assert.That(result.assemblies, Has.None.StartsWith("Tsvrc.UdonTestKit"));
+            Assert.That(result.assemblies.Where(assembly => assembly.StartsWith("Tsvrc.UdonTestKit")),
+                Is.EquivalentTo(new[] { "Tsvrc.UdonTestKit.UdonSpies.dll", "Tsvrc.UdonTestKit.Tests.UdonDoubles.dll" }));
         }
     }
 }

@@ -4,8 +4,10 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
+        "Tsvrc.UdonTestKit.UdonSpies",
         "UdonSharp.Runtime",
         "VRC.SDKBase",
+        "VRC.Udon",
         "VRC.SDK3",
         "VRC.ClientSim",
         "VRC.ClientSim.Editor"

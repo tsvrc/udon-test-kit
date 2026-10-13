@@ -1,0 +1,16 @@
+{
+    "name": "Tsvrc.UdonTestKit.UdonSpies",
+    "rootNamespace": "Tsvrc.UdonTestKit",
+    "references": [
+        "UdonSharp.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
