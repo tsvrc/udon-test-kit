@@ -5,8 +5,12 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Tsvrc.UdonTestKit",
+        "Tsvrc.UdonTestKit.Tests.TestsOnlyDoubles",
         "UdonSharp.Runtime",
+        "UdonSharp.Editor",
         "VRC.SDKBase",
+        "VRC.Udon",
+        "VRC.Udon.Editor",
         "VRC.SDK3",
         "VRC.ClientSim",
         "VRC.ClientSim.Editor"
@@ -21,6 +25,7 @@
         "nunit.framework.dll",
         "VRCSDKBase.dll",
         "VRCSDK3.dll",
+        "VRCSDKBase-Editor.dll",
         "VRCCore-Editor.dll"
     ],
     "autoReferenced": false,

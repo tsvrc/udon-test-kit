@@ -37,6 +37,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             TestContext.WriteLine("Player assemblies: " + string.Join(", ", result.assemblies));
             Assert.That(result.assemblies, Has.Some.StartsWith("VRC."),
                 "The world's player scripts didn't compile.");
+            // UdonCallLog and the kit's Udon test doubles run as Udon, and the compile for a world
+            // upload reads only player assemblies.
             Assert.That(result.assemblies.Where(assembly => assembly.StartsWith("Tsvrc.UdonTestKit")),
                 Is.EquivalentTo(new[] { "Tsvrc.UdonTestKit.UdonSpies.dll", "Tsvrc.UdonTestKit.Tests.UdonDoubles.dll" }));
         }
