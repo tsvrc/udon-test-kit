@@ -1,0 +1,4 @@
+{
+    "name": "Beta",
+    "versionDefines": [{"name": "com.unity.x", "expression": "1.0", "define": "X"}]
+}

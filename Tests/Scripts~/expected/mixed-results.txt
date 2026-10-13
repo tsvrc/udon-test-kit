@@ -1,0 +1,20 @@
+EditMode tests...
+FAILED  Consumer.Tests.Editor.ReportFixtureTests.Fails_WithACdataEndInTheMessage
+    before ]]> after
+FAILED  Consumer.Tests.Editor.ReportFixtureTests.Fails_WithAMultiLineMessage
+    first line & <tag> "double" 'single'
+    second line
+        indented third
+FAILED  Consumer.Tests.Editor.ReportFixtureTests.Fails_WithAnEmptyMessage
+FAILED  Consumer.Tests.Editor.ReportFixtureTests.Fails_WithSpecialCharactersInItsName("a<b&c\"d'e>f")
+    Expected string length 1 but was 11. Strings differ at index 0.
+      Expected: "x"
+      But was:  "a<b&c"d'e>f"
+      -----------^
+SKIPPED  Consumer.Tests.Editor.ReportFixtureTests.IsIgnored
+    ignored for <reasons> & more
+INCONCLUSIVE  Consumer.Tests.Editor.ReportFixtureTests.IsInconclusive
+    not sure
+7 passed, 4 failed, 2 inconclusive or skipped
+
+exit 1

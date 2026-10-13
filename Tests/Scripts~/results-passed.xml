@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0">
+  <test-suite type="TestFixture" name="PassingTests" fullname="Consumer.Tests.PassingTests" result="Passed">
+    <test-case id="1" name="First" fullname="Consumer.Tests.PassingTests.First" result="Passed" />
+    <test-case id="2" name="Second" fullname="Consumer.Tests.PassingTests.Second" result="Passed" />
+  </test-suite>
+</test-run>

@@ -4,7 +4,7 @@
 # the Linux counterpart of Invoke-UnityTests.ps1. Run it with --help for the
 # options.
 
-# ** matches every folder level, except hidden folders.
+# ** matches every folder level, except hidden folders, which Unity skips too.
 shopt -s globstar nullglob
 
 readonly SCRIPT_NAME="${0##*/}"
@@ -38,8 +38,9 @@ Options:
       EditMode, PlayMode, or All. Defaults to All.
   -a, --assembly-names NAMES
       Test assemblies to run, separated by ";". Defaults to the project's
-      own: every assembly definition under Assets, and the assemblies Unity
-      compiles scripts without one into, such as tests in Editor folders.
+      own: every assembly definition Unity imports under Assets, and the
+      assemblies Unity compiles scripts without one into, such as tests in
+      Editor folders.
   -r, --results-path PATH
       Folder for each mode's results file and Unity log. Defaults to a new
       folder under the temp folder.
@@ -91,7 +92,7 @@ find_project() {
 
 #######################################
 # Lists the project's own assemblies: the name of every assembly definition
-# under Assets, outside hidden folders, then the Assembly-CSharp ones.
+# Unity imports under Assets, then the Assembly-CSharp ones.
 # Arguments:
 #   Project folder.
 # Outputs:
@@ -103,6 +104,10 @@ default_assembly_names() {
   local names=""
   local asmdef content
   for asmdef in "$1"/Assets/**/*.asmdef; do
+    # Unity also skips a folder whose name ends with ~.
+    if [[ "${asmdef#"$1"/Assets/}" == *"~/"* ]]; then
+      continue
+    fi
     content="$(<"${asmdef}")"
     if [[ "${content}" =~ ${name_regex} ]]; then
       names+="${BASH_REMATCH[1]};"

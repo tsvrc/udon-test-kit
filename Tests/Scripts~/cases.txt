@@ -1,0 +1,7 @@
+# Report cases for both runner tests: name, results file Unity writes (- for
+# none), Unity exit code, test mode. expected/<name>.txt holds the output.
+mixed-results results-mixed.xml 2 EditMode
+both-modes results-mixed.xml 2 All
+passed results-passed.xml 0 EditMode
+unity-failed results-passed.xml 3 EditMode
+no-results - 1 EditMode
