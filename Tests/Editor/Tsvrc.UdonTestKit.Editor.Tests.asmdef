@@ -5,6 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Tsvrc.UdonTestKit",
+        "Tsvrc.UdonTestKit.UdonSpies",
         "Tsvrc.UdonTestKit.Tests.UdonDoubles",
         "Tsvrc.UdonTestKit.Tests.TestsOnlyDoubles",
         "UdonSharp.Runtime",
@@ -26,6 +27,7 @@
         "nunit.framework.dll",
         "VRCSDKBase.dll",
         "VRCSDK3.dll",
+        "VRCSDK3-Editor.dll",
         "VRCSDKBase-Editor.dll",
         "VRCCore-Editor.dll",
         "VRC.Udon.Common.dll"

@@ -22,6 +22,7 @@
         "nunit.framework.dll",
         "VRCSDKBase.dll",
         "VRCSDK3.dll",
+        "VRCSDK3-Editor.dll",
         "VRCCore-Editor.dll",
         "VRC.Udon.Common.dll"
     ],

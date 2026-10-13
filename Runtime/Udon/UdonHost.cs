@@ -23,11 +23,7 @@ namespace Tsvrc.UdonTestKit
         // Creates a GameObject with this name, running the program of T.
         public UdonBehaviour Create<T>(string name, bool active = true) where T : UdonSharpBehaviour
         {
-            UdonSharpProgramAsset program = UdonSharpEditorUtility.GetUdonSharpProgramAsset(typeof(T));
-            if (program == null)
-            {
-                throw new InvalidOperationException($"{typeof(T).Name} has no UdonSharp program asset, so it can't run as Udon. Create one with Assets > Create > VRChat > Udon > Udon C# Program Asset and set its Source Script.");
-            }
+            UdonSharpProgramAsset program = ProgramAssetOf(typeof(T));
             var host = new GameObject(name);
             host.SetActive(false);
             _hosts.Add(host);
@@ -49,6 +45,16 @@ namespace Tsvrc.UdonTestKit
                 }
             }
             _hosts.Clear();
+        }
+
+        internal static UdonSharpProgramAsset ProgramAssetOf(Type udonSharpClass)
+        {
+            UdonSharpProgramAsset program = UdonSharpEditorUtility.GetUdonSharpProgramAsset(udonSharpClass);
+            if (program == null)
+            {
+                throw new InvalidOperationException($"{udonSharpClass.Name} has no UdonSharp program asset. Create one with Assets > Create > VRChat > Udon > Udon C# Program Asset and set its Source Script.");
+            }
+            return program;
         }
 
         // The calls an UdonCallLog recorded, in order.
