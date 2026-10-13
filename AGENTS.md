@@ -15,5 +15,6 @@ conventions and pull requests; follow it. This file only adds what it leaves out
 
 ## Running tests
 
-Close the Unity Editor, then run `Scripts~/Invoke-UnityTests.ps1`, or `Scripts~/run_unity_tests.sh`
-on Linux. Add `-TestMode EditMode` or `-TestMode PlayMode` (`--test-mode` in Bash) to run one mode.
+Close the Unity Editor, then run `Scripts~/Invoke-UnityTests.ps1`, or
+`Scripts~/run_unity_tests.sh -- -buildTarget win64` on Linux. Add `-TestMode EditMode` or
+`-TestMode PlayMode` (`--test-mode` in Bash) to run one mode.

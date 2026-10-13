@@ -13,7 +13,7 @@ Assembly-CSharp-Editor;Assembly-CSharp-Editor-firstpass"
 
 usage() {
   cat <<EOF
-Usage: ${SCRIPT_NAME} [options]
+Usage: ${SCRIPT_NAME} [options] [-- unity-arguments]
 
 Starts Unity once per test mode with the Unity Test Framework -runTests
 option, then reads the results file Unity writes. Prints each failed,
@@ -45,6 +45,9 @@ Options:
       folder under the temp folder.
   -h, --help
       Prints this help.
+  -- UNITY-ARGUMENTS
+      More arguments for Unity, such as -- -buildTarget win64. Everything
+      after -- goes to Unity, after the script's own.
 EOF
 }
 
@@ -209,6 +212,7 @@ report() {
 
 main() {
   local project_path="" unity_path="" test_mode="All" assembly_names=""
+  local unity_arguments=()
   local results_path
   results_path="${TMPDIR:-/tmp}/UnityTestResults/$(date +%Y%m%d-%H%M%S)"
 
@@ -242,6 +246,11 @@ main() {
       -h|--help)
         usage
         exit 0
+        ;;
+      --)
+        shift
+        unity_arguments=("$@")
+        break
         ;;
       *)
         usage_error "unknown option $1"
@@ -316,7 +325,8 @@ main() {
     if ! "${unity_path}" -batchmode -nographics \
       -projectPath "${project_path}" -logFile "${log}" \
       -runTests -testPlatform "${mode}" -testResults "${results}" \
-      -assemblyNames "${assembly_names}" > /dev/null; then
+      -assemblyNames "${assembly_names}" "${unity_arguments[@]}" \
+      > /dev/null; then
       exit_code=1
     fi
 
