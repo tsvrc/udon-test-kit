@@ -32,10 +32,11 @@ Run both modes before opening a pull request. In the Editor, use the EditMode an
 .\Scripts~\Invoke-UnityTests.ps1
 ```
 
-On Linux, from Bash:
+On Linux, from Bash, with the Windows build target. In batch mode, Unity opens a project it hasn't
+imported yet on the default target, which is Linux on Linux.
 
 ```bash
-./Scripts~/run_unity_tests.sh
+./Scripts~/run_unity_tests.sh -- -buildTarget win64
 ```
 
 Both scripts run the tests of every assembly definition under `Assets`, which is why the kit lives
