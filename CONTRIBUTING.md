@@ -55,9 +55,9 @@ the VRChat SDK, ClientSim, UdonSharp and Unity behavior the kit relies on, such 
 ClientSim allows or which listeners the SDK strips when Play Mode starts. When an update changes
 that behavior, a learning test fails and its comment names the kit code to revisit.
 
-Add one whenever kit code depends on behavior you found by trying it rather than in documentation.
-When one fails after an update, change the kit code it names, then update the test to the new
-behavior.
+Every such behavior that kit code or documentation depends on has one, whether the documentation
+states it or you found it by trying it, unless no Editor test can reach it. When one fails after an
+update, change the kit code it names, then update the test to the new behavior.
 
 ## Coding conventions
 
