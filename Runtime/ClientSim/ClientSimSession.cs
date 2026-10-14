@@ -130,7 +130,7 @@ namespace Tsvrc.UdonTestKit
         {
             var players = new VRCPlayerApi[VRCPlayerApi.GetPlayerCount()];
             VRCPlayerApi.GetPlayers(players);
-            return Array.Find(players, player => player != null && player.displayName == displayName);
+            return Array.Find(players, player => player.displayName == displayName);
         }
 
         /// <summary>
@@ -139,10 +139,7 @@ namespace Tsvrc.UdonTestKit
         /// </summary>
         public void End()
         {
-            if (ClientSimMain.HasInstance())
-            {
-                ClientSimMain.RemoveInstance();
-            }
+            ClientSimMain.RemoveInstance();
             ClientSimRuntimeLoader.EndUnityTesting();
             DestroySavedDataObjects();
 
@@ -150,7 +147,6 @@ namespace Tsvrc.UdonTestKit
             {
                 Object.DestroyImmediate(_addedDescriptor);
             }
-            _addedDescriptor = null;
         }
 
         /// <summary>
@@ -186,7 +182,7 @@ namespace Tsvrc.UdonTestKit
         // never destroys, and that keeps rewriting the player's save file.
         internal static void DestroySavedDataObjects()
         {
-            foreach (ClientSimPlayerObjectStorage storage in SavedDataObjects().ToList())
+            foreach (ClientSimPlayerObjectStorage storage in SavedDataObjects())
             {
                 Object.DestroyImmediate(storage.gameObject);
             }
@@ -196,7 +192,7 @@ namespace Tsvrc.UdonTestKit
         internal static IEnumerable<ClientSimPlayerObjectStorage> SavedDataObjects()
         {
             return Resources.FindObjectsOfTypeAll<ClientSimPlayerObjectStorage>()
-                .Where(storage => storage != null && storage.gameObject.scene.IsValid());
+                .Where(storage => storage.gameObject.scene.IsValid());
         }
 
         internal static GameObject CreateSceneDescriptor(Vector3 spawnPosition)
