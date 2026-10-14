@@ -71,7 +71,7 @@ namespace Tsvrc.UdonTestKit
                 return;
             }
 
-            if (SceneManager.GetActiveScene() == _scene && _previousActiveScene.IsValid() && _previousActiveScene.isLoaded)
+            if (SceneManager.GetActiveScene() == _scene && _previousActiveScene.isLoaded)
             {
                 SceneManager.SetActiveScene(_previousActiveScene);
             }
@@ -80,7 +80,6 @@ namespace Tsvrc.UdonTestKit
 #pragma warning disable CS0618
             SceneManager.UnloadScene(_scene);
 #pragma warning restore CS0618
-            _scene = default;
         }
     }
 }
