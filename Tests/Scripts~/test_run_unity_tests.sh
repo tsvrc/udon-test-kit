@@ -7,6 +7,9 @@
 here="$(cd "$(dirname "$0")" && pwd)"
 readonly HERE="${here}"
 readonly SCRIPT="${HERE}/../../Scripts~/run_unity_tests.sh"
+# Seconds each run of the script gets, so a run that never ends fails its check
+# instead of stopping the test.
+readonly LIMIT=60
 failures=0
 
 #######################################
@@ -30,7 +33,7 @@ check() {
 check_run() {
   local -r name="$1" code="$2" line="$3"
   shift 3
-  "$@" > "${tmp}/${name}.out" 2>&1
+  timeout "${LIMIT}" "$@" > "${tmp}/${name}.out" 2>&1
   local -r status=$?
   local first_line
   first_line="$(head -n 1 "${tmp}/${name}.out")"
@@ -49,24 +52,25 @@ main() {
     [[ -z "${name}" || "${name}" == \#* ]] && continue
     local fake_xml=""
     [[ "${xml}" != "-" ]] && fake_xml="${HERE}/${xml}"
-    FAKE_XML="${fake_xml}" FAKE_EXIT="${code}" "${SCRIPT}" -p "${project}" \
-      -u "${HERE}/fake_unity.sh" -m "${mode}" -r "${tmp}/${name}" \
-      > "${tmp}/${name}.out" 2>&1
+    FAKE_XML="${fake_xml}" FAKE_EXIT="${code}" timeout "${LIMIT}" "${SCRIPT}" \
+      -p "${project}" -u "${HERE}/fake_unity.sh" -m "${mode}" \
+      -r "${tmp}/${name}" > "${tmp}/${name}.out" 2>&1
     echo "exit $?" >> "${tmp}/${name}.out"
-    sed "s#${tmp}/${name}/#RESULTS/#" "${tmp}/${name}.out" > "${tmp}/${name}.txt"
+    sed "s#${tmp}/${name}/#RESULTS/#" "${tmp}/${name}.out" \
+      > "${tmp}/${name}.txt"
     check "${name}" "${HERE}/expected/${name}.txt" "${tmp}/${name}.txt"
   done < "${HERE}/cases.txt"
 
-  FAKE_ARGS="${tmp}/arguments.args" "${SCRIPT}" -p "${project}" \
-    -u "${HERE}/fake_unity.sh" -m EditMode -r "${tmp}/arguments" \
-    -- -buildTarget win64 > /dev/null
+  FAKE_ARGS="${tmp}/arguments.args" timeout "${LIMIT}" "${SCRIPT}" \
+    -p "${project}" -u "${HERE}/fake_unity.sh" -m EditMode \
+    -r "${tmp}/arguments" -- -buildTarget win64 > /dev/null
   sed -e "s#^${project}\$#PROJECT#" -e "s#^${tmp}/arguments/#RESULTS/#" \
     "${tmp}/arguments.args" > "${tmp}/arguments.txt"
   check arguments "${HERE}/expected/arguments.txt" "${tmp}/arguments.txt"
 
-  FAKE_ARGS="${tmp}/given.args" "${SCRIPT}" -p "${project}" \
-    -u "${HERE}/fake_unity.sh" -m EditMode -r "${tmp}/given" -a "One;Two" \
-    > /dev/null
+  FAKE_ARGS="${tmp}/given.args" timeout "${LIMIT}" "${SCRIPT}" \
+    -p "${project}" -u "${HERE}/fake_unity.sh" -m EditMode \
+    -r "${tmp}/given" -a "One;Two" > /dev/null
   sed -n '/^-assemblyNames$/{n;p;}' "${tmp}/given.args" > "${tmp}/given.txt"
   check assembly-names <(echo "One;Two") "${tmp}/given.txt"
 
@@ -85,7 +89,7 @@ ${tmp}/home/Unity/Hub/Editor/0.0.0f0/Editor/Unity. Pass --unity-path."
     env HOME="${tmp}/home" "${tmp}/copy/Assets/Scripts/run_unity_tests.sh"
   # A copy outside any project looks in the current folder instead. Both checks
   # give it the fake Unity, so finding the wrong project can't start a real one.
-  FAKE_ARGS="${tmp}/current.args" env -C "${tmp}/copy" \
+  FAKE_ARGS="${tmp}/current.args" timeout "${LIMIT}" env -C "${tmp}/copy" \
     "${tmp}/outside/run_unity_tests.sh" -u "${HERE}/fake_unity.sh" \
     -m EditMode -r "${tmp}/current" > /dev/null
   sed -n '/^-projectPath$/{n;p;}' "${tmp}/current.args" > "${tmp}/current.txt"
