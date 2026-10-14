@@ -25,7 +25,10 @@ namespace Tsvrc.UdonTestKit
             ScriptableObject.CreateInstance<TestRunnerApi>().RegisterCallbacks(new Callbacks());
         }
 
-        public static bool IsActive => StartedInThisEditorSession || IsTestProcess(Environment.GetCommandLineArgs());
+        public static bool IsActive => IsActiveFor(StartedInThisEditorSession, Environment.GetCommandLineArgs());
+
+        internal static bool IsActiveFor(bool startedInThisEditorSession, string[] commandLineArgs) =>
+            startedInThisEditorSession || IsTestProcess(commandLineArgs);
 
         // SessionState survives domain reloads but not an editor restart, so a run that never
         // reported its end can't leave this set for good.

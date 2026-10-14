@@ -30,17 +30,34 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void Apply_TypeAlreadyAllowlisted_KeepsTheExistingEntry()
+        public void Apply_TypeAlreadyAllowlisted_KeepsTheExistingEntryAndWarnsNothing()
         {
             // Arrange
             var existing = new object();
             WorkingFilter.Entries[typeof(KnownListenerType)] = existing;
+            var warnings = new List<string>();
+            Application.LogCallback record = (message, stackTrace, type) =>
+            {
+                if (type == LogType.Warning)
+                {
+                    warnings.Add(message);
+                }
+            };
+            Application.logMessageReceived += record;
 
             // Act
-            UnityEventFilterAllowlist.Apply(typeof(WorkingFilter), KnownListener);
+            try
+            {
+                UnityEventFilterAllowlist.Apply(typeof(WorkingFilter), KnownListener);
+            }
+            finally
+            {
+                Application.logMessageReceived -= record;
+            }
 
-            // Assert
+            // Assert: Unity Test Framework doesn't fail a test on a warning, so this collects them.
             Assert.That(WorkingFilter.Entries[typeof(KnownListenerType)], Is.SameAs(existing));
+            Assert.That(warnings, Is.Empty);
         }
 
         [Test]
