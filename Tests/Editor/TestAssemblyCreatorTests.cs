@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
+using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
@@ -126,6 +127,19 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(definition.references.Count(reference => reference == "Tsvrc.UdonTestKit"), Is.EqualTo(1));
         }
 
+        // Unity puts a script it creates in a folder into the root namespace of that folder's assembly.
+        [Test]
+        public void AssemblyDefinitionJson_AnyKind_HasNoRootNamespaceAndNoUnsafeCode()
+        {
+            // Act
+            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.PlayMode",
+                TestAssemblyCreator.AssemblyKind.PlayModeTests, new string[0]));
+
+            // Assert
+            Assert.That(definition.rootNamespace, Is.Null.Or.Empty);
+            Assert.That(definition.allowUnsafeCode, Is.False);
+        }
+
         [Test]
         public void KitReferences_EachIsAnAssemblyInThisProject()
         {
@@ -166,19 +180,85 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assembly tests = CompiledAssembly("MyWorld.Tests", "Assets/Tests/DoorTests.cs", "Library/nunit.framework.dll");
             Assembly package = CompiledAssembly("VRC.SDK3", "Packages/com.vrchat.worlds/Runtime/Sdk.cs");
             Assembly assemblyCSharp = CompiledAssembly("Assembly-CSharp", "Assets/Loose.cs");
+            Assembly audio = CompiledAssembly("MyWorld.Audio", "Assets/MyWorld/Audio/Music.cs");
 
             // Act
-            IEnumerable<string> names = TestAssemblyCreator.WorldAssemblyNames(new[] { tests }, new[] { world, tests, package, assemblyCSharp });
+            IEnumerable<string> names = TestAssemblyCreator.WorldAssemblyNames(new[] { tests }, new[] { world, tests, package, assemblyCSharp, audio });
 
             // Assert
-            Assert.That(names, Is.EqualTo(new[] { "MyWorld.Runtime" }));
+            Assert.That(names, Is.EqualTo(new[] { "MyWorld.Audio", "MyWorld.Runtime" }));
         }
 
-        [TestCase("Assets/Loose.cs", ExpectedResult = true)]
-        [TestCase("Packages/com.example/Loose.cs", ExpectedResult = false)]
-        public bool HasScriptsInAssemblyCSharp_AssemblyCSharpScript_IsTrueOnlyUnderAssets(string script)
+        [Test]
+        public void CreateAndImport_FolderOutsideAssets_ReturnsTheTestsFolderAndLogsIt()
         {
-            return TestAssemblyCreator.HasScriptsInAssemblyCSharp(new[] { CompiledAssembly("Assembly-CSharp", script) });
+            // Arrange
+            string expected = Path.Combine(_parent, "Tests").Replace('\\', '/');
+            LogAssert.Expect(LogType.Log, $"[UdonTestKit] Created test assemblies in {expected}.");
+
+            // Act
+            string tests = TestAssemblyCreator.CreateAndImport(_parent, new Assembly[0], new Assembly[0]);
+
+            // Assert
+            Assert.That(tests, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void CreateAndImport_TestAssembliesWithTheProductNameExist_NumbersTheNewOnes()
+        {
+            // Arrange
+            string prefix = TestAssemblyCreator.AssemblyPrefix(Application.productName);
+            Assembly existing = CompiledAssembly(prefix + TestAssemblyCreator.EditModeSuffix, "Assets/Tests/EditMode/Tests.cs");
+
+            // Act
+            string tests = TestAssemblyCreator.CreateAndImport(_parent, new[] { existing }, new Assembly[0]);
+
+            // Assert
+            Assert.That(File.Exists(Path.Combine(tests, "EditMode", prefix + "2" + TestAssemblyCreator.EditModeSuffix + ".asmdef")));
+        }
+
+        [Test]
+        public void CreateAndImport_WorldAssemblyInThePlayerBuild_IsReferenced()
+        {
+            // Arrange
+            Assembly world = CompiledAssembly("MyWorld.Runtime", "Assets/MyWorld/Door.cs");
+
+            // Act
+            string tests = TestAssemblyCreator.CreateAndImport(_parent, new Assembly[0], new[] { world });
+
+            // Assert
+            AssemblyDefinition definition = Parse(File.ReadAllText(Directory.GetFiles(Path.Combine(tests, "PlayMode"), "*.asmdef").Single()));
+            Assert.That(definition.references, Has.Member("MyWorld.Runtime"));
+        }
+
+        [TestCase("Assembly-CSharp", "Assets/Loose.cs", ExpectedResult = true)]
+        [TestCase("Assembly-CSharp", "Packages/com.example/Loose.cs", ExpectedResult = false)]
+        [TestCase("MyWorld.Runtime", "Assets/MyWorld/Door.cs", ExpectedResult = false)]
+        public bool CreateAndImport_PlayerAssembly_WarnsOnlyForAssemblyCSharpScriptsUnderAssets(string assembly, string script)
+        {
+            // Arrange
+            var warnings = new List<string>();
+            Application.LogCallback record = (message, stackTrace, type) =>
+            {
+                if (type == LogType.Warning)
+                {
+                    warnings.Add(message);
+                }
+            };
+            Application.logMessageReceived += record;
+
+            // Act
+            try
+            {
+                TestAssemblyCreator.CreateAndImport(_parent, new Assembly[0], new[] { CompiledAssembly(assembly, script) });
+            }
+            finally
+            {
+                Application.logMessageReceived -= record;
+            }
+
+            // Assert
+            return warnings.Contains(TestAssemblyCreator.AssemblyCSharpWarning);
         }
 
         [Test]
@@ -282,9 +362,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void ExamplePlayModeTests_InTheReadme_IsTheExampleCreateWrites()
         {
             // Arrange
-            string kitRoot = Path.GetDirectoryName(Path.GetDirectoryName(
-                CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName("Tsvrc.UdonTestKit")));
-            string readme = Lines(File.ReadAllText(Path.Combine(kitRoot, "README.md")));
+            string readme = Readme();
 
             // Act
             int start = readme.IndexOf("```csharp\n") + "```csharp\n".Length;
@@ -292,6 +370,19 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 
             // Assert
             Assert.That(block, Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
+        }
+
+        [Test]
+        public void MenuPath_InTheReadme_IsTheMenuItem()
+        {
+            Assert.That(Readme(), Does.Contain($"**{TestAssemblyCreator.MenuPath.Replace("/", " > ")}**"));
+        }
+
+        private static string Readme()
+        {
+            string kitRoot = Path.GetDirectoryName(Path.GetDirectoryName(
+                CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName("Tsvrc.UdonTestKit")));
+            return Lines(File.ReadAllText(Path.Combine(kitRoot, "README.md")));
         }
 
         private static string SourceOf(System.Type script)
@@ -328,8 +419,10 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         private class AssemblyDefinition
         {
             public string name;
+            public string rootNamespace;
             public string[] references;
             public string[] includePlatforms;
+            public bool allowUnsafeCode;
             public string[] precompiledReferences;
             public string[] defineConstraints;
         }

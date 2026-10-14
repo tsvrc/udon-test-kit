@@ -23,7 +23,7 @@ namespace Tsvrc.UdonTestKit
         internal const string PlayModeSuffix = ".Tests.PlayMode";
         internal const string DoublesSuffix = ".Tests.Doubles";
 
-        internal static readonly string[] KitReferences = { "Tsvrc.UdonTestKit", "UdonSharp.Runtime", "VRC.SDKBase", "VRC.SDK3", "VRC.ClientSim" };
+        internal static readonly string[] KitReferences = { "Tsvrc.UdonTestKit", "Tsvrc.UdonTestKit.UdonSpies", "UdonSharp.Runtime", "VRC.SDKBase", "VRC.Udon", "VRC.SDK3", "VRC.ClientSim" };
 
         internal static readonly string[] SdkDlls = { "VRCSDKBase.dll", "VRCSDK3.dll" };
 
@@ -50,8 +50,12 @@ namespace Tsvrc.UdonTestKit
         /// returns its path. An existing Tests folder is left alone; the new one gets a number.</summary>
         public static string Create(string parentFolder = "Assets")
         {
-            Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
-            Assembly[] player = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
+            return CreateAndImport(parentFolder, CompilationPipeline.GetAssemblies(AssembliesType.Editor),
+                CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies));
+        }
+
+        internal static string CreateAndImport(string parentFolder, Assembly[] editor, Assembly[] player)
+        {
             string prefix = UniquePrefix(AssemblyPrefix(Application.productName), editor.Select(assembly => assembly.name));
             string folder = Create(parentFolder, prefix, WorldAssemblyNames(editor, player));
             AssetDatabase.Refresh();
