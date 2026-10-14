@@ -179,9 +179,9 @@ namespace Tsvrc.UdonTestKit
                 string path = AssetDatabase.GetAssetPath(selected);
                 if (!AssetDatabase.IsValidFolder(path))
                 {
-                    path = Path.GetDirectoryName(path)?.Replace('\\', '/');
+                    path = Path.GetDirectoryName(path).Replace('\\', '/');
                 }
-                if (path != null && (path == "Assets" || path.StartsWith("Assets/")))
+                if (path.StartsWith("Assets/"))
                 {
                     return path;
                 }
