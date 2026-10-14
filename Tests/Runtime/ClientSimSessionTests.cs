@@ -109,6 +109,14 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator Start_SceneWithoutADescriptor_SpawnsAtTheOrigin()
+        {
+            yield return Session.Start();
+
+            Assert.That(Vector3.Distance(Networking.LocalPlayer.GetPosition(), Vector3.zero), Is.LessThan(0.5f));
+        }
+
+        [UnityTest]
         public IEnumerator Start_SceneHasADescriptor_SpawnsAtItsSpawnPoint()
         {
             // Arrange

@@ -40,9 +40,9 @@ namespace Tsvrc.UdonTestKit
 
         /// <summary>
         /// Starts ClientSim and returns once the local player has joined and, with player persistence
-        /// on, has its saved data restored. Adds a scene descriptor with one spawn point when the
-        /// active scene has none. Fails the test if the ClientSim project settings check fails, and
-        /// throws TimeoutException if ClientSim isn't ready within 10 seconds.
+        /// on, has its saved data restored. Adds a scene descriptor with one spawn point, at the
+        /// origin, when the active scene has none. Fails the test if the ClientSim project settings
+        /// check fails, and throws TimeoutException if ClientSim isn't ready within 10 seconds.
         /// </summary>
         public IEnumerator Start(bool localPlayerIsMaster = true)
         {
