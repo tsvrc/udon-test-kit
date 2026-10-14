@@ -30,7 +30,7 @@ namespace Tsvrc.UdonTestKit
         /// need to be in the build settings.</summary>
         public static TestScene FromAsset(string assetPath) => new TestScene(null, assetPath);
 
-        public bool IsLoaded => _scene.IsValid() && _scene.isLoaded;
+        public bool IsLoaded => _scene.isLoaded;
 
         /// <summary>Loads the scene alongside the scenes already loaded and makes it the active scene.
         /// Does nothing if it's already loaded.</summary>
