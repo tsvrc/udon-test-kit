@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # Stands in for Unity in test_run_unity_tests.sh: writes each argument on a
-# line of $FAKE_ARGS, copies $FAKE_XML to the -testResults path, and exits with
+# line of $FAKE_ARGS, copies $FAKE_XML to the -testResults path, writes a line
+# to its standard output, which the report leaves out, and exits with
 # $FAKE_EXIT.
 
 printf '%s\n' "$@" > "${FAKE_ARGS:-/dev/null}"
@@ -11,4 +12,5 @@ while (( $# > 0 )); do
   fi
   shift
 done
+echo "Unity output"
 exit "${FAKE_EXIT:-0}"
