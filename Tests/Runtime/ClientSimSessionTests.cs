@@ -74,6 +74,14 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator Start_WhenItReturns_ClientSimIsInTestMode()
+        {
+            yield return Session.Start();
+
+            Assert.That(ClientSimRuntimeLoader.IsInUnityTest(), Is.True);
+        }
+
+        [UnityTest]
         public IEnumerator Start_ClientSimNotReadyWithinTimeout_ThrowsTimeoutException()
         {
             // Arrange: ClientSim takes 5 s to get ready, the timeout is 0.2 s.

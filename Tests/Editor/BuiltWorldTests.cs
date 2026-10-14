@@ -61,6 +61,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         [Test]
         public void FromOpenScene_AfterReadingTheWorld_DeletesTheWorldFile()
         {
+            Assert.That(_world.FilePath, Is.Not.Null.And.Not.Empty);
             Assert.That(File.Exists(_world.FilePath), Is.False, $"'{_world.FilePath}' is still there.");
         }
 
