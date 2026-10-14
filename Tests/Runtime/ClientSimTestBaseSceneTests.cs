@@ -93,4 +93,28 @@ namespace Tsvrc.UdonTestKit.Tests
             Assert.That(scene.handle, Is.EqualTo(_firstSceneHandle));
         }
     }
+
+    // NUnit runs [OneTimeTearDown] after the last test of the fixture, where no test can look, so
+    // this test calls it.
+    public class ClientSimTestBasePerFixtureUnloadTests : ClientSimTestBase
+    {
+        private const string SceneName = "Tsvrc.UdonTestKit.PerFixtureUnload";
+
+        public ClientSimTestBasePerFixtureUnloadTests() : base(TestScene.Empty(SceneName), TestSceneLifetime.PerFixture)
+        {
+        }
+
+        [Test]
+        public void UnloadPerFixtureScene_SceneLoadedForTheFixture_UnloadsIt()
+        {
+            // Arrange
+            Assert.That(SceneManager.GetSceneByName(SceneName).isLoaded, Is.True, "The base class didn't load the scene.");
+
+            // Act
+            UnloadPerFixtureScene();
+
+            // Assert
+            Assert.That(SceneManager.GetSceneByName(SceneName).isLoaded, Is.False);
+        }
+    }
 }
