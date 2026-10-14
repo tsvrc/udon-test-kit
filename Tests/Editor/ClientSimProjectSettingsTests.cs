@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim.Editor;
 using Object = UnityEngine.Object;
 
@@ -12,6 +13,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
     // original value back.
     public class ClientSimProjectSettingsTests
     {
+        private const int InputSystemOnly = 1;
+
         private Action _restore;
 
         [TearDown]
@@ -44,16 +47,22 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             var failure = Assert.Throws<AssertionException>(() => ClientSimProjectSettings.AssertValid(() => false, settings));
 
             // Assert
-            Assert.That(failure.Message, Does.Contain("on: layers, matrix."));
-            Assert.That(failure.Message, Does.Contain("Tools > TsVRC > Udon Test Kit > Fix ClientSim Project Settings"));
+            Assert.That(failure.Message, Is.EqualTo("The ClientSim project settings check fails on: layers, matrix. " +
+                "Fix them with Tools > TsVRC > Udon Test Kit > Fix ClientSim Project Settings."));
         }
 
         [Test]
         public void AssertValid_ClientSimCheckFailsWithNoSettingNamed_StillFails()
         {
+            // Arrange
             var settings = new[] { StandIn("valid", true, new List<string>()) };
 
-            Assert.Throws<AssertionException>(() => ClientSimProjectSettings.AssertValid(() => false, settings));
+            // Act
+            var failure = Assert.Throws<AssertionException>(() => ClientSimProjectSettings.AssertValid(() => false, settings));
+
+            // Assert
+            Assert.That(failure.Message, Is.EqualTo("The ClientSim project settings check fails. " +
+                "Fix them with Tools > TsVRC > Udon Test Kit > Fix ClientSim Project Settings."));
         }
 
         [Test]
@@ -91,39 +100,38 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void Fix_InputAxesBroken_MakesClientSimCheckPass()
+        public void Fix_InputAxesBroken_MakesClientSimCheckPassAndNamesIt()
         {
             SerializedObject inputManager = Load("ProjectSettings/InputManager.asset");
             SerializedProperty firstAxisName = inputManager.FindProperty("m_Axes").GetArrayElementAtIndex(0).FindPropertyRelative("m_Name");
-            BreakAndFix(firstAxisName, firstAxisName.stringValue + "_Broken", ClientSimProjectSettingsSetup.IsUsingCorrectInputAxesSettings, saveToDisk: true);
+            BreakAndFix(firstAxisName, firstAxisName.stringValue + "_Broken", "input axes", ClientSimProjectSettingsSetup.IsUsingCorrectInputAxesSettings, saveToDisk: true);
         }
 
         [Test]
-        public void Fix_InputTypeBroken_MakesClientSimCheckPass()
+        public void Fix_InputTypeBroken_MakesClientSimCheckPassAndNamesIt()
         {
             SerializedObject projectSettings = Load("ProjectSettings/ProjectSettings.asset");
-            const int inputSystemOnly = 1;
-            BreakAndFix(projectSettings.FindProperty("activeInputHandler"), inputSystemOnly, ClientSimProjectSettingsSetup.IsUsingCorrectInputTypeSettings);
+            BreakAndFix(projectSettings.FindProperty("activeInputHandler"), InputSystemOnly, "input type", ClientSimProjectSettingsSetup.IsUsingCorrectInputTypeSettings);
         }
 
         [Test]
-        public void Fix_AudioSpatializerBroken_MakesClientSimCheckPass()
+        public void Fix_AudioSpatializerBroken_MakesClientSimCheckPassAndNamesIt()
         {
             SerializedObject audioManager = Load("ProjectSettings/AudioManager.asset");
-            BreakAndFix(audioManager.FindProperty("m_SpatializerPlugin"), "", ClientSimProjectSettingsSetup.IsUsingCorrectAudioSettings);
+            BreakAndFix(audioManager.FindProperty("m_SpatializerPlugin"), "", "audio spatializer", ClientSimProjectSettingsSetup.IsUsingCorrectAudioSettings);
         }
 
         [Test]
-        public void Fix_VRChatLayerBroken_MakesClientSimCheckPass()
+        public void Fix_VRChatLayerBroken_MakesClientSimCheckPassAndNamesIt()
         {
             int layer = LayerMask.NameToLayer("PlayerLocal");
             Assume.That(layer, Is.Not.EqualTo(-1), "This project has no PlayerLocal layer to break.");
             SerializedObject tagManager = Load("ProjectSettings/TagManager.asset");
-            BreakAndFix(tagManager.FindProperty("layers").GetArrayElementAtIndex(layer), "", UpdateLayers.AreLayersSetup);
+            BreakAndFix(tagManager.FindProperty("layers").GetArrayElementAtIndex(layer), "", "VRChat layers", UpdateLayers.AreLayersSetup);
         }
 
         [Test]
-        public void Fix_CollisionMatrixBroken_MakesClientSimCheckPass()
+        public void Fix_CollisionMatrixBroken_MakesClientSimCheckPassAndNamesIt()
         {
             // Arrange
             AssumeClientSimSettingsValid();
@@ -131,6 +139,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             _restore = () => Physics.IgnoreLayerCollision(0, 0, original);
             Physics.IgnoreLayerCollision(0, 0, !original);
             Assume.That(UpdateLayers.IsCollisionLayerMatrixSetup(), Is.False, "Flipping Default/Default didn't break the matrix check.");
+            LogAssert.Expect(LogType.Log, "[UdonTestKit] Changed the ClientSim project settings: collision matrix.");
 
             // Act
             ClientSimProjectSettings.Fix();
@@ -139,7 +148,46 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(ClientSimProjectSettingsSetup.IsUsingCorrectSettings(), Is.True);
         }
 
-        private void BreakAndFix(SerializedProperty property, object brokenValue, Func<bool> check, bool saveToDisk = false)
+        [Test]
+        public void Fix_TwoSettingsBroken_LogsBothNames()
+        {
+            // Arrange
+            AssumeClientSimSettingsValid();
+            SerializedProperty inputType = Load("ProjectSettings/ProjectSettings.asset").FindProperty("activeInputHandler");
+            SerializedProperty spatializer = Load("ProjectSettings/AudioManager.asset").FindProperty("m_SpatializerPlugin");
+            object originalInputType = Read(inputType);
+            object originalSpatializer = Read(spatializer);
+            _restore = () =>
+            {
+                Write(inputType, originalInputType, saveToDisk: false);
+                Write(spatializer, originalSpatializer, saveToDisk: false);
+            };
+            Write(inputType, InputSystemOnly, saveToDisk: false);
+            Write(spatializer, "", saveToDisk: false);
+            LogAssert.Expect(LogType.Log, "[UdonTestKit] Changed the ClientSim project settings: input type, audio spatializer.");
+
+            // Act
+            ClientSimProjectSettings.Fix();
+
+            // Assert
+            Assert.That(ClientSimProjectSettingsSetup.IsUsingCorrectSettings(), Is.True);
+        }
+
+        [Test]
+        public void FixMenuItem_SettingsCorrect_LogsThatTheyWereAlreadyCorrect()
+        {
+            // Arrange
+            AssumeClientSimSettingsValid();
+            LogAssert.Expect(LogType.Log, "[UdonTestKit] The ClientSim project settings were already correct.");
+
+            // Act
+            bool ran = EditorApplication.ExecuteMenuItem(ClientSimProjectSettings.FixMenuPath);
+
+            // Assert
+            Assert.That(ran, Is.True);
+        }
+
+        private void BreakAndFix(SerializedProperty property, object brokenValue, string setting, Func<bool> check, bool saveToDisk = false)
         {
             // Arrange
             AssumeClientSimSettingsValid();
@@ -147,6 +195,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             _restore = () => Write(property, original, saveToDisk);
             Write(property, brokenValue, saveToDisk);
             Assume.That(check(), Is.False, $"Setting {property.propertyPath} to '{brokenValue}' didn't break the check.");
+            LogAssert.Expect(LogType.Log, $"[UdonTestKit] Changed the ClientSim project settings: {setting}.");
 
             // Act
             ClientSimProjectSettings.Fix();

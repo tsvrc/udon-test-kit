@@ -89,6 +89,7 @@ namespace Tsvrc.UdonTestKit.Tests
 
             // Assert
             Assert.That(failure, Is.Not.Null, "Start finished instead of timing out.");
+            Assert.That(failure.Message, Is.EqualTo($"ClientSim didn't get ready within {0.2f} seconds."));
         }
 
         [UnityTest]

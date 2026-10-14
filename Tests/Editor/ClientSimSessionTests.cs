@@ -76,6 +76,17 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void Constructor_Default_StartsClientSimAtOnceAndWaitsTenSeconds()
+        {
+            // Act
+            var session = new ClientSimSession();
+
+            // Assert
+            Assert.That(PrivateFieldAccess.GetField<float>(session, "_initializationDelay"), Is.Zero);
+            Assert.That(PrivateFieldAccess.GetField<float>(session, "_readyTimeoutSeconds"), Is.EqualTo(10f));
+        }
+
+        [Test]
         public void DeleteSavedData_NoStorageFolder_DoesNotThrow()
         {
             // Arrange
