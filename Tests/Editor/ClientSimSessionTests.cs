@@ -1,5 +1,6 @@
 using System.IO;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.ClientSim.Persistence;
 
@@ -60,7 +61,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void DeleteSavedData_FilesForSeveralScenes_DeletesOnlyTheGivenScenes()
         {
             // Arrange
-            _storageRoot = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.ClientSimSessionTests");
+            _storageRoot = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             string data = CreateFile("PlayerData", "PlayerData_1_World.json");
             string objects = CreateFile("PlayerObjects", "PlayerObject_2_World.json");
             string otherScene = CreateFile("PlayerData", "PlayerData_1_My_World.json");
@@ -78,7 +79,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void DeleteSavedData_NoStorageFolder_DoesNotThrow()
         {
             // Arrange
-            string missing = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.ClientSimSessionTests.Missing");
+            string missing = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
 
             // Act and assert
             Assert.That(() => ClientSimSession.DeleteSavedData(missing, "World"), Throws.Nothing);

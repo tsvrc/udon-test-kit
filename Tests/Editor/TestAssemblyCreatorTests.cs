@@ -20,11 +20,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         [SetUp]
         public void SetUp()
         {
-            _parent = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.TestAssemblyCreatorTests");
-            if (Directory.Exists(_parent))
-            {
-                Directory.Delete(_parent, recursive: true);
-            }
+            _parent = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             Directory.CreateDirectory(_parent);
         }
 
