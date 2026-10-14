@@ -108,6 +108,39 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator Unload_SceneNotActive_KeepsTheActiveScene()
+        {
+            // Arrange
+            _outer = TestScene.Empty(SceneName + ".Outer");
+            yield return _outer.Load();
+            _scene = TestScene.Empty(SceneName);
+            yield return _scene.Load();
+
+            // Act
+            _outer.Unload();
+
+            // Assert
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(SceneName));
+        }
+
+        [UnityTest]
+        public IEnumerator Unload_PreviousActiveSceneAlreadyUnloaded_StillUnloads()
+        {
+            // Arrange
+            _outer = TestScene.Empty(SceneName + ".Outer");
+            yield return _outer.Load();
+            _scene = TestScene.Empty(SceneName);
+            yield return _scene.Load();
+            _outer.Unload();
+
+            // Act
+            _scene.Unload();
+
+            // Assert
+            Assert.That(_scene.IsLoaded, Is.False);
+        }
+
+        [UnityTest]
         public IEnumerator Load_EmptyRightAfterUnload_CreatesItAgain()
         {
             // Arrange
