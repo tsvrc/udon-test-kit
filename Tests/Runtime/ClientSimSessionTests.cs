@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
@@ -232,6 +233,23 @@ namespace Tsvrc.UdonTestKit.Tests
             // Assert
             Assert.That(Networking.GetOwner(_owned), Is.EqualTo(remote));
             Assert.That(Networking.IsOwner(Networking.LocalPlayer, _owned), Is.False);
+        }
+
+        // Giving a GameObject to the player who owns it already changes nothing, so ClientSim reports
+        // no transfer.
+        [UnityTest]
+        public IEnumerator SetOwner_CurrentOwner_ReportsNoTransfer()
+        {
+            // Arrange
+            yield return Session.Start();
+            _owned = new GameObject(nameof(ClientSimSessionTests));
+            var transfers = _owned.AddComponent<OwnershipTransferSpy>();
+
+            // Act
+            Session.SetOwner(Networking.LocalPlayer, _owned);
+
+            // Assert
+            Assert.That(transfers.Transfers, Is.Zero);
         }
 
         [UnityTest]

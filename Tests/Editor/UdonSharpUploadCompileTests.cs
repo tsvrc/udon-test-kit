@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
 using Tsvrc.UdonTestKit.Tests;
+using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
@@ -26,6 +27,20 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 
             // Assert
             Assert.That(errors, Has.Some.Contains("TestsOnlyBehaviour.cs' does not belong to a U# assembly"));
+        }
+
+        [Test]
+        public void Run_ErrorLoggedAfterItReturns_IsLeftOut()
+        {
+            // Arrange
+            IReadOnlyList<string> errors = UdonSharpUploadCompile.Run();
+            LogAssert.Expect(LogType.Error, "A later error");
+
+            // Act
+            Debug.LogError("A later error");
+
+            // Assert
+            Assert.That(errors, Is.Empty);
         }
 
         [Test]

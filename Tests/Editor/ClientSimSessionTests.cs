@@ -76,6 +76,22 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void DeleteSavedData_SceneNameWithARegexCharacter_MatchesItAsWritten()
+        {
+            // Arrange
+            _storageRoot = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
+            string data = CreateFile("PlayerData", "PlayerData_1_My.World.json");
+            string lookalike = CreateFile("PlayerData", "PlayerData_1_MyxWorld.json");
+
+            // Act
+            ClientSimSession.DeleteSavedData(_storageRoot, "My.World");
+
+            // Assert
+            Assert.That(File.Exists(data), Is.False);
+            Assert.That(File.Exists(lookalike), Is.True);
+        }
+
+        [Test]
         public void Constructor_Default_StartsClientSimAtOnceAndWaitsTenSeconds()
         {
             // Act
