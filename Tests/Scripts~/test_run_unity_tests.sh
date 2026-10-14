@@ -21,6 +21,24 @@ check() {
   fi
 }
 
+#######################################
+# Runs a command and compares its exit code and the first line it prints with
+# the expected ones.
+# Arguments:
+#   Check name, exit code, first line, then the command and its arguments.
+#######################################
+check_run() {
+  local -r name="$1" code="$2" line="$3"
+  shift 3
+  "$@" > "${tmp}/${name}.out" 2>&1
+  local -r status=$?
+  local first_line
+  first_line="$(head -n 1 "${tmp}/${name}.out")"
+  printf 'exit %s\n%s\n' "${status}" "${first_line}" > "${tmp}/${name}.txt"
+  check "${name}" <(printf 'exit %s\n%s\n' "${code}" "${line}") \
+    "${tmp}/${name}.txt"
+}
+
 main() {
   tmp="$(mktemp -d)"
   trap 'rm -rf "${tmp}"' EXIT
@@ -46,25 +64,49 @@ main() {
     "${tmp}/arguments.args" > "${tmp}/arguments.txt"
   check arguments "${HERE}/expected/arguments.txt" "${tmp}/arguments.txt"
 
+  FAKE_ARGS="${tmp}/given.args" "${SCRIPT}" -p "${project}" \
+    -u "${HERE}/fake_unity.sh" -m EditMode -r "${tmp}/given" -a "One;Two" \
+    > /dev/null
+  sed -n '/^-assemblyNames$/{n;p;}' "${tmp}/given.args" > "${tmp}/given.txt"
+  check assembly-names <(echo "One;Two") "${tmp}/given.txt"
+
   # A copy of the script inside a project finds that project, and the Unity
   # version it names, even with Windows line endings. No Unity has that
   # version, so a real one never starts.
   cp -R "${project}" "${tmp}/copy"
   printf 'm_EditorVersion: 0.0.0f0\r\n' \
     > "${tmp}/copy/ProjectSettings/ProjectVersion.txt"
-  mkdir "${tmp}/copy/Assets/Scripts"
+  mkdir "${tmp}/copy/Assets/Scripts" "${tmp}/outside"
   cp "${SCRIPT}" "${tmp}/copy/Assets/Scripts/"
-  HOME="${tmp}/home" "${tmp}/copy/Assets/Scripts/run_unity_tests.sh" \
-    2> "${tmp}/defaults.err"
-  echo "exit $?" >> "${tmp}/defaults.err"
-  printf 'run_unity_tests.sh: Unity not found at %s. Pass --unity-path.\nexit 1\n' \
-    "${tmp}/home/Unity/Hub/Editor/0.0.0f0/Editor/Unity" \
-    > "${tmp}/defaults.expected"
-  check defaults "${tmp}/defaults.expected" "${tmp}/defaults.err"
+  cp "${SCRIPT}" "${tmp}/outside/"
+  local -r no_unity="run_unity_tests.sh: Unity not found at \
+${tmp}/home/Unity/Hub/Editor/0.0.0f0/Editor/Unity. Pass --unity-path."
+  check_run defaults 1 "${no_unity}" \
+    env HOME="${tmp}/home" "${tmp}/copy/Assets/Scripts/run_unity_tests.sh"
+  # A copy outside any project looks in the current folder instead. Both checks
+  # give it the fake Unity, so finding the wrong project can't start a real one.
+  FAKE_ARGS="${tmp}/current.args" env -C "${tmp}/copy" \
+    "${tmp}/outside/run_unity_tests.sh" -u "${HERE}/fake_unity.sh" \
+    -m EditMode -r "${tmp}/current" > /dev/null
+  sed -n '/^-projectPath$/{n;p;}' "${tmp}/current.args" > "${tmp}/current.txt"
+  check current-folder <(echo "${tmp}/copy") "${tmp}/current.txt"
+  check_run no-project 1 "run_unity_tests.sh: No Unity project found above \
+this script or the current folder. Pass --project-path." \
+    env -C "${tmp}/outside" "${tmp}/outside/run_unity_tests.sh" \
+    -u "${HERE}/fake_unity.sh"
 
-  "${SCRIPT}" --no-such-option > /dev/null 2>&1
-  echo "exit $?" > "${tmp}/usage.txt"
-  check usage <(echo "exit 2") "${tmp}/usage.txt"
+  check_run missing-project 1 \
+    "run_unity_tests.sh: No such folder: ${tmp}/missing" \
+    "${SCRIPT}" -p "${tmp}/missing"
+  check_run test-mode 2 "run_unity_tests.sh: test mode must be EditMode, \
+PlayMode, or All, not Both" "${SCRIPT}" -m Both
+  check_run usage 2 "run_unity_tests.sh: unknown option --no-such-option" \
+    "${SCRIPT}" --no-such-option
+  check_run missing-value 2 "run_unity_tests.sh: option -p needs a value" \
+    "${SCRIPT}" -p
+  check_run help 0 \
+    "Usage: run_unity_tests.sh [options] [-- unity-arguments]" \
+    "${SCRIPT}" --help
 
   if (( failures > 0 )); then
     echo "${failures} checks failed"
