@@ -45,6 +45,21 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator Load_FromAsset_KeepsTheScenesAlreadyLoaded()
+        {
+            // Arrange
+            _outer = TestScene.Empty(SceneName + ".Outer");
+            yield return _outer.Load();
+            _scene = TestScene.FromAsset(TestWorldScene.Path);
+
+            // Act
+            yield return _scene.Load();
+
+            // Assert
+            Assert.That(_outer.IsLoaded, Is.True);
+        }
+
+        [UnityTest]
         public IEnumerator Load_AlreadyLoaded_KeepsTheSameScene()
         {
             // Arrange

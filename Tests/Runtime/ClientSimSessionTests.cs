@@ -159,6 +159,7 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             yield return Session.Start();
+            Transform spawn = SceneDescriptors().Single().spawns[0];
 
             // Act
             Session.End();
@@ -167,6 +168,7 @@ namespace Tsvrc.UdonTestKit.Tests
             Assert.That(ClientSimMain.HasInstance(), Is.False);
             Assert.That(ClientSimRuntimeLoader.IsInUnityTest(), Is.False);
             Assert.That(SceneDescriptors(), Is.Empty);
+            Assert.That(spawn == null, "The spawn point Start added is still in the scene.");
         }
 
         [UnityTest]
