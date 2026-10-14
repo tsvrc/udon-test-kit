@@ -113,6 +113,14 @@ public class EditorProbe
             Assert.That(playMode.compiledAssemblyReferences.Select(Path.GetFileName), Has.Member("nunit.framework.dll"));
             Assert.That(doubles.compiledAssemblyReferences.Select(Path.GetFileName), Has.No.Member("nunit.framework.dll"));
             Assert.That(AssemblyOf(editor, LooseScript).assemblyReferences.Select(assembly => assembly.name).Intersect(created), Is.Empty);
+
+            // A second run, with the first set compiled, numbers its names and leaves the first doubles
+            // assembly, which only tests use, out of its references.
+            Selection.activeObject = AssetDatabase.LoadAssetAtPath<DefaultAsset>(Parent);
+            EditorApplication.ExecuteMenuItem(TestAssemblyCreator.MenuPath);
+            string prefix = editMode.name.Substring(0, editMode.name.Length - TestAssemblyCreator.EditModeSuffix.Length);
+            string second = File.ReadAllText($"{Tests} 1/PlayMode/{prefix}2{TestAssemblyCreator.PlayModeSuffix}.asmdef");
+            Assert.That(second, Does.Not.Contain($"\"{doubles.name}\""));
         }
 
         private static Assembly AssemblyOf(Assembly[] assemblies, string script)
