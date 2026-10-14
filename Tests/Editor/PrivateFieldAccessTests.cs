@@ -132,8 +132,24 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeStatic(typeof(Base), "DoesNotExist"));
         }
 
+        [Test]
+        public void GetField_PublicField_ReturnsValue()
+        {
+            Assert.That(PrivateFieldAccess.GetField<int>(new Derived(), nameof(Base.PublicField)), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void InvokeStatic_PublicStaticMethod_ReturnsResult()
+        {
+            Assert.That(PrivateFieldAccess.InvokeStatic(typeof(Base), nameof(Base.PublicStaticMethod), 5), Is.EqualTo(6));
+        }
+
         private class Base
         {
+            public int PublicField = 3;
+
+            public static int PublicStaticMethod(int x) => x + 1;
+
 #pragma warning disable CS0414, IDE0051, IDE0044 // Reached only through reflection.
             private int _baseField = 1;
             private static int _baseStaticField = InitialStaticValue;
