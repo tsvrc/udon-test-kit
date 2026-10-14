@@ -43,7 +43,7 @@ Full walkthrough: [Write your first test](https://tsvrc.com/docs/udon-test-kit/f
 
 ## Install
 
-Requires Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or later.
+Requires Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or a later 3.x version.
 
 Install **Udon Test Kit** (`com.tsvrc.udon-test-kit`) as described in
 [Install a TsVRC package](https://tsvrc.com/docs/install-a-package); the `.unitypackage` is on the
@@ -53,7 +53,7 @@ Install **Udon Test Kit** (`com.tsvrc.udon-test-kit`) as described in
 ## Command-line test runner
 
 [`Scripts~/Invoke-UnityTests.ps1`](Scripts~/Invoke-UnityTests.ps1) runs the tests of a Unity project
-from PowerShell and prints only what failed. On Linux,
+from PowerShell and prints only the tests that didn't pass. On Linux,
 [`Scripts~/run_unity_tests.sh`](Scripts~/run_unity_tests.sh) does the same from Bash. Each one is
 standalone: copy it into any Unity project, with or without the kit. See
 [Run tests from the command line](https://tsvrc.com/docs/udon-test-kit/how-to/running-tests-from-the-command-line).

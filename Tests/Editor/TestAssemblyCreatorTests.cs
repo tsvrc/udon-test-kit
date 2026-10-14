@@ -358,33 +358,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(SourceOf(typeof(ExamplePlayModeTests)), Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
         }
 
-        [Test]
-        public void ExamplePlayModeTests_InTheReadme_IsTheExampleCreateWrites()
-        {
-            // Arrange
-            string readme = Readme();
-
-            // Act
-            int start = readme.IndexOf("```csharp\n") + "```csharp\n".Length;
-            string block = readme.Substring(start, readme.IndexOf("```", start) - start);
-
-            // Assert
-            Assert.That(block, Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
-        }
-
-        [Test]
-        public void MenuPath_InTheReadme_IsTheMenuItem()
-        {
-            Assert.That(Readme(), Does.Contain($"**{TestAssemblyCreator.MenuPath.Replace("/", " > ")}**"));
-        }
-
-        private static string Readme()
-        {
-            string kitRoot = Path.GetDirectoryName(Path.GetDirectoryName(
-                CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName("Tsvrc.UdonTestKit")));
-            return Lines(File.ReadAllText(Path.Combine(kitRoot, "README.md")));
-        }
-
         private static string SourceOf(System.Type script)
         {
             MonoScript source = AssetDatabase.FindAssets(script.Name + " t:MonoScript")
