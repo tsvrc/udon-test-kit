@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
@@ -96,6 +97,23 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 
             // Assert
             Assert.That(manager == null, "FindObjectOfType found ClientSim's synced object manager.");
+        }
+
+        // FindObjectsOfTypeAll also lists the manager in ClientSim's system prefab, an asset outside
+        // any scene, in an order Unity doesn't specify, so ClientSimSession.SetOwner picks the one in
+        // a scene.
+        [UnityTest]
+        public IEnumerator FindObjectsOfTypeAll_ClientSimSyncedObjectManagerWhileRunning_ListsThePrefabsToo()
+        {
+            // Arrange
+            yield return _clientSim.Start();
+
+            // Act
+            ClientSimSyncedObjectManager[] managers = Resources.FindObjectsOfTypeAll<ClientSimSyncedObjectManager>();
+
+            // Assert
+            Assert.That(managers.Count(manager => manager.gameObject.scene.IsValid()), Is.EqualTo(1));
+            Assert.That(managers.Count(manager => !manager.gameObject.scene.IsValid()), Is.GreaterThan(0));
         }
 
         private static GameObject CreateTarget()

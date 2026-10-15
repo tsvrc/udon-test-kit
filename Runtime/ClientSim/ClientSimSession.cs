@@ -40,9 +40,9 @@ namespace Tsvrc.UdonTestKit
 
         /// <summary>
         /// Starts ClientSim and returns once the local player has joined and, with player persistence
-        /// on, has its saved data restored. Adds a scene descriptor with one spawn point when the
-        /// active scene has none. Fails the test if the ClientSim project settings check fails, and
-        /// throws TimeoutException if ClientSim isn't ready within 10 seconds.
+        /// on, has its saved data restored. Adds a scene descriptor with one spawn point, at the
+        /// origin, when the active scene has none. Fails the test if the ClientSim project settings
+        /// check fails, and throws TimeoutException if ClientSim isn't ready within 10 seconds.
         /// </summary>
         public IEnumerator Start(bool localPlayerIsMaster = true)
         {
@@ -130,7 +130,7 @@ namespace Tsvrc.UdonTestKit
         {
             var players = new VRCPlayerApi[VRCPlayerApi.GetPlayerCount()];
             VRCPlayerApi.GetPlayers(players);
-            return Array.Find(players, player => player != null && player.displayName == displayName);
+            return Array.Find(players, player => player.displayName == displayName);
         }
 
         /// <summary>
@@ -139,10 +139,7 @@ namespace Tsvrc.UdonTestKit
         /// </summary>
         public void End()
         {
-            if (ClientSimMain.HasInstance())
-            {
-                ClientSimMain.RemoveInstance();
-            }
+            ClientSimMain.RemoveInstance();
             ClientSimRuntimeLoader.EndUnityTesting();
             DestroySavedDataObjects();
 
@@ -150,7 +147,6 @@ namespace Tsvrc.UdonTestKit
             {
                 Object.DestroyImmediate(_addedDescriptor);
             }
-            _addedDescriptor = null;
         }
 
         /// <summary>
@@ -186,7 +182,7 @@ namespace Tsvrc.UdonTestKit
         // never destroys, and that keeps rewriting the player's save file.
         internal static void DestroySavedDataObjects()
         {
-            foreach (ClientSimPlayerObjectStorage storage in SavedDataObjects().ToList())
+            foreach (ClientSimPlayerObjectStorage storage in SavedDataObjects())
             {
                 Object.DestroyImmediate(storage.gameObject);
             }
@@ -196,7 +192,7 @@ namespace Tsvrc.UdonTestKit
         internal static IEnumerable<ClientSimPlayerObjectStorage> SavedDataObjects()
         {
             return Resources.FindObjectsOfTypeAll<ClientSimPlayerObjectStorage>()
-                .Where(storage => storage != null && storage.gameObject.scene.IsValid());
+                .Where(storage => storage.gameObject.scene.IsValid());
         }
 
         internal static GameObject CreateSceneDescriptor(Vector3 spawnPosition)

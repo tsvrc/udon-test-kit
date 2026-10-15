@@ -30,7 +30,7 @@ namespace Tsvrc.UdonTestKit
         /// need to be in the build settings.</summary>
         public static TestScene FromAsset(string assetPath) => new TestScene(null, assetPath);
 
-        public bool IsLoaded => _scene.IsValid() && _scene.isLoaded;
+        public bool IsLoaded => _scene.isLoaded;
 
         /// <summary>Loads the scene alongside the scenes already loaded and makes it the active scene.
         /// Does nothing if it's already loaded.</summary>
@@ -71,7 +71,7 @@ namespace Tsvrc.UdonTestKit
                 return;
             }
 
-            if (SceneManager.GetActiveScene() == _scene && _previousActiveScene.IsValid() && _previousActiveScene.isLoaded)
+            if (SceneManager.GetActiveScene() == _scene && _previousActiveScene.isLoaded)
             {
                 SceneManager.SetActiveScene(_previousActiveScene);
             }
@@ -80,7 +80,6 @@ namespace Tsvrc.UdonTestKit
 #pragma warning disable CS0618
             SceneManager.UnloadScene(_scene);
 #pragma warning restore CS0618
-            _scene = default;
         }
     }
 }

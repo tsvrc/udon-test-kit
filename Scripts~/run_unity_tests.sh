@@ -163,16 +163,20 @@ report() {
         print "    " message
       }
     }
+    # A message outside a test case is read too, and dropped when the next
+    # test case starts.
     function handle(tag) {
-      if (tag ~ /^<test-case[ >\/]/) {
-        in_case = 1; want = 0; got = 0; message = ""
+      # XML reads a line break or a tab inside a tag as a space.
+      gsub(/[\t\r\n]/, " ", tag)
+      if (tag ~ /^<test-case/) {
+        got = 0; message = ""
         result = attr(tag, "result"); fullname = attr(tag, "fullname")
-        if (tag ~ /\/>$/) { in_case = 0; finish_case() }
+        if (tag ~ /\/>$/) finish_case()
       }
-      else if (tag == "</test-case>") { in_case = 0; finish_case() }
-      else if (in_case && tag ~ /^<(failure|reason)[ >]/) want = 1
+      else if (tag == "</test-case>") finish_case()
+      else if (tag ~ /^<(failure|reason)[ >]/) want = 1
       else if (tag ~ /^<\/(failure|reason)>/) want = 0
-      else if (in_case && want && !got && tag == "<message>") in_message = 1
+      else if (want && !got && tag == "<message>") in_message = 1
       else if (tag == "</message>" && in_message) { in_message = 0; got = 1 }
     }
     {

@@ -52,23 +52,19 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void GetField_UnknownFieldName_FailsWithAssertion()
+        public void GetField_UnknownFieldName_FailsNamingItAndTheType()
         {
-            // Arrange
-            var target = new Derived();
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.GetField<int>(new Derived(), "_doesNotExist"));
 
-            // Act and Assert
-            Assert.Throws<AssertionException>(() => PrivateFieldAccess.GetField<int>(target, "_doesNotExist"));
+            Assert.That(failure.Message, Is.EqualTo("Field '_doesNotExist' not found on Derived."));
         }
 
         [Test]
-        public void SetField_UnknownFieldName_FailsWithAssertion()
+        public void SetField_UnknownFieldName_FailsNamingItAndTheType()
         {
-            // Arrange
-            var target = new Derived();
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.SetField(new Derived(), "_doesNotExist", 1));
 
-            // Act and Assert
-            Assert.Throws<AssertionException>(() => PrivateFieldAccess.SetField(target, "_doesNotExist", 1));
+            Assert.That(failure.Message, Is.EqualTo("Field '_doesNotExist' not found on Derived."));
         }
 
         [Test]
@@ -82,15 +78,19 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void GetField_UnknownStaticFieldName_FailsWithAssertion()
+        public void GetField_UnknownStaticFieldName_FailsNamingItAndTheType()
         {
-            Assert.Throws<AssertionException>(() => PrivateFieldAccess.GetField<int>(typeof(Base), "_doesNotExist"));
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.GetField<int>(typeof(Base), "_doesNotExist"));
+
+            Assert.That(failure.Message, Is.EqualTo("Static field '_doesNotExist' not found on Base."));
         }
 
         [Test]
-        public void SetField_UnknownStaticFieldName_FailsWithAssertion()
+        public void SetField_UnknownStaticFieldName_FailsNamingItAndTheType()
         {
-            Assert.Throws<AssertionException>(() => PrivateFieldAccess.SetField(typeof(Base), "_doesNotExist", 1));
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.SetField(typeof(Base), "_doesNotExist", 1));
+
+            Assert.That(failure.Message, Is.EqualTo("Static field '_doesNotExist' not found on Base."));
         }
 
         [Test]
@@ -107,13 +107,11 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void InvokeInstance_UnknownMethodName_FailsWithAssertion()
+        public void InvokeInstance_UnknownMethodName_FailsNamingItAndTheType()
         {
-            // Arrange
-            var target = new Derived();
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(new Derived(), "DoesNotExist"));
 
-            // Act and Assert
-            Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(target, "DoesNotExist"));
+            Assert.That(failure.Message, Is.EqualTo("Method 'DoesNotExist' not found on Derived."));
         }
 
         [Test]
@@ -127,13 +125,31 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void InvokeStatic_UnknownMethodName_FailsWithAssertion()
+        public void InvokeStatic_UnknownMethodName_FailsNamingItAndTheType()
         {
-            Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeStatic(typeof(Base), "DoesNotExist"));
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeStatic(typeof(Base), "DoesNotExist"));
+
+            Assert.That(failure.Message, Is.EqualTo("Static method 'DoesNotExist' not found on Base."));
+        }
+
+        [Test]
+        public void GetField_PublicField_ReturnsValue()
+        {
+            Assert.That(PrivateFieldAccess.GetField<int>(new Derived(), nameof(Base.PublicField)), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void InvokeStatic_PublicStaticMethod_ReturnsResult()
+        {
+            Assert.That(PrivateFieldAccess.InvokeStatic(typeof(Base), nameof(Base.PublicStaticMethod), 5), Is.EqualTo(6));
         }
 
         private class Base
         {
+            public int PublicField = 3;
+
+            public static int PublicStaticMethod(int x) => x + 1;
+
 #pragma warning disable CS0414, IDE0051, IDE0044 // Reached only through reflection.
             private int _baseField = 1;
             private static int _baseStaticField = InitialStaticValue;

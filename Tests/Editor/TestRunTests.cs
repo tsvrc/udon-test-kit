@@ -25,6 +25,16 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void IsActive_RunStartNotReported_FollowsTheCommandLine()
+        {
+            // Arrange
+            TestRun.StartedInThisEditorSession = false;
+
+            // Act and assert
+            Assert.That(TestRun.IsActive, Is.EqualTo(TestRun.IsTestProcess(System.Environment.GetCommandLineArgs())));
+        }
+
+        [Test]
         public void RunFinished_AfterRunStarted_ClearsIt()
         {
             // Arrange

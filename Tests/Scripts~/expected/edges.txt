@@ -1,0 +1,21 @@
+EditMode tests...
+FAILED  Edge.Tests.Escaped('it', "q", &, <x>)
+    plain <text> & &lt; a tab	here
+    and a second line
+INCONCLUSIVE  Edge.Tests.Split
+    a reason
+    over two lines
+FAILED  Edge.Tests.QuotedEnd(a>b)
+    the first message
+SKIPPED  Edge.Tests.SelfClosing
+FAILED  Edge.Tests.Padded
+    padded
+FAILED  Edge.Tests.Empty
+FAILED  Edge.Tests.NoIndent
+    split before an attribute
+    and a plain second line
+FAILED  Edge.Tests.StackOnly
+SKIPPED  
+1 passed, 6 failed, 3 inconclusive or skipped
+
+exit 1

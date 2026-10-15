@@ -73,15 +73,24 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(WorkingFilter.Entries.Contains(typeof(KnownListenerType)), Is.True);
         }
 
-        [TestCase(typeof(FilterWithoutAllowlist))]
-        [TestCase(typeof(FilterWithNonDictionaryAllowlist))]
-        [TestCase(typeof(FilterWithoutEntryType))]
-        [TestCase(typeof(FilterThatThrows))]
-        public void Apply_SdkInternalsMissing_WarnsInsteadOfThrowing(Type filterType)
+        [TestCase(typeof(FilterWithoutAllowlist), "could not find FilterWithoutAllowlist._allowedUnityEventTargetTypes.")]
+        [TestCase(typeof(FilterWithNonDictionaryAllowlist), "could not read FilterWithNonDictionaryAllowlist's allowlist dictionary.")]
+        [TestCase(typeof(FilterWithoutEntryType), "could not find the FilterWithoutEntryType.AllowedMethodFilter constructor.")]
+        public void Apply_SdkInternalsMissing_WarnsWhatIsMissingInsteadOfThrowing(Type filterType, string reason)
         {
-            LogAssert.Expect(LogType.Warning, AllowlistWarning);
+            LogAssert.Expect(LogType.Warning, "[UdonTestKit] UnityEventFilterAllowlist: " + reason);
 
             Assert.DoesNotThrow(() => UnityEventFilterAllowlist.Apply(filterType, KnownListener));
+        }
+
+        // The allowlist is read through reflection, which wraps what it throws.
+        [Test]
+        public void Apply_SdkInternalsThrow_WarnsWithTheExceptionInsteadOfThrowing()
+        {
+            LogAssert.Expect(LogType.Warning,
+                new Regex(@"^\[UdonTestKit\] UnityEventFilterAllowlist: .*InvalidOperationException: Stand-in failure\.", RegexOptions.Singleline));
+
+            Assert.DoesNotThrow(() => UnityEventFilterAllowlist.Apply(typeof(FilterThatThrows), KnownListener));
         }
 
         // Stand-ins shaped like VRC.Core.UnityEventFilter's internals, each missing one piece.

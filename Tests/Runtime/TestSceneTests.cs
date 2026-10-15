@@ -45,6 +45,21 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator Load_FromAsset_KeepsTheScenesAlreadyLoaded()
+        {
+            // Arrange
+            _outer = TestScene.Empty(SceneName + ".Outer");
+            yield return _outer.Load();
+            _scene = TestScene.FromAsset(TestWorldScene.Path);
+
+            // Act
+            yield return _scene.Load();
+
+            // Assert
+            Assert.That(_outer.IsLoaded, Is.True);
+        }
+
+        [UnityTest]
         public IEnumerator Load_AlreadyLoaded_KeepsTheSameScene()
         {
             // Arrange
@@ -90,6 +105,39 @@ namespace Tsvrc.UdonTestKit.Tests
 
             // Assert
             Assert.That(SceneManager.GetActiveScene(), Is.EqualTo(before));
+        }
+
+        [UnityTest]
+        public IEnumerator Unload_SceneNotActive_KeepsTheActiveScene()
+        {
+            // Arrange
+            _outer = TestScene.Empty(SceneName + ".Outer");
+            yield return _outer.Load();
+            _scene = TestScene.Empty(SceneName);
+            yield return _scene.Load();
+
+            // Act
+            _outer.Unload();
+
+            // Assert
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(SceneName));
+        }
+
+        [UnityTest]
+        public IEnumerator Unload_PreviousActiveSceneAlreadyUnloaded_StillUnloads()
+        {
+            // Arrange
+            _outer = TestScene.Empty(SceneName + ".Outer");
+            yield return _outer.Load();
+            _scene = TestScene.Empty(SceneName);
+            yield return _scene.Load();
+            _outer.Unload();
+
+            // Act
+            _scene.Unload();
+
+            // Assert
+            Assert.That(_scene.IsLoaded, Is.False);
         }
 
         [UnityTest]

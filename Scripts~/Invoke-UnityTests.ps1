@@ -72,9 +72,12 @@ if (-not (Test-Path -LiteralPath $UnityPath)) {
 # Without assembly names Unity runs every test it finds, including the ones that come with packages.
 if (-not $AssemblyNames) {
     $assets = Join-Path $ProjectPath 'Assets'
-    # Unity skips a file or folder whose name starts with a dot or ends with ~.
+    # Unity skips a folder with the Hidden attribute, which Get-ChildItem without -Force also skips
+    # with its contents, but imports a file with it. It also skips a file or folder whose name
+    # starts with a dot or ends with ~.
+    $folders = @($assets) + @(Get-ChildItem -LiteralPath $assets -Directory -Recurse | ForEach-Object FullName)
     $names = @(Get-ChildItem -LiteralPath $assets -Filter *.asmdef -Recurse -Force |
-        Where-Object { $_.FullName.Substring($assets.Length) -notmatch '[\\/]\.|~[\\/]' } |
+        Where-Object { $folders -contains $_.DirectoryName -and $_.FullName.Substring($assets.Length) -notmatch '[\\/]\.|~[\\/]' } |
         ForEach-Object { (Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json).name })
     $names += 'Assembly-CSharp', 'Assembly-CSharp-firstpass', 'Assembly-CSharp-Editor', 'Assembly-CSharp-Editor-firstpass'
     $AssemblyNames = $names -join ';'
@@ -82,7 +85,11 @@ if (-not $AssemblyNames) {
 
 # Absolute, because Unity resolves a relative path from the project folder and .NET from the
 # process's folder, not from PowerShell's current folder.
-$ResultsPath = (New-Item -ItemType Directory -Path $ResultsPath -Force).FullName
+$resultsFolder = New-Item -ItemType Directory -Path $ResultsPath -Force
+# Windows PowerShell 5.1 returns nothing, and reports no error, when the path or part of it names a
+# file.
+if (-not $resultsFolder) { throw "Can't create the results folder $ResultsPath" }
+$ResultsPath = $resultsFolder.FullName
 
 $modes = if ($TestMode -eq 'All') { 'EditMode', 'PlayMode' } else { $TestMode }
 $exitCode = 0
@@ -103,7 +110,7 @@ foreach ($mode in $modes) {
         $exitCode = 1
     }
     else {
-        $testCases = @(([xml][IO.File]::ReadAllText($results)).SelectNodes('//test-case'))
+        $testCases = ([xml][IO.File]::ReadAllText($results)).SelectNodes('//test-case')
         foreach ($testCase in $testCases | Where-Object result -ne 'Passed') {
             Write-Host "$($testCase.result.ToUpperInvariant())  $($testCase.fullname)"
             $message = $testCase.SelectSingleNode('failure/message|reason/message')

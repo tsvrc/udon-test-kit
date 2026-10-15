@@ -52,6 +52,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
                 Throws.InvalidOperationException.With.Message.StartsWith("TestsOnlyBehaviour has no UdonSharp program asset"));
         }
 
+        // WebExtract writes the objects of the world it reads to a world_data folder next to it.
+        [Test]
+        public void FromOpenScene_AfterReadingTheWorld_LeavesNothingExtracted()
+        {
+            Assert.That(Directory.GetDirectories("Temp", "world_data", SearchOption.AllDirectories), Is.Empty);
+        }
+
         [Test]
         public void FromOpenScene_AfterTheBuild_PutsBackThePathRecordedBefore()
         {
@@ -61,6 +68,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         [Test]
         public void FromOpenScene_AfterReadingTheWorld_DeletesTheWorldFile()
         {
+            Assert.That(_world.FilePath, Is.Not.Null.And.Not.Empty);
             Assert.That(File.Exists(_world.FilePath), Is.False, $"'{_world.FilePath}' is still there.");
         }
 

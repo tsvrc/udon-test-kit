@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.SDK3.ClientSim;
@@ -74,6 +75,14 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator Start_WhenItReturns_ClientSimIsInTestMode()
+        {
+            yield return Session.Start();
+
+            Assert.That(ClientSimRuntimeLoader.IsInUnityTest(), Is.True);
+        }
+
+        [UnityTest]
         public IEnumerator Start_ClientSimNotReadyWithinTimeout_ThrowsTimeoutException()
         {
             // Arrange: ClientSim takes 5 s to get ready, the timeout is 0.2 s.
@@ -89,6 +98,7 @@ namespace Tsvrc.UdonTestKit.Tests
 
             // Assert
             Assert.That(failure, Is.Not.Null, "Start finished instead of timing out.");
+            Assert.That(failure.Message, Is.EqualTo($"ClientSim didn't get ready within {0.2f} seconds."));
         }
 
         [UnityTest]
@@ -105,6 +115,14 @@ namespace Tsvrc.UdonTestKit.Tests
             yield return Session.Start(localPlayerIsMaster: false);
 
             Assert.That(Networking.IsMaster, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator Start_SceneWithoutADescriptor_SpawnsAtTheOrigin()
+        {
+            yield return Session.Start();
+
+            Assert.That(Vector3.Distance(Networking.LocalPlayer.GetPosition(), Vector3.zero), Is.LessThan(0.5f));
         }
 
         [UnityTest]
@@ -141,6 +159,7 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             yield return Session.Start();
+            Transform spawn = SceneDescriptors().Single().spawns[0];
 
             // Act
             Session.End();
@@ -149,6 +168,7 @@ namespace Tsvrc.UdonTestKit.Tests
             Assert.That(ClientSimMain.HasInstance(), Is.False);
             Assert.That(ClientSimRuntimeLoader.IsInUnityTest(), Is.False);
             Assert.That(SceneDescriptors(), Is.Empty);
+            Assert.That(spawn == null, "The spawn point Start added is still in the scene.");
         }
 
         [UnityTest]
@@ -215,6 +235,23 @@ namespace Tsvrc.UdonTestKit.Tests
             // Assert
             Assert.That(Networking.GetOwner(_owned), Is.EqualTo(remote));
             Assert.That(Networking.IsOwner(Networking.LocalPlayer, _owned), Is.False);
+        }
+
+        // Giving a GameObject to the player who owns it already changes nothing, so ClientSim reports
+        // no transfer.
+        [UnityTest]
+        public IEnumerator SetOwner_CurrentOwner_ReportsNoTransfer()
+        {
+            // Arrange
+            yield return Session.Start();
+            _owned = new GameObject(nameof(ClientSimSessionTests));
+            var transfers = _owned.AddComponent<OwnershipTransferSpy>();
+
+            // Act
+            Session.SetOwner(Networking.LocalPlayer, _owned);
+
+            // Assert
+            Assert.That(transfers.Transfers, Is.Zero);
         }
 
         [UnityTest]

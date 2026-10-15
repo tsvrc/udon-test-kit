@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" result="Failed" total="10">
+  <test-suite type="TestFixture" name="EdgeTests" fullname="Edge.Tests" result="Failed">
+    <properties>
+      <property name="note" value="a &gt; b" />
+    </properties>
+    <output><![CDATA[<message>printed by a test, not a result</message>]]></output>
+    <test-case id="1" name="Escaped" fullname="Edge.Tests.Escaped(&apos;it&apos;, &quot;q&quot;, &amp;, &lt;x&gt;)" result="Failed">
+      <failure>
+        <message>plain &lt;text&gt; &amp; &amp;lt; a tab&#x9;here&#xA;and a second line</message>
+      </failure>
+    </test-case>
+    <test-case id="2" name="Split"
+      fullname="Edge.Tests.Split"
+      result="Inconclusive">
+      <reason>
+        <message><![CDATA[a reason
+over two lines]]></message>
+      </reason>
+    </test-case>
+    <test-case id="3" name="QuotedEnd" fullname="Edge.Tests.QuotedEnd(a>b)" result="Failed">
+      <failure>
+        <message><![CDATA[the first message]]></message>
+      </failure>
+      <reason>
+        <message><![CDATA[a second message]]></message>
+      </reason>
+    </test-case>
+    <test-case id="4" name="SelfClosing" fullname="Edge.Tests.SelfClosing" result="Skipped" />
+    <test-case id="5" name="Passes" fullname="Edge.Tests.Passes" result="Passed" />
+    <test-case id="6" name="Padded" fullname="Edge.Tests.Padded" result="Failed"><failure><message><![CDATA[
+   padded   ]]></message></failure></test-case>
+    <test-case id="7" name="Empty" fullname="Edge.Tests.Empty" result="Failed"><failure><message></message></failure></test-case>
+    <test-case id="8" name="NoIndent"
+fullname="Edge.Tests.NoIndent"	result="Failed">
+      <failure>
+        <message>split before an attribute
+and a plain second line</message>
+      </failure>
+    </test-case>
+    <test-case id="9" name="StackOnly" fullname="Edge.Tests.StackOnly" result="Failed">
+      <failure>
+        <stack-trace>at Edge.Tests.StackOnly</stack-trace>
+      </failure>
+      <message>outside the failure</message>
+    </test-case>
+    <test-case id="10" name="NoFullname" result="Skipped" />
+  </test-suite>
+</test-run>
