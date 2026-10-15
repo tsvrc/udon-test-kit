@@ -34,11 +34,19 @@ function Test-Output([string] $Name, [string] $Expected, [string] $Actual) {
     }
 }
 
-# Fails the check unless the script exits with $Code after writing $Text.
+# Fails the check unless the script exits with $Code after writing $Text, without starting Unity.
 function Test-Run([string] $Name, [int] $Code, [string] $Text, [string] $Path, [string[]] $Arguments, [string] $Folder = $tmp) {
-    $output = Invoke-Script $Path $Arguments $Folder
-    if (-not ($output.Contains($Text) -and $output.EndsWith("exit $Code`n"))) {
-        Write-Host "FAILED  $Name, expected an exit code of $Code after:`n  $Text`nWritten:`n$output"
+    # The fake Unity writes this file if the script starts it.
+    $started = Join-Path $tmp "$Name.started"
+    $env:FAKE_ARGS = $started
+    try {
+        $output = Invoke-Script $Path $Arguments $Folder
+    }
+    finally {
+        $env:FAKE_ARGS = $null
+    }
+    if (-not ($output.Contains($Text) -and $output.EndsWith("exit $Code`n")) -or (Test-Path -LiteralPath $started)) {
+        Write-Host "FAILED  $Name, expected an exit code of $Code after:`n  $Text`nwithout starting Unity. Written:`n$output"
         $script:failures++
     }
 }
