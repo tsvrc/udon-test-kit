@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
@@ -145,6 +146,34 @@ namespace Tsvrc.UdonTestKit.Tests
 
             // Assert: an error it didn't expect would also fail this test.
             Assert.That(copied, Is.True);
+        }
+
+        // Each error is matched by the whole first line Udon or UdonSharp gives it.
+        [UnityTest]
+        public IEnumerator ExpectUdonException_ErrorsItExpects_EndTheFirstLinesUdonAndUdonSharpLog()
+        {
+            // Arrange
+            VRChatExceptionWatching.DropQueuedErrors();
+            using var watching = new VRChatExceptionWatching(on: false);
+            using var udon = new UdonHost();
+            UdonBehaviour probe = udon.Create<UdonProbe>("Probe");
+            var firstLines = new List<string>();
+            Application.LogCallback onLog = (message, stackTrace, type) => firstLines.Add(message.Split('\n')[0]);
+            Application.logMessageReceived += onLog;
+
+            // Act
+            try
+            {
+                yield return UdonHost.ExpectUdonException(() => probe.SendCustomEvent(nameof(UdonProbe._Throw)));
+            }
+            finally
+            {
+                Application.logMessageReceived -= onLog;
+            }
+
+            // Assert
+            Assert.That(firstLines, Has.Some.EndsWith(UdonHost.HaltError + "."));
+            Assert.That(firstLines, Has.Some.EndsWith(UdonHost.UdonSharpCopy));
         }
 
         [UnityTest]
