@@ -73,7 +73,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void FromOpenScene_SceneWithoutADescriptor_Throws()
+        public void FromOpenScene_SceneWithoutADescriptor_ThrowsThatTheExporterDidNotBuildIt()
         {
             // Arrange
             if (!Application.isBatchMode)
@@ -84,7 +84,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             LogAssert.ignoreFailingMessages = true;
 
             // Act and assert
-            Assert.That(() => BuiltWorld.FromOpenScene(), Throws.InvalidOperationException);
+            Assert.That(() => BuiltWorld.FromOpenScene(), Throws.InvalidOperationException.With.Message.EqualTo(
+                "The world exporter of the VRChat SDK didn't build the open scene."));
         }
     }
 }
