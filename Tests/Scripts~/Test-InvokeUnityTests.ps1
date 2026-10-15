@@ -37,7 +37,11 @@ function Test-Output([string] $Name, [string] $Expected, [string] $Actual) {
 # Fails the check unless the script exits with $Code after writing $Text.
 function Test-Run([string] $Name, [int] $Code, [string] $Text, [string] $Path, [string[]] $Arguments, [string] $Folder = $tmp) {
     $output = Invoke-Script $Path $Arguments $Folder
-    if (-not ($output.Contains($Text) -and $output.EndsWith("exit $Code`n"))) {
+    # PowerShell breaks an error message wider than its console into lines, anywhere in the text,
+    # so the text is compared without whitespace.
+    $written = $output -replace '\s', ''
+    $expected = $Text -replace '\s', ''
+    if (-not ($written.Contains($expected) -and $output.EndsWith("exit $Code`n"))) {
         Write-Host "FAILED  $Name, expected an exit code of $Code after:`n  $Text`nWritten:`n$output"
         $script:failures++
     }
