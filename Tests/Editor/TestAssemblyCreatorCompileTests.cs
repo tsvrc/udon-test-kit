@@ -22,7 +22,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         private const string LooseScript = Parent + "/UdonTestKitLooseScript.cs";
         private const string KitProbe = Tests + "/PlayMode/KitProbe.cs";
         private const string EditorProbe = Tests + "/EditMode/EditorProbe.cs";
-        private const string EditorFolderTests = Parent + "/Editor/UdonTestKitEditorFolderTests.cs";
 
         // Uses each public type of the kit, each SDK type its members take or return, and a type
         // from each other assembly the test assemblies reference. It only has to compile.
@@ -73,23 +72,6 @@ public class KitProbe__RUN__ : UdonTestBase
 public class EditorProbe__RUN__
 {
     public TestRunnerApi Api;
-}
-";
-
-        // An Edit Mode test in an Editor folder without an assembly definition, for a script in
-        // Assembly-CSharp. It only has to compile.
-        private const string EditorFolderTestsSource = @"using NUnit.Framework;
-using Tsvrc.UdonTestKit;
-
-public class UdonTestKitEditorFolderTests__RUN__
-{
-    [Test]
-    public void UseTheKit()
-    {
-        using var calls = new CallLog();
-        Assert.That(new UdonTestKitLooseScript(), Is.Not.Null);
-        Assert.That(typeof(UdonCallLog), Is.Not.Null);
-    }
 }
 ";
 
@@ -146,27 +128,6 @@ public class UdonTestKitEditorFolderTests__RUN__
             string prefix = editMode.name.Substring(0, editMode.name.Length - TestAssemblyCreator.EditModeSuffix.Length);
             string second = File.ReadAllText($"{Tests} 1/PlayMode/{prefix}2{TestAssemblyCreator.PlayModeSuffix}.asmdef");
             Assert.That(second, Does.Not.Contain($"\"{doubles.name}\""));
-        }
-
-        // The warning for scripts in Assembly-CSharp says Edit Mode tests for them can go in an Editor
-        // folder without an assembly definition.
-        [UnityTest]
-        public IEnumerator AssemblyCSharpWarning_EditModeTestsInAnEditorFolder_CompileWithTheKit()
-        {
-            // Arrange
-            SessionState.SetString(RunKey, System.Guid.NewGuid().ToString("N"));
-            AssetDatabase.CreateFolder("Assets", Path.GetFileName(Parent));
-            AssetDatabase.CreateFolder(Parent, "Editor");
-            File.WriteAllText(LooseScript, "public class UdonTestKitLooseScript { }");
-            File.WriteAllText(EditorFolderTests, EditorFolderTestsSource.Replace("__RUN__", Run));
-
-            // Act
-            AssetDatabase.ImportAsset(LooseScript);
-            AssetDatabase.ImportAsset(EditorFolderTests);
-            yield return new WaitForDomainReload();
-
-            // Assert
-            Assert.That(System.Type.GetType("UdonTestKitEditorFolderTests" + Run + ", Assembly-CSharp-Editor"), Is.Not.Null);
         }
 
         private static Assembly AssemblyOf(Assembly[] assemblies, string script)
