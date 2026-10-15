@@ -74,3 +74,6 @@ if ($failures) {
     exit 1
 }
 Write-Host 'All checks passed'
+# Run in the caller's session, as the Scripts workflow does, the test would otherwise leave the
+# exit code of the last runner it started in $LASTEXITCODE.
+exit 0
