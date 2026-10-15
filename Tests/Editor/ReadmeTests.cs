@@ -5,7 +5,7 @@ using UnityEditor.Compilation;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
 {
-    // The README shows what the kit writes and requires.
+    // The README shows what the kit writes and requires, and CONTRIBUTING what it requires.
     public class ReadmeTests
     {
         [Test]
@@ -29,17 +29,18 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         // A VPM range ^3.8.2 takes 3.8.2 and every later 3.x version.
-        [Test]
-        public void Requirements_InTheReadme_AreThoseOfThePackageManifest()
+        [TestCase("README.md")]
+        [TestCase("CONTRIBUTING.md")]
+        public void Requirements_InTheDoc_AreThoseOfThePackageManifest(string doc)
         {
             // Arrange
             string manifest = Read("package.json");
             string unity = Regex.Match(manifest, "\"unity\": \"([^\"]+)\"").Groups[1].Value;
             Match sdk = Regex.Match(manifest, "\"com\\.vrchat\\.worlds\": \"\\^((\\d+)\\.[^\"]+)\"");
 
-            // Act and assert
-            Assert.That(Read("README.md"), Does.Contain(
-                $"Requires Unity {unity} and the VRChat Worlds SDK {sdk.Groups[1].Value} or a later {sdk.Groups[2].Value}.x version."));
+            // Act and assert: Markdown reads a line break as a space.
+            Assert.That(Regex.Replace(Read(doc), @"\s+", " "), Does.Contain(
+                $"Unity {unity} and the VRChat Worlds SDK {sdk.Groups[1].Value} or a later {sdk.Groups[2].Value}.x version"));
         }
 
         // A checkout on Windows can turn the line endings of a file into CRLF.

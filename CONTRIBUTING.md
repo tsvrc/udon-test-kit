@@ -15,8 +15,8 @@ attach.
 
 The kit tests need a VRChat world project to run in.
 
-1. Create a world project with Unity 2022.3 and VRChat Worlds SDK 3.8.2 or later, through the
-   [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
+1. Create a world project with Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or a later 3.x version,
+   through the [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
 2. Clone this repository into the `Assets` folder of that project, for example as
    `Assets/udon-test-kit`. Don't install the kit through the Creator Companion as well: two copies
    stop the project compiling.
