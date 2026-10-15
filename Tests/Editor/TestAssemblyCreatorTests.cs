@@ -15,6 +15,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         // Created by the selection tests, so they don't depend on where the kit is installed.
         private const string SelectionFolder = "Assets/UdonTestKitSelectionTests";
         private const string SelectionFile = SelectionFolder + "/Selected.txt";
+        private const string EditorFolderParent = "Assets/UdonTestKitEditorFolderTests";
+        private const string EditorFolderScript = EditorFolderParent + "/Editor/UdonTestKitEditorFolderTests.cs";
 
         private string _parent;
 
@@ -31,6 +33,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Directory.Delete(_parent, recursive: true);
             Selection.activeObject = null;
             AssetDatabase.DeleteAsset(SelectionFolder);
+            AssetDatabase.DeleteAsset(EditorFolderParent);
         }
 
         [Test]
@@ -58,6 +61,59 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             // Assert
             AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, folder, assemblyDefinition)));
             Assert.That(definition.references, Has.Member("MyWorld.Tests.Doubles").And.Member("MyWorld.Runtime"));
+        }
+
+        [TestCase("EditMode", "MyWorld.Tests.EditMode.asmdef")]
+        [TestCase("PlayMode", "MyWorld.Tests.PlayMode.asmdef")]
+        [TestCase("Doubles", "MyWorld.Tests.Doubles.asmdef")]
+        public void Create_TwoWorldAssemblies_AssemblyReferencesBoth(string folder, string assemblyDefinition)
+        {
+            // Act
+            string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new[] { "MyWorld.Audio", "MyWorld.Runtime" });
+
+            // Assert
+            AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, folder, assemblyDefinition)));
+            Assert.That(definition.references, Has.Member("MyWorld.Audio").And.Member("MyWorld.Runtime"));
+        }
+
+        // Code in a created assembly can use every public member of the kit, so each assembly such a
+        // member takes, returns or derives from is a reference or a precompiled reference of it.
+        [TestCase("EditMode", "MyWorld.Tests.EditMode.asmdef")]
+        [TestCase("PlayMode", "MyWorld.Tests.PlayMode.asmdef")]
+        [TestCase("Doubles", "MyWorld.Tests.Doubles.asmdef")]
+        public void Create_EmptyFolder_AssemblyReferencesEachAssemblyThePublicKitApiUses(string folder, string assemblyDefinition)
+        {
+            // Act
+            string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new string[0]);
+
+            // Assert
+            AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, folder, assemblyDefinition)));
+            Assert.That(definition.references.Concat(definition.precompiledReferences.Select(Path.GetFileNameWithoutExtension)),
+                Is.SupersetOf(AssembliesThePublicKitApiUses()));
+        }
+
+        // The warning for scripts in Assembly-CSharp says Edit Mode tests for them can go in an Editor
+        // folder without an assembly definition. Unity works out an assembly's references from the
+        // scripts it imported, before any compile.
+        [Test]
+        public void AssemblyCSharpWarning_EditorFolderWithoutAnAssemblyDefinition_ReferencesTheKitNUnitAndAssemblyCSharp()
+        {
+            // Arrange
+            AssetDatabase.CreateFolder("Assets", Path.GetFileName(EditorFolderParent));
+            AssetDatabase.CreateFolder(EditorFolderParent, "Editor");
+            File.WriteAllText(EditorFolderParent + "/UdonTestKitLooseScript.cs", "public class UdonTestKitLooseScript { }");
+            File.WriteAllText(EditorFolderScript, "public class UdonTestKitEditorFolderTests { }");
+            AssetDatabase.ImportAsset(EditorFolderParent + "/UdonTestKitLooseScript.cs");
+            AssetDatabase.ImportAsset(EditorFolderScript);
+
+            // Act
+            Assembly editorFolder = CompilationPipeline.GetAssemblies(AssembliesType.Editor)
+                .Single(assembly => assembly.sourceFiles.Contains(EditorFolderScript));
+
+            // Assert
+            Assert.That(editorFolder.assemblyReferences.Select(assembly => assembly.name),
+                Is.SupersetOf(new[] { "Assembly-CSharp", "Tsvrc.UdonTestKit", "Tsvrc.UdonTestKit.UdonSpies" }));
+            Assert.That(editorFolder.compiledAssemblyReferences.Select(Path.GetFileName), Has.Member("nunit.framework.dll"));
         }
 
         [Test]
@@ -369,6 +425,29 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         // A checkout on Windows can turn the line endings of a file, and of the examples in
         // TestAssemblyCreator.cs, into CRLF.
         private static string Lines(string text) => text.Replace("\r\n", "\n");
+
+        // The assemblies the public and protected members of the kit's types take, return or derive
+        // from, but the ones that ship with the Unity Editor, which every assembly references.
+        private static IEnumerable<string> AssembliesThePublicKitApiUses()
+        {
+            const System.Reflection.BindingFlags members = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly;
+            string editor = Path.GetFullPath(EditorApplication.applicationContentsPath);
+            return new[] { typeof(CallLog).Assembly, typeof(UdonCallLog).Assembly }
+                .SelectMany(assembly => assembly.GetExportedTypes())
+                .SelectMany(type => new[] { type, type.BaseType }
+                    .Concat(type.GetMethods(members).Where(IsVisible).SelectMany(method =>
+                        method.GetParameters().Select(parameter => parameter.ParameterType).Append(method.ReturnType)))
+                    .Concat(type.GetProperties(members).Where(property => IsVisible(property.GetMethod)).Select(property => property.PropertyType))
+                    .Concat(type.GetFields(members).Where(field => field.IsPublic || field.IsFamily).Select(field => field.FieldType)))
+                .Where(type => type != null)
+                .Select(type => type.Assembly)
+                .Where(assembly => !assembly.IsDynamic && !Path.GetFullPath(assembly.Location).StartsWith(editor))
+                .Select(assembly => assembly.GetName().Name)
+                .Distinct();
+        }
+
+        private static bool IsVisible(System.Reflection.MethodBase method) => method != null && (method.IsPublic || method.IsFamily);
 
         private static Assembly CompiledAssembly(string name, string script, params string[] compiledReferences)
         {

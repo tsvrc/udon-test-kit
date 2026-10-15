@@ -52,11 +52,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
                 Throws.InvalidOperationException.With.Message.StartsWith("TestsOnlyBehaviour has no UdonSharp program asset"));
         }
 
-        // WebExtract writes the objects of the world it reads to a world_data folder next to it.
+        // BuiltWorld reads a copy of the world file named world, and WebExtract writes the objects of
+        // the world it reads to a folder next to it named after it, ending in _data.
         [Test]
-        public void FromOpenScene_AfterReadingTheWorld_LeavesNothingExtracted()
+        public void FromOpenScene_AfterReadingTheWorld_LeavesNeitherTheCopyNorWhatWasExtracted()
         {
-            Assert.That(Directory.GetDirectories("Temp", "world_data", SearchOption.AllDirectories), Is.Empty);
+            Assert.That(Directory.GetFileSystemEntries("Temp", "*world", SearchOption.AllDirectories), Is.Empty);
+            Assert.That(Directory.GetFileSystemEntries("Temp", "*world_data", SearchOption.AllDirectories), Is.Empty);
         }
 
         [Test]
@@ -73,7 +75,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void FromOpenScene_SceneWithoutADescriptor_Throws()
+        public void FromOpenScene_SceneWithoutADescriptor_ThrowsThatTheExporterDidNotBuildIt()
         {
             // Arrange
             if (!Application.isBatchMode)
@@ -84,7 +86,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             LogAssert.ignoreFailingMessages = true;
 
             // Act and assert
-            Assert.That(() => BuiltWorld.FromOpenScene(), Throws.InvalidOperationException);
+            Assert.That(() => BuiltWorld.FromOpenScene(), Throws.InvalidOperationException.With.Message.EqualTo(
+                "The world exporter of the VRChat SDK didn't build the open scene."));
         }
     }
 }

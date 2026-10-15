@@ -25,12 +25,28 @@ check() {
 }
 
 #######################################
+# Runs a command and compares its exit code and everything it prints with the
+# expected ones.
+# Arguments:
+#   Check name, exit code, output, then the command and its arguments.
+#######################################
+check_run() {
+  local -r name="$1" code="$2" output="$3"
+  shift 3
+  timeout "${LIMIT}" "$@" > "${tmp}/${name}.out" 2>&1
+  local -r status=$?
+  { echo "exit ${status}"; cat "${tmp}/${name}.out"; } > "${tmp}/${name}.txt"
+  check "${name}" <(printf 'exit %s\n%s\n' "${code}" "${output}") \
+    "${tmp}/${name}.txt"
+}
+
+#######################################
 # Runs a command and compares its exit code and the first line it prints with
 # the expected ones.
 # Arguments:
 #   Check name, exit code, first line, then the command and its arguments.
 #######################################
-check_run() {
+check_first_line() {
   local -r name="$1" code="$2" line="$3"
   shift 3
   timeout "${LIMIT}" "$@" > "${tmp}/${name}.out" 2>&1
@@ -187,27 +203,26 @@ this script or the current folder. Pass --project-path." \
   check_run missing-project 1 \
     "run_unity_tests.sh: No such folder: ${tmp}/missing" \
     "${SCRIPT}" -p "${tmp}/missing"
+  local -r hint="Try 'run_unity_tests.sh --help'."
   check_run test-mode 2 "run_unity_tests.sh: test mode must be EditMode, \
-PlayMode, or All, not Both" "${SCRIPT}" -m Both
+PlayMode, or All, not Both
+${hint}" "${SCRIPT}" -m Both
   touch "${tmp}/not-unity"
   check_run unity-not-executable 1 "run_unity_tests.sh: Unity not found at \
 ${tmp}/not-unity. Pass --unity-path." \
     "${SCRIPT}" -p "${project}" -u "${tmp}/not-unity"
-  check_run usage 2 "run_unity_tests.sh: unknown option --no-such-option" \
-    "${SCRIPT}" --no-such-option
-  tail -n 1 "${tmp}/usage.out" > "${tmp}/usage-hint.txt"
-  check usage-hint <(echo "Try 'run_unity_tests.sh --help'.") \
-    "${tmp}/usage-hint.txt"
+  check_run usage 2 "run_unity_tests.sh: unknown option --no-such-option
+${hint}" "${SCRIPT}" --no-such-option
   local option
   for option in -p -u -m -a -r; do
     check_run "missing-value${option}" 2 \
-      "run_unity_tests.sh: option ${option} needs a value" \
-      "${SCRIPT}" "${option}"
+      "run_unity_tests.sh: option ${option} needs a value
+${hint}" "${SCRIPT}" "${option}"
   done
-  check_run help 0 \
+  check_first_line help 0 \
     "Usage: run_unity_tests.sh [options] [-- unity-arguments]" \
     "${SCRIPT}" --help
-  check_run help-short 0 \
+  check_first_line help-short 0 \
     "Usage: run_unity_tests.sh [options] [-- unity-arguments]" "${SCRIPT}" -h
 
   if (( failures > 0 )); then

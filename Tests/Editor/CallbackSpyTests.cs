@@ -106,7 +106,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void CallbackA_SpyNotCreatedByACallLog_ThrowsNamingCreateSpy()
+        public void CallbackA_SpyNotCreatedByACallLog_ThrowsNamingTheSpyTheCallbackAndCreateSpy()
         {
             // Arrange
             _host = new GameObject(nameof(CallbackSpyTests));
@@ -116,7 +116,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             var failure = Assert.Throws<InvalidOperationException>(spy.CallbackA);
 
             // Assert
-            Assert.That(failure.Message, Does.Contain("CallLog.CreateSpy"));
+            Assert.That(failure.Message, Is.EqualTo(
+                $"{nameof(CallbackSpyTests)} wasn't created by a CallLog, so it has nowhere to record CallbackA. Use CallLog.CreateSpy."));
         }
     }
 }

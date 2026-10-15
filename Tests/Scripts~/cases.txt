@@ -4,6 +4,7 @@
 mixed-results results-mixed.xml 2 EditMode
 both-modes results-mixed.xml 2 All
 passed results-passed.xml 0 EditMode
+play-mode results-passed.xml 0 PlayMode
 unity-failed results-passed.xml 3 EditMode
 no-results - 1 EditMode
 edges results-edges.xml 2 EditMode
