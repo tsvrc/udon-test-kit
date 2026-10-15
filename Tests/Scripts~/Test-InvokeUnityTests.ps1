@@ -45,7 +45,11 @@ function Test-Run([string] $Name, [int] $Code, [string] $Text, [string] $Path, [
     finally {
         $env:FAKE_ARGS = $null
     }
-    if (-not ($output.Contains($Text) -and $output.EndsWith("exit $Code`n")) -or (Test-Path -LiteralPath $started)) {
+    # PowerShell breaks an error message wider than its console into lines, anywhere in the text,
+    # so the text is compared without whitespace.
+    $written = $output -replace '\s', ''
+    $expected = $Text -replace '\s', ''
+    if (-not ($written.Contains($expected) -and $output.EndsWith("exit $Code`n")) -or (Test-Path -LiteralPath $started)) {
         Write-Host "FAILED  $Name, expected an exit code of $Code after:`n  $Text`nwithout starting Unity. Written:`n$output"
         $script:failures++
     }
