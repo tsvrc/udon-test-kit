@@ -8,6 +8,7 @@ namespace Tsvrc.UdonTestKit.Tests
     public class ClientSimTestBaseTests : ClientSimTestBase
     {
         private bool _checkSessionInTearDown;
+        private bool _checkSessionInUnityTearDown;
 
         [TearDown]
         public void TearDown()
@@ -20,6 +21,19 @@ namespace Tsvrc.UdonTestKit.Tests
             }
         }
 
+        // Runs after every [TearDown], so it sees what the base class left after the test.
+        [UnityTearDown]
+        public IEnumerator UnityTearDown()
+        {
+            bool check = _checkSessionInUnityTearDown;
+            _checkSessionInUnityTearDown = false;
+            if (check)
+            {
+                Assert.That(ClientSimMain.HasInstance(), Is.False, "The base class didn't end the session after the test.");
+            }
+            yield break;
+        }
+
         [UnityTest]
         public IEnumerator DerivedTearDown_AfterStart_SessionIsStillRunning()
         {
@@ -29,16 +43,11 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
-        public IEnumerator EndClientSimSession_AfterStart_EndsTheSession()
+        public IEnumerator EndClientSimSession_AfterATest_EndsTheSession()
         {
-            // Arrange
             yield return Session.Start();
 
-            // Act
-            EndClientSimSession();
-
-            // Assert
-            Assert.That(ClientSimMain.HasInstance(), Is.False);
+            _checkSessionInUnityTearDown = true;
         }
     }
 }

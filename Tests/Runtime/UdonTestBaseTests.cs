@@ -1,21 +1,31 @@
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Tsvrc.UdonTestKit.Tests
 {
     public class UdonTestBaseTests : UdonTestBase
     {
-        [Test]
-        public void DisposeUdonHost_AfterCreate_DestroysWhatTheTestCreated()
+        private GameObject _created;
+
+        // Runs after every [TearDown], so it sees what the base class left after the test.
+        [UnityTearDown]
+        public IEnumerator CheckWhatTheTestCreatedIsGone()
         {
-            // Arrange
-            GameObject probe = Udon.Create<UdonProbe>("Probe").gameObject;
+            GameObject created = _created;
+            _created = null;
+            Assert.That(created == null, Is.True, "UdonTestBase didn't destroy what the test created.");
+            yield break;
+        }
 
+        [Test]
+        public void DisposeUdonHost_AfterATest_DestroysWhatTheTestCreated()
+        {
             // Act
-            DisposeUdonHost();
+            _created = Udon.Create<UdonProbe>("Probe").gameObject;
 
-            // Assert
-            Assert.That(probe == null, Is.True);
+            // Assert: in CheckWhatTheTestCreatedIsGone.
         }
     }
 }

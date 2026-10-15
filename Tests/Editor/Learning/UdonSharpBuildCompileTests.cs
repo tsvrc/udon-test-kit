@@ -80,6 +80,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         public void BuildRequested_CodeInsideIfUnityEditor_IsLeftOutOfTheProgram()
         {
             // Arrange
+            UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions());
             Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.Member(UdonProbe.EditorOnlyMarker),
                 "The Editor compile left the marker out.");
 

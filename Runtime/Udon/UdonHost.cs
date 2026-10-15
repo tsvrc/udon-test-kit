@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UdonSharp;
 using UdonSharpEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.Udon;
@@ -23,17 +25,16 @@ namespace Tsvrc.UdonTestKit
         /// <summary>Creates a GameObject named <paramref name="name"/> with an UdonBehaviour running the
         /// compiled program of <typeparamref name="T"/>, from its UdonSharp program asset. When
         /// <paramref name="active"/> is false, the GameObject is inactive and the behaviour starts once
-        /// it's activated.</summary>
+        /// it's activated. Throws when <typeparamref name="T"/> has no program asset, or when player
+        /// builds leave its assembly out, which breaks the compile for a world upload.</summary>
         public UdonBehaviour Create<T>(string name, bool active = true) where T : UdonSharpBehaviour
         {
             UdonSharpProgramAsset program = ProgramAssetOf(typeof(T));
             // An UdonBehaviour added at runtime runs nothing until it has its compiled program and
             // UdonManager registers it.
             var host = new GameObject(name);
-            host.SetActive(false);
             _hosts.Add(host);
             var behaviour = host.AddComponent<UdonBehaviour>();
-            behaviour.programSource = program;
             behaviour.AssignProgramAndVariables(program.SerializedProgramAsset, new UdonVariableTable());
             host.SetActive(active);
             UdonManager.Instance.RegisterUdonBehaviour(behaviour);
@@ -58,6 +59,13 @@ namespace Tsvrc.UdonTestKit
             if (program == null)
             {
                 throw new InvalidOperationException($"{udonSharpClass.Name} has no UdonSharp program asset. Create one with Assets > Create > VRChat > Udon > Udon C# Program Asset and set its Source Script.");
+            }
+            // The compile for a world upload reads only player assemblies, and a program asset whose
+            // script is outside them makes it log an error and compile no program.
+            string assembly = udonSharpClass.Assembly.GetName().Name;
+            if (!CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies).Any(player => player.name == assembly))
+            {
+                throw new InvalidOperationException($"{udonSharpClass.Name} has a program asset, but player builds leave out its assembly, {assembly}, so the compile for a world upload fails. Move it to an assembly in player builds, with a U# assembly definition from Assets > Create > U# Assembly Definition.");
             }
             return program;
         }

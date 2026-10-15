@@ -31,9 +31,10 @@ namespace Tsvrc.UdonTestKit
         public string Text { get; }
 
         /// <summary>Builds the open scene into a world file with the world exporter of the VRChat SDK,
-        /// without the callbacks the SDK runs before a build, reads the file and deletes it. The exporter
-        /// records the path of the file in EditorPrefs, which every Unity project of the user shares, so
-        /// the path recorded before is put back.</summary>
+        /// without the callbacks the SDK runs before a build, reads the file and deletes it. Without
+        /// those callbacks UdonSharp doesn't compile for upload first, so the world holds each program
+        /// as last compiled for the Editor. The exporter records the path of the file in EditorPrefs,
+        /// which every Unity project of the user shares, so the path recorded before is put back.</summary>
         public static BuiltWorld FromOpenScene()
         {
             string previousFile = EditorPrefs.GetString(WorldFileKey);

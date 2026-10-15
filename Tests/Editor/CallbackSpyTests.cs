@@ -50,6 +50,23 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void CountAndIndexer_TwoCalls_ReadThemInOrder()
+        {
+            // Arrange
+            using var calls = new CallLog();
+            CallbackSpy spy = calls.CreateSpy();
+
+            // Act
+            spy.CallbackA();
+            spy.CallbackB();
+
+            // Assert
+            Assert.That(calls.Count, Is.EqualTo(2));
+            Assert.That(calls[0], Is.EqualTo("Spy.CallbackA"));
+            Assert.That(calls[1], Is.EqualTo("Spy.CallbackB"));
+        }
+
+        [Test]
         public void Clear_AfterACall_ForgetsIt()
         {
             // Arrange

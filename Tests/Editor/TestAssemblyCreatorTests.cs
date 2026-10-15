@@ -155,10 +155,34 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void WorldAssemblyNames_InThisProject_LeavesOutTestAssembliesAndTheKit()
         {
             // Act
-            List<string> world = TestAssemblyCreator.WorldAssemblyNames().ToList();
+            List<string> world = TestAssemblyCreator.WorldAssemblyNames(CompilationPipeline.GetAssemblies(AssembliesType.Editor),
+                CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies)).ToList();
 
             // Assert
             Assert.That(world, Has.None.StartsWith("Tsvrc.UdonTestKit"));
+        }
+
+        [Test]
+        public void WorldAssemblyNames_PlayerAssemblies_ListsOnlyTheWorldsOwnUnderAssets()
+        {
+            // Arrange
+            Assembly world = CompiledAssembly("MyWorld.Runtime", "Assets/MyWorld/Door.cs");
+            Assembly tests = CompiledAssembly("MyWorld.Tests", "Assets/Tests/DoorTests.cs", "Library/nunit.framework.dll");
+            Assembly package = CompiledAssembly("VRC.SDK3", "Packages/com.vrchat.worlds/Runtime/Sdk.cs");
+            Assembly assemblyCSharp = CompiledAssembly("Assembly-CSharp", "Assets/Loose.cs");
+
+            // Act
+            IEnumerable<string> names = TestAssemblyCreator.WorldAssemblyNames(new[] { tests }, new[] { world, tests, package, assemblyCSharp });
+
+            // Assert
+            Assert.That(names, Is.EqualTo(new[] { "MyWorld.Runtime" }));
+        }
+
+        [TestCase("Assets/Loose.cs", ExpectedResult = true)]
+        [TestCase("Packages/com.example/Loose.cs", ExpectedResult = false)]
+        public bool HasScriptsInAssemblyCSharp_AssemblyCSharpScript_IsTrueOnlyUnderAssets(string script)
+        {
+            return TestAssemblyCreator.HasScriptsInAssemblyCSharp(new[] { CompiledAssembly("Assembly-CSharp", script) });
         }
 
         [Test]
@@ -194,6 +218,18 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void SelectedFolder_FileOutsideAssetsSelected_IsAssets()
+        {
+            // Arrange
+            Object packageFile = AssetDatabase.LoadAssetAtPath<Object>("Packages/com.unity.test-framework/package.json");
+            Assert.That(packageFile, Is.Not.Null, "No package file to select.");
+            Selection.activeObject = packageFile;
+
+            // Act and Assert
+            Assert.That(TestAssemblyCreator.SelectedFolder(), Is.EqualTo("Assets"));
+        }
+
+        [Test]
         public void UniquePrefix_NoTestAssembliesYet_KeepsThePrefix()
         {
             Assert.That(TestAssemblyCreator.UniquePrefix("MyWorld", new[] { "MyWorld.Runtime" }), Is.EqualTo("MyWorld"));
@@ -224,6 +260,60 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void AssemblyPrefix_ProductName_KeepsOnlyLettersAndDigits(string productName, string expected)
         {
             Assert.That(TestAssemblyCreator.AssemblyPrefix(productName), Is.EqualTo(expected));
+        }
+
+        // The examples Create writes are also scripts under Tests/, which compile and run with the kit
+        // tests, so the examples a world gets work.
+        [Test]
+        public void ExampleSpy_WrittenByCreate_IsATestedScript()
+        {
+            Assert.That(SourceOf(typeof(ExampleSpy)), Is.EqualTo(Lines(TestAssemblyCreator.ExampleSpy)));
+        }
+
+        [Test]
+        public void ExampleEditModeTests_WrittenByCreate_IsATestedScript()
+        {
+            Assert.That(SourceOf(typeof(ExampleEditModeTests)), Is.EqualTo(Lines(TestAssemblyCreator.ExampleEditModeTests)));
+        }
+
+        [Test]
+        public void ExamplePlayModeTests_WrittenByCreate_IsATestedScript()
+        {
+            Assert.That(SourceOf(typeof(ExamplePlayModeTests)), Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
+        }
+
+        [Test]
+        public void ExamplePlayModeTests_InTheReadme_IsTheExampleCreateWrites()
+        {
+            // Arrange
+            string kitRoot = Path.GetDirectoryName(Path.GetDirectoryName(
+                CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName("Tsvrc.UdonTestKit")));
+            string readme = Lines(File.ReadAllText(Path.Combine(kitRoot, "README.md")));
+
+            // Act
+            int start = readme.IndexOf("```csharp\n") + "```csharp\n".Length;
+            string block = readme.Substring(start, readme.IndexOf("```", start) - start);
+
+            // Assert
+            Assert.That(block, Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
+        }
+
+        private static string SourceOf(System.Type script)
+        {
+            MonoScript source = AssetDatabase.FindAssets(script.Name + " t:MonoScript")
+                .Select(guid => AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(guid)))
+                .Single(candidate => candidate.GetClass() == script);
+            return Lines(source.text);
+        }
+
+        // A checkout on Windows can turn the line endings of a file, and of the examples in
+        // TestAssemblyCreator.cs, into CRLF.
+        private static string Lines(string text) => text.Replace("\r\n", "\n");
+
+        private static Assembly CompiledAssembly(string name, string script, params string[] compiledReferences)
+        {
+            return new Assembly(name, $"Library/ScriptAssemblies/{name}.dll", new[] { script }, new string[0], new Assembly[0],
+                compiledReferences, AssemblyFlags.None);
         }
 
         private static void CreateSelectionFolder()
