@@ -24,7 +24,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         public void SetUp()
         {
             _previousFile = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
-            _folder = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.UnityBundleToolsTests");
+            _folder = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             Directory.CreateDirectory(_folder);
         }
 

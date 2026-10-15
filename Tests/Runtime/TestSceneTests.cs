@@ -13,12 +13,15 @@ namespace Tsvrc.UdonTestKit.Tests
         private const string SceneName = "Tsvrc.UdonTestKit.TestSceneTests";
 
         private TestScene _scene;
+        private TestScene _outer;
 
         [TearDown]
         public void TearDown()
         {
             _scene?.Unload();
             _scene = null;
+            _outer?.Unload();
+            _outer = null;
         }
 
         [UnityTest]
@@ -74,7 +77,10 @@ namespace Tsvrc.UdonTestKit.Tests
         [UnityTest]
         public IEnumerator Unload_AfterLoad_GivesBackThePreviousActiveScene()
         {
-            // Arrange
+            // Arrange: two scenes over the test runner scene, so Unity on its own could pick either
+            // of the two left.
+            _outer = TestScene.Empty(SceneName + ".Outer");
+            yield return _outer.Load();
             Scene before = SceneManager.GetActiveScene();
             _scene = TestScene.Empty(SceneName);
             yield return _scene.Load();

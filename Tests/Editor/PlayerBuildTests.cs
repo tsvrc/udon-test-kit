@@ -23,7 +23,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void CompilePlayerScripts_WindowsBuild_HoldsOnlyTheUdonAssembliesOfTheKit()
         {
             // Arrange
-            _outputFolder = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.PlayerBuildTests");
+            _outputFolder = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             var settings = new ScriptCompilationSettings
             {
                 target = BuildTarget.StandaloneWindows64,

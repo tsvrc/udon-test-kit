@@ -58,5 +58,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         {
             return TestRun.IsTestProcess(commandLine.Split(' '));
         }
+
+        // A batch run reports its start and has -runTests, so it can't tell the two apart.
+        [TestCase(true, "Unity.exe -projectPath World", ExpectedResult = true)]
+        [TestCase(false, "Unity.exe -batchmode -runTests", ExpectedResult = true)]
+        [TestCase(false, "Unity.exe -projectPath World", ExpectedResult = false)]
+        public bool IsActiveFor_RunStartedOrTestProcess_IsTrueForEither(bool startedInThisEditorSession, string commandLine)
+        {
+            return TestRun.IsActiveFor(startedInThisEditorSession, commandLine.Split(' '));
+        }
     }
 }

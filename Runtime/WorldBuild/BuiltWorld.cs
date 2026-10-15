@@ -72,11 +72,9 @@ namespace Tsvrc.UdonTestKit
             string tools = Path.Combine(EditorApplication.applicationContentsPath, "Tools");
             // The Windows Editor ships these tools as .exe files, the Linux Editor without an extension.
             string extension = Application.platform == RuntimePlatform.WindowsEditor ? ".exe" : "";
-            string folder = Path.Combine(Path.GetTempPath(), "Tsvrc.UdonTestKit.BuiltWorld");
-            if (Directory.Exists(folder))
-            {
-                Directory.Delete(folder, recursive: true);
-            }
+            // A new folder in the project for each read, so a build in another project or test run at
+            // the same time can't delete its files.
+            string folder = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             Directory.CreateDirectory(folder);
             try
             {
