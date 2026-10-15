@@ -1,2 +1,4 @@
 # Bash fails on a carriage return, so shell scripts keep LF line endings in every checkout.
 *.sh text eol=lf
+# The script tests compare outputs byte for byte, so their files keep LF line endings too.
+Tests/Scripts~/** text eol=lf

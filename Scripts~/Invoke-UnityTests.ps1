@@ -25,8 +25,8 @@
 
 .PARAMETER AssemblyNames
     Test assemblies to run, separated by ";". Defaults to the project's own: every assembly
-    definition under Assets, and the assemblies Unity compiles scripts without one into, such
-    as tests in Editor folders.
+    definition Unity imports under Assets, and the assemblies Unity compiles scripts without one
+    into, such as tests in Editor folders.
 
 .PARAMETER ResultsPath
     Folder for each mode's results file and Unity log. Defaults to a new folder under the temp folder.
@@ -71,7 +71,10 @@ if (-not (Test-Path -LiteralPath $UnityPath)) {
 
 # Without assembly names Unity runs every test it finds, including the ones that come with packages.
 if (-not $AssemblyNames) {
-    $names = @(Get-ChildItem -LiteralPath (Join-Path $ProjectPath 'Assets') -Filter *.asmdef -Recurse |
+    $assets = Join-Path $ProjectPath 'Assets'
+    # Unity skips a file or folder whose name starts with a dot or ends with ~.
+    $names = @(Get-ChildItem -LiteralPath $assets -Filter *.asmdef -Recurse -Force |
+        Where-Object { $_.FullName.Substring($assets.Length) -notmatch '[\\/]\.|~[\\/]' } |
         ForEach-Object { (Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json).name })
     $names += 'Assembly-CSharp', 'Assembly-CSharp-firstpass', 'Assembly-CSharp-Editor', 'Assembly-CSharp-Editor-firstpass'
     $AssemblyNames = $names -join ';'

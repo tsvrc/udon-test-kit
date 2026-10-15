@@ -1,0 +1,32 @@
+name: Scripts
+on:
+  pull_request:
+    paths:
+      - "Scripts~/**"
+      - "Tests/Scripts~/**"
+      - ".github/workflows/scripts.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "Scripts~/**"
+      - "Tests/Scripts~/**"
+      - ".github/workflows/scripts.yml"
+jobs:
+  test_bash_runner:
+    runs-on: ubuntu-latest
+    name: Test run_unity_tests.sh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run ShellCheck
+        run: shellcheck --enable=all "Scripts~/run_unity_tests.sh" "Tests/Scripts~/test_run_unity_tests.sh" "Tests/Scripts~/fake_unity.sh"
+      - name: Run the script test
+        run: "Tests/Scripts~/test_run_unity_tests.sh"
+  test_powershell_runner:
+    runs-on: windows-latest
+    name: Test Invoke-UnityTests.ps1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run the script test
+        shell: powershell
+        run: "& ./Tests/Scripts~/Test-InvokeUnityTests.ps1; exit $LASTEXITCODE"

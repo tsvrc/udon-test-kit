@@ -44,6 +44,10 @@ there while you develop it. The options of the PowerShell script are in the
 [Invoke-UnityTests.ps1 reference](https://tsvrc.com/docs/udon-test-kit/reference/invoke-unity-tests),
 and `run_unity_tests.sh --help` lists the same ones for Bash.
 
+The scripts have tests of their own in `Tests/Scripts~`, which run without Unity:
+`Test-InvokeUnityTests.ps1` from Windows PowerShell and `test_run_unity_tests.sh` from Bash. A
+pull request that changes a script runs both.
+
 ## Learning tests
 
 The tests in `Tests/Editor/Learning` and `Tests/Runtime/Learning` don't test the kit. They pin down

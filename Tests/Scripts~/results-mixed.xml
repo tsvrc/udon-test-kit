@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="13" result="Failed(Child)" total="13" passed="7" failed="4" inconclusive="1" skipped="1" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:26Z" duration="17.916197">
+  <test-suite type="TestSuite" id="1247" name="tests-kit" fullname="tests-kit" runstate="Runnable" testcasecount="211" result="Failed" site="Child" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:26Z" duration="17.916197" total="13" passed="7" failed="4" inconclusive="1" skipped="1" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1264" name="Consumer.Tests.Editor.dll" fullname="C:/Projects/Consumer/Library/ScriptAssemblies/Consumer.Tests.Editor.dll" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:26Z" duration="17.891571" total="13" passed="7" failed="4" inconclusive="1" skipped="1" asserts="0">
+      <properties>
+        <property name="_PID" value="10300" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1265" name="Consumer" fullname="Consumer" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:26Z" duration="17.890968" total="13" passed="7" failed="4" inconclusive="1" skipped="1" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1266" name="Tests" fullname="Consumer.Tests" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:26Z" duration="17.887841" total="13" passed="7" failed="4" inconclusive="1" skipped="1" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1267" name="Editor" fullname="Consumer.Tests.Editor" runstate="Runnable" testcasecount="13" result="Failed" site="Child" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:26Z" duration="17.884815" total="13" passed="7" failed="4" inconclusive="1" skipped="1" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1248" name="PackageInstallEditTests" fullname="Consumer.Tests.Editor.PackageInstallEditTests" classname="Consumer.Tests.Editor.PackageInstallEditTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:26Z" duration="17.864851" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1251" name="BuildRequested_PackageInstall_LogsNoErrorAndLetsTheBuildGoOn" fullname="Consumer.Tests.Editor.PackageInstallEditTests.BuildRequested_PackageInstall_LogsNoErrorAndLetsTheBuildGoOn" methodname="BuildRequested_PackageInstall_LogsNoErrorAndLetsTheBuildGoOn" classname="Consumer.Tests.Editor.PackageInstallEditTests" runstate="Runnable" seed="1809162784" result="Passed" start-time="2026-10-13 03:04:08Z" end-time="2026-10-13 03:04:10Z" duration="2.248306" asserts="0">
+                <properties />
+                <output><![CDATA[[<color=#0c824c>UdonSharp</color>] Compile of 10 scripts finished in 00:01.758
+[<color=#0c824c>UdonSharp</color>] Compile of 10 scripts finished in 00:00.078
+]]></output>
+              </test-case>
+              <test-case id="1250" name="CompileForUpload_PackageInstall_LogsNoErrorAndCompilesUdonCallLog" fullname="Consumer.Tests.Editor.PackageInstallEditTests.CompileForUpload_PackageInstall_LogsNoErrorAndCompilesUdonCallLog" methodname="CompileForUpload_PackageInstall_LogsNoErrorAndCompilesUdonCallLog" classname="Consumer.Tests.Editor.PackageInstallEditTests" runstate="Runnable" seed="1017174983" result="Passed" start-time="2026-10-13 03:04:10Z" end-time="2026-10-13 03:04:11Z" duration="0.300658" asserts="0">
+                <properties />
+                <output><![CDATA[[<color=#0c824c>UdonSharp</color>] Compile of 10 scripts finished in 00:00.087
+[<color=#0c824c>UdonSharp</color>] Compile of 10 scripts finished in 00:00.077
+]]></output>
+              </test-case>
+              <test-case id="1249" name="FindProgram_UdonCallLog_IsTheProgramAssetInThePackage" fullname="Consumer.Tests.Editor.PackageInstallEditTests.FindProgram_UdonCallLog_IsTheProgramAssetInThePackage" methodname="FindProgram_UdonCallLog_IsTheProgramAssetInThePackage" classname="Consumer.Tests.Editor.PackageInstallEditTests" runstate="Runnable" seed="961049539" result="Passed" start-time="2026-10-13 03:04:11Z" end-time="2026-10-13 03:04:11Z" duration="0.255217" asserts="0">
+                <properties />
+                <output><![CDATA[[<color=#0c824c>UdonSharp</color>] Compile of 10 scripts finished in 00:00.105
+]]></output>
+              </test-case>
+              <test-case id="1252" name="WorldBuild_NothingPlaced_HoldsNoUdonCallLogAndNoKitScript" fullname="Consumer.Tests.Editor.PackageInstallEditTests.WorldBuild_NothingPlaced_HoldsNoUdonCallLogAndNoKitScript" methodname="WorldBuild_NothingPlaced_HoldsNoUdonCallLogAndNoKitScript" classname="Consumer.Tests.Editor.PackageInstallEditTests" runstate="Runnable" seed="720486486" result="Passed" start-time="2026-10-13 03:04:11Z" end-time="2026-10-13 03:04:20Z" duration="9.201628" asserts="0">
+                <properties />
+                <output><![CDATA[GfxDevice renderer is null. Unity cannot update the Ambient Probe and Reflection Probes that the SkyManager generates. Run the Editor without the -nographics argument or generate lighting for your scene.
+Computed code signatures for 64 scripts of type SerializedUdonProgramAsset in 4ms
+[<color=#0c824c>UdonSharp</color>] Compile of 10 scripts finished in 00:00.118
+]]></output>
+              </test-case>
+              <test-case id="1253" name="WorldBuild_UdonCallLogPlaced_HoldsItsProgramButNoKitScript" fullname="Consumer.Tests.Editor.PackageInstallEditTests.WorldBuild_UdonCallLogPlaced_HoldsItsProgramButNoKitScript" methodname="WorldBuild_UdonCallLogPlaced_HoldsItsProgramButNoKitScript" classname="Consumer.Tests.Editor.PackageInstallEditTests" runstate="Runnable" seed="1711422840" result="Passed" start-time="2026-10-13 03:04:20Z" end-time="2026-10-13 03:04:26Z" duration="5.843744" asserts="0">
+                <properties />
+                <output><![CDATA[GfxDevice renderer is null. Unity cannot update the Ambient Probe and Reflection Probes that the SkyManager generates. Run the Editor without the -nographics argument or generate lighting for your scene.
+Computed code signatures for 64 scripts of type SerializedUdonProgramAsset in 3ms
+[<color=#0c824c>UdonSharp</color>] Compile of 10 scripts finished in 00:00.113
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1254" name="ReportFixtureTests" fullname="Consumer.Tests.Editor.ReportFixtureTests" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.015462" total="8" passed="2" failed="4" inconclusive="1" skipped="1" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <output><![CDATA[MissingReferenceException: The object of type 'UdonBehaviour' has been destroyed but you are still trying to access it.
+Your script should either check if it is null or you should not destroy the object.
+GfxDevice renderer is null. Unity cannot update the Ambient Probe and Reflection Probes that the SkyManager generates. Run the Editor without the -nographics argument or generate lighting for your scene.
+]]></output>
+              <test-case id="1259" name="Fails_WithACdataEndInTheMessage" fullname="Consumer.Tests.Editor.ReportFixtureTests.Fails_WithACdataEndInTheMessage" methodname="Fails_WithACdataEndInTheMessage" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="1352810778" result="Failed" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.001162" asserts="0">
+                <properties />
+                <failure>
+                  <message><![CDATA[before ]]]]><![CDATA[> after]]></message>
+                  <stack-trace><![CDATA[at Consumer.Tests.Editor.ReportFixtureTests.Fails_WithACdataEndInTheMessage () [0x00000] in C:\Projects\Consumer\Assets\Tests\Editor\ReportFixtureTests.cs:35
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1257" name="Fails_WithAMultiLineMessage" fullname="Consumer.Tests.Editor.ReportFixtureTests.Fails_WithAMultiLineMessage" methodname="Fails_WithAMultiLineMessage" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="1451484322" result="Failed" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.000199" asserts="0">
+                <properties />
+                <failure>
+                  <message><![CDATA[first line & <tag> "double" 'single'
+second line
+    indented third
+]]></message>
+                  <stack-trace><![CDATA[at Consumer.Tests.Editor.ReportFixtureTests.Fails_WithAMultiLineMessage () [0x00000] in C:\Projects\Consumer\Assets\Tests\Editor\ReportFixtureTests.cs:23
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1258" name="Fails_WithAnEmptyMessage" fullname="Consumer.Tests.Editor.ReportFixtureTests.Fails_WithAnEmptyMessage" methodname="Fails_WithAnEmptyMessage" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="2134385155" result="Failed" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.000172" asserts="0">
+                <properties />
+                <failure>
+                  <message><![CDATA[]]></message>
+                  <stack-trace><![CDATA[at Consumer.Tests.Editor.ReportFixtureTests.Fails_WithAnEmptyMessage () [0x00000] in C:\Projects\Consumer\Assets\Tests\Editor\ReportFixtureTests.cs:29
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1261" name="Fails_WithSpecialCharactersInItsName" fullname="Consumer.Tests.Editor.ReportFixtureTests.Fails_WithSpecialCharactersInItsName" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" testcasecount="1" result="Failed" site="Child" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.004012" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <failure>
+                  <message><![CDATA[One or more child tests had errors]]></message>
+                </failure>
+                <test-case id="1260" name="Fails_WithSpecialCharactersInItsName(&quot;a&lt;b&amp;c\&quot;d'e&gt;f&quot;)" fullname="Consumer.Tests.Editor.ReportFixtureTests.Fails_WithSpecialCharactersInItsName(&quot;a&lt;b&amp;c\&quot;d'e&gt;f&quot;)" methodname="Fails_WithSpecialCharactersInItsName" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="1700697487" result="Failed" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.003513" asserts="0">
+                  <properties />
+                  <failure>
+                    <message><![CDATA[  Expected string length 1 but was 11. Strings differ at index 0.
+  Expected: "x"
+  But was:  "a<b&c"d'e>f"
+  -----------^
+]]></message>
+                    <stack-trace><![CDATA[at Consumer.Tests.Editor.ReportFixtureTests.Fails_WithSpecialCharactersInItsName (System.String value) [0x00000] in C:\Projects\Consumer\Assets\Tests\Editor\ReportFixtureTests.cs:41
+]]></stack-trace>
+                  </failure>
+                </test-case>
+              </test-suite>
+              <test-case id="1262" name="IsIgnored" fullname="Consumer.Tests.Editor.ReportFixtureTests.IsIgnored" methodname="IsIgnored" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="1912414007" result="Skipped" label="Ignored" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.000359" asserts="0">
+                <properties />
+                <reason>
+                  <message><![CDATA[ignored for <reasons> & more]]></message>
+                </reason>
+              </test-case>
+              <test-case id="1263" name="IsInconclusive" fullname="Consumer.Tests.Editor.ReportFixtureTests.IsInconclusive" methodname="IsInconclusive" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="251429699" result="Inconclusive" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.000337" asserts="0">
+                <properties />
+                <reason>
+                  <message><![CDATA[not sure]]></message>
+                </reason>
+              </test-case>
+              <test-case id="1255" name="Passes" fullname="Consumer.Tests.Editor.ReportFixtureTests.Passes" methodname="Passes" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="1439664515" result="Passed" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.000116" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1256" name="Passes_WithOutputThatLooksLikeXml" fullname="Consumer.Tests.Editor.ReportFixtureTests.Passes_WithOutputThatLooksLikeXml" methodname="Passes_WithOutputThatLooksLikeXml" classname="Consumer.Tests.Editor.ReportFixtureTests" runstate="Runnable" seed="365794031" result="Passed" start-time="2026-10-13 03:04:26Z" end-time="2026-10-13 03:04:26Z" duration="0.000155" asserts="0">
+                <properties />
+                <output><![CDATA[<test-case result="Failed" fullname="Fake.Case"><failure><message>fake</message>
+<![CDATA[ not a real section
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

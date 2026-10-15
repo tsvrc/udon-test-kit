@@ -1,0 +1,15 @@
+-batchmode
+-nographics
+-projectPath
+PROJECT
+-logFile
+RESULTS/EditMode.log
+-runTests
+-testPlatform
+EditMode
+-testResults
+RESULTS/EditMode.xml
+-assemblyNames
+Alpha;Beta;Spaced.Bom;Assembly-CSharp;Assembly-CSharp-firstpass;Assembly-CSharp-Editor;Assembly-CSharp-Editor-firstpass
+-buildTarget
+win64

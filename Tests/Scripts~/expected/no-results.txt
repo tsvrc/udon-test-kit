@@ -1,0 +1,4 @@
+EditMode tests...
+No results were written. See RESULTS/EditMode.log
+
+exit 1

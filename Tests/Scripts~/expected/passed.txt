@@ -1,0 +1,4 @@
+EditMode tests...
+2 passed, 0 failed, 0 inconclusive or skipped
+
+exit 0

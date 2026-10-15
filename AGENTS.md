@@ -13,7 +13,8 @@ conventions and pull requests; follow it. This file only adds what it leaves out
   `Tests/TestsOnlyDoubles/` an UdonSharp behaviour in a tests-only assembly, for the learning tests
   about the upload compile.
 - `Scripts~/Invoke-UnityTests.ps1` is the command-line test runner, and
-  `Scripts~/run_unity_tests.sh` its Linux counterpart.
+  `Scripts~/run_unity_tests.sh` its Linux counterpart. `Tests/Scripts~/` tests both against a fake
+  Unity.
 - User documentation isn't in this repo: it's `docs/udon-test-kit/` in `tsvrc/docs`.
 
 ## Running tests
