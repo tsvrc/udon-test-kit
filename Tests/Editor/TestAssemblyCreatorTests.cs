@@ -63,6 +63,19 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(definition.references, Has.Member("MyWorld.Tests.Doubles").And.Member("MyWorld.Runtime"));
         }
 
+        [TestCase("EditMode", "MyWorld.Tests.EditMode.asmdef")]
+        [TestCase("PlayMode", "MyWorld.Tests.PlayMode.asmdef")]
+        [TestCase("Doubles", "MyWorld.Tests.Doubles.asmdef")]
+        public void Create_TwoWorldAssemblies_AssemblyReferencesBoth(string folder, string assemblyDefinition)
+        {
+            // Act
+            string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new[] { "MyWorld.Audio", "MyWorld.Runtime" });
+
+            // Assert
+            AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, folder, assemblyDefinition)));
+            Assert.That(definition.references, Has.Member("MyWorld.Audio").And.Member("MyWorld.Runtime"));
+        }
+
         // Code in a created assembly can use every public member of the kit, so each assembly such a
         // member takes, returns or derives from is a reference or a precompiled reference of it.
         [TestCase("EditMode", "MyWorld.Tests.EditMode.asmdef")]
