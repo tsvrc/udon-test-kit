@@ -21,28 +21,41 @@ namespace Tsvrc.UdonTestKit
     /// </summary>
     public sealed class ClientSimSession
     {
-        private const float DefaultReadyTimeoutSeconds = 10f;
-
-        private readonly float _readyTimeoutSeconds;
         private readonly float _initializationDelay;
+        private float _readyTimeoutSeconds = 10f;
         private GameObject _addedDescriptor;
 
-        public ClientSimSession() : this(DefaultReadyTimeoutSeconds, 0f)
+        public ClientSimSession()
         {
         }
 
         // Lets the kit's own tests make ClientSim get ready slower than the timeout.
-        internal ClientSimSession(float readyTimeoutSeconds, float initializationDelay)
+        internal ClientSimSession(float initializationDelay)
         {
-            _readyTimeoutSeconds = readyTimeoutSeconds;
             _initializationDelay = initializationDelay;
+        }
+
+        /// <summary>How many seconds <see cref="Start"/> waits for ClientSim to get ready before it
+        /// throws TimeoutException: 10 unless set. Throws ArgumentOutOfRangeException for anything but
+        /// a finite number above 0.</summary>
+        public float ReadyTimeoutSeconds
+        {
+            get => _readyTimeoutSeconds;
+            set
+            {
+                if (!(value > 0f) || float.IsInfinity(value))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The timeout needs a finite number of seconds above 0.");
+                }
+                _readyTimeoutSeconds = value;
+            }
         }
 
         /// <summary>
         /// Starts ClientSim and returns once the local player has joined and, with player persistence
         /// on, has its saved data restored. Adds a scene descriptor with one spawn point, at the
         /// origin, when the active scene has none. Fails the test if the ClientSim project settings
-        /// check fails, and throws TimeoutException if ClientSim isn't ready within 10 seconds.
+        /// check fails, and throws TimeoutException if ClientSim isn't ready within ReadyTimeoutSeconds.
         /// </summary>
         public IEnumerator Start(bool localPlayerIsMaster = true)
         {

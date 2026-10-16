@@ -144,25 +144,104 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(PrivateFieldAccess.InvokeStatic(typeof(Base), nameof(Base.PublicStaticMethod), 5), Is.EqualTo(6));
         }
 
+        [TestCase(1, ExpectedResult = "int")]
+        [TestCase("a", ExpectedResult = "string")]
+        public object InvokeInstance_OverloadsOfTwoParameterTypes_CallsTheOneTheArgumentFits(object argument)
+        {
+            return PrivateFieldAccess.InvokeInstance(new Derived(), "Pick", argument);
+        }
+
+        [Test]
+        public void InvokeInstance_NullArgumentArray_PassesOneNullArgument()
+        {
+            Assert.That(PrivateFieldAccess.InvokeInstance(new Derived(), "Pick", null), Is.EqualTo("string"));
+        }
+
+        [TestCase("RefPick", ExpectedResult = "string")]
+        [TestCase("NullablePick", ExpectedResult = "int?")]
+        public object InvokeInstance_NullArgument_CallsTheOverloadWhoseParameterTakesNull(string method)
+        {
+            return PrivateFieldAccess.InvokeInstance(new Derived(), method, new object[] { null });
+        }
+
+        [TestCase(1, ExpectedResult = "Base.Over(int)")]
+        [TestCase("a", ExpectedResult = "Derived.Over(string)")]
+        public object InvokeInstance_OverloadsOnTwoClassesOfTheHierarchy_CallsTheOneTheArgumentFits(object argument)
+        {
+            return PrivateFieldAccess.InvokeInstance(new Derived(), "Over", argument);
+        }
+
+        [Test]
+        public void InvokeInstance_ArgumentNoOverloadTakes_FailsNamingTheMethodAndType()
+        {
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(new Derived(), "Pick", 1.5));
+
+            Assert.That(failure.Message, Is.EqualTo("Method 'Pick' on Derived takes none of these arguments."));
+        }
+
+        [Test]
+        public void InvokeInstance_ArgumentsTwoOverloadsTakeEquallyWell_FailsNamingTheMethodAndType()
+        {
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(new Derived(), "Tie", "a", "b"));
+
+            Assert.That(failure.Message, Is.EqualTo("Method 'Tie' on Base has overloads that take these arguments equally well."));
+        }
+
+        [Test]
+        public void InvokeInstance_MethodWithTypeParameters_FailsAsTakingNoneOfTheArguments()
+        {
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(new Derived(), "Generic", 5));
+
+            Assert.That(failure.Message, Is.EqualTo("Method 'Generic' on Derived takes none of these arguments."));
+        }
+
+        [TestCase(1, ExpectedResult = "int")]
+        [TestCase("a", ExpectedResult = "string")]
+        public object InvokeStatic_OverloadsOfTwoParameterTypes_CallsTheOneTheArgumentFits(object argument)
+        {
+            return PrivateFieldAccess.InvokeStatic(typeof(Base), "StaticPick", argument);
+        }
+
+        [Test]
+        public void InvokeStatic_ArgumentNoOverloadTakes_FailsNamingTheMethodAndType()
+        {
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeStatic(typeof(Base), "StaticPick", 1.5));
+
+            Assert.That(failure.Message, Is.EqualTo("Static method 'StaticPick' on Base takes none of these arguments."));
+        }
+
         private class Base
         {
             public int PublicField = 3;
 
             public static int PublicStaticMethod(int x) => x + 1;
 
-#pragma warning disable CS0414, IDE0051, IDE0044 // Reached only through reflection.
+#pragma warning disable CS0414, IDE0051, IDE0044, IDE0060 // Reached only through reflection.
             private int _baseField = 1;
             private static int _baseStaticField = InitialStaticValue;
             private int BasePrivateMethod(int x) => x + _baseField;
             private static int BaseStaticMethod(int x) => x * 2;
-#pragma warning restore CS0414, IDE0051, IDE0044
+            private string Pick(int value) => "int";
+            private string Pick(string value) => "string";
+            private string Over(int value) => "Base.Over(int)";
+            private string Tie(string first, object second) => "first";
+            private string Tie(object first, string second) => "second";
+            private T Generic<T>(T value) => value;
+            private string RefPick(ref int value) => "ref int";
+            private string RefPick(string value) => "string";
+            private string NullablePick(int value) => "int";
+            private string NullablePick(int? value) => "int?";
+            private static string StaticPick(int value) => "int";
+            private static string StaticPick(string value) => "string";
+#pragma warning restore CS0414, IDE0051, IDE0044, IDE0060
         }
 
         private class Derived : Base
         {
-#pragma warning disable CS0414, IDE0044, IDE0051, IDE0052 // Reached only through reflection.
+#pragma warning disable CS0414, IDE0044, IDE0051, IDE0052, IDE0060 // Reached only through reflection.
             private string _derivedField = "hello";
-#pragma warning restore CS0414, IDE0044, IDE0051, IDE0052
+            private string Over(string value) => "Derived.Over(string)";
+#pragma warning restore CS0414, IDE0044, IDE0051, IDE0052, IDE0060
         }
     }
 }
