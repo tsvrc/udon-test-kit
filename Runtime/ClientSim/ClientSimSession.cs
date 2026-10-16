@@ -190,7 +190,7 @@ namespace Tsvrc.UdonTestKit
                 return;
             }
 
-            var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_(" + scenePattern + @")\.json$");
+            var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_" + scenePattern + @"\.json$");
             foreach (string file in Directory.GetFiles(storageRoot, "*.json", SearchOption.AllDirectories))
             {
                 if (sceneFile.IsMatch(Path.GetFileName(file)))
