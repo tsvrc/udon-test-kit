@@ -18,6 +18,12 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
         private bool _copied;
         private bool _copiedDuringTheCall;
 
+        [Test]
+        public void ListenForVRCExceptions_SettingsNotSaved_IsOn()
+        {
+            Assert.That(VRChatExceptionWatching.WatchesWithNewSettings(), Is.True);
+        }
+
         [UnityTest]
         public IEnumerator Exception_NotWatchingVRChat_IsLoggedAgainOnALaterFrame()
         {

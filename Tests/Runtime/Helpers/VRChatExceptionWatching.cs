@@ -40,6 +40,21 @@ namespace Tsvrc.UdonTestKit.Tests.Helpers
             WatcherModeField.SetValue(settings, _watcherModeBefore);
         }
 
+        // Whether UdonSharp watches the VRChat client's log with the settings it creates for a project
+        // that has none saved.
+        public static bool WatchesWithNewSettings()
+        {
+            ScriptableObject settings = ScriptableObject.CreateInstance(SettingsType);
+            try
+            {
+                return (bool)ListenField.GetValue(settings);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(settings);
+            }
+        }
+
         // Drops the errors UdonSharp queued while it watched for a VRChat log it couldn't find. It logs a
         // copy of each queued Udon exception once watching stops, so a test that stops it would get the
         // copies of exceptions from earlier tests.
