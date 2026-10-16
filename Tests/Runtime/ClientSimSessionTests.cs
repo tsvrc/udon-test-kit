@@ -200,6 +200,60 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator SpawnRemotePlayer_NameOfAPlayerInTheSession_ThrowsAndSpawnsNoOne()
+        {
+            // Arrange
+            yield return Session.Start();
+            Session.SpawnRemotePlayer(RemoteName);
+
+            // Act
+            var failure = Assert.Throws<ArgumentException>(() => Session.SpawnRemotePlayer(RemoteName));
+
+            // Assert
+            Assert.That(failure.ParamName, Is.EqualTo("displayName"));
+            Assert.That(failure.Message, Does.StartWith($"A player named {RemoteName} is in the session already. Give each player its own name."));
+            Assert.That(VRCPlayerApi.GetPlayerCount(), Is.EqualTo(2));
+        }
+
+        [UnityTest]
+        public IEnumerator SpawnRemotePlayer_NameOfTheLocalPlayer_Throws()
+        {
+            yield return Session.Start();
+
+            Assert.Throws<ArgumentException>(() => Session.SpawnRemotePlayer(Networking.LocalPlayer.displayName));
+        }
+
+        [UnityTest]
+        public IEnumerator SpawnRemotePlayer_NoName_ThrowsAndSpawnsNoOne([Values(null, "")] string displayName)
+        {
+            // Arrange
+            yield return Session.Start();
+
+            // Act
+            var failure = Assert.Throws<ArgumentException>(() => Session.SpawnRemotePlayer(displayName));
+
+            // Assert
+            Assert.That(failure.ParamName, Is.EqualTo("displayName"));
+            Assert.That(failure.Message, Does.StartWith("A remote player needs a display name."));
+            Assert.That(VRCPlayerApi.GetPlayerCount(), Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator SpawnRemotePlayer_NameOfARemovedPlayer_SpawnsANewPlayer()
+        {
+            // Arrange
+            yield return Session.Start();
+            VRCPlayerApi removed = Session.SpawnRemotePlayer(RemoteName);
+            Session.RemovePlayer(removed);
+
+            // Act
+            VRCPlayerApi remote = Session.SpawnRemotePlayer(RemoteName);
+
+            // Assert
+            Assert.That(remote.playerId, Is.Not.EqualTo(removed.playerId));
+        }
+
+        [UnityTest]
         public IEnumerator RemovePlayer_SameFrame_IsNoLongerFoundByName()
         {
             // Arrange

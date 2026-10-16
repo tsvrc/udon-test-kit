@@ -86,9 +86,19 @@ namespace Tsvrc.UdonTestKit
             }
         }
 
-        /// <summary>Spawns a remote player and returns it. Give each player its own name.</summary>
+        /// <summary>Spawns a remote player and returns it. Throws ArgumentException when
+        /// <paramref name="displayName"/> is empty or a player in the session has it already: the
+        /// player is found by its name.</summary>
         public VRCPlayerApi SpawnRemotePlayer(string displayName)
         {
+            if (string.IsNullOrEmpty(displayName))
+            {
+                throw new ArgumentException("A remote player needs a display name.", nameof(displayName));
+            }
+            if (FindPlayerByName(displayName) != null)
+            {
+                throw new ArgumentException($"A player named {displayName} is in the session already. Give each player its own name.", nameof(displayName));
+            }
             ClientSimMain.SpawnRemotePlayer(displayName);
             return FindPlayerByName(displayName);
         }
