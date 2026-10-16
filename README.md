@@ -8,9 +8,9 @@ Unity Test Framework tests for VRChat worlds, with your UdonSharp behaviours run
 ClientSim session.
 
 > [!NOTE]
-> I build this kit with help from AI coding tools: reading the VRChat SDK, ClientSim and UdonSharp
-> source, writing code and tests, and repeating checks that would take ages by hand. I decide what
-> goes in and review every change, and every behavior of the kit has a test you can
+> I use AI coding tools to draft code and tests, dig through the VRChat SDK, ClientSim and
+> UdonSharp source, and rerun checks that would take hours by hand. I design the kit and review each
+> AI-drafted change before it's merged, and every behavior of the kit has a test you can
 > [run yourself](CONTRIBUTING.md#running-tests).
 
 *Udon Test Kit is a [TsVRC](https://tsvrc.com) project by
