@@ -2,14 +2,17 @@
 
 Bug reports, fixes and new test helpers are welcome. Before you build a new helper or change a
 public API, open an issue to agree on its shape, so the code you write is the code that gets
-merged. Questions go in [GitHub Discussions](https://github.com/orgs/tsvrc/discussions).
+merged. Questions go in [GitHub Discussions](https://github.com/orgs/tsvrc/discussions). To find
+something to work on, look at the issues labelled
+[good first issue](https://github.com/tsvrc/udon-test-kit/labels/good%20first%20issue) or
+[help wanted](https://github.com/tsvrc/udon-test-kit/labels/help%20wanted).
 
 ## Reporting a bug
 
 Use the bug report form. The kit relies on internals of the VRChat SDK, which ClientSim ships in, so
 the SDK version matters most, and so does how you ran the test: the Test Runner window and batch
-mode fail in different ways. A failing test that shows the problem is the most useful thing you can
-attach.
+mode fail in different ways. The most useful thing you can attach is the code of a test, written
+with the kit, that fails because of the bug.
 
 ## Setup
 
@@ -17,26 +20,31 @@ The kit tests need a VRChat world project to run in.
 
 1. Create a world project with Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or a later 3.x version,
    through the [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
-2. Clone this repository into the `Assets` folder of that project, for example as
-   `Assets/udon-test-kit`. Don't install the kit through the Creator Companion as well: two copies
-   stop the project compiling.
+2. Clone this repository into the `Assets` folder of that project:
+
+   ```powershell
+   git clone https://github.com/tsvrc/udon-test-kit.git Assets/udon-test-kit
+   ```
+
+   Don't install the kit through the Creator Companion as well: two copies stop the project
+   compiling.
 3. Add `TSVRC_UDON_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The
    kit tests compile only when it's defined, so they never show up in a world that uses the kit.
 
 ## Running tests
 
 Run both modes before opening a pull request. In the Editor, use the EditMode and PlayMode tabs of
-**Window > General > Test Runner**. From PowerShell, with the Editor closed:
+**Window > General > Test Runner**. From PowerShell, in the project folder, with the Editor closed:
 
 ```powershell
-.\Scripts~\Invoke-UnityTests.ps1
+.\Assets\udon-test-kit\Scripts~\Invoke-UnityTests.ps1
 ```
 
 On Linux, from Bash, with the Windows build target. In batch mode, Unity opens a project it hasn't
 imported yet on the default target, which is Linux on Linux.
 
 ```bash
-./Scripts~/run_unity_tests.sh -- -buildTarget win64
+./Assets/udon-test-kit/Scripts~/run_unity_tests.sh -- -buildTarget win64
 ```
 
 Both scripts run the tests of every assembly definition under `Assets`, which is why the kit lives
