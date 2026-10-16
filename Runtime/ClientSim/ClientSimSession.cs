@@ -165,20 +165,32 @@ namespace Tsvrc.UdonTestKit
         /// </summary>
         public static void DeleteSavedData()
         {
-            DeleteSavedData(Path.Combine(Path.GetDirectoryName(Application.dataPath), "ClientSimStorage"),
-                SceneManager.GetActiveScene().name);
+            DeleteSavedData(StorageRoot, SceneManager.GetActiveScene().name);
         }
 
-        // ClientSim saves to <storageRoot>/PlayerData/PlayerData_<playerId>_<scene>.json and
-        // <storageRoot>/PlayerObjects/PlayerObject_<playerId>_<scene>.json.
+        // ClientSim saves to <StorageRoot>/PlayerData/PlayerData_<playerId>_<scene>.json and
+        // <StorageRoot>/PlayerObjects/PlayerObject_<playerId>_<scene>.json.
+        internal static string StorageRoot => Path.Combine(Path.GetDirectoryName(Application.dataPath), "ClientSimStorage");
+
         internal static void DeleteSavedData(string storageRoot, string sceneName)
+        {
+            DeleteSavedDataOfScenes(storageRoot, Regex.Escape(sceneName));
+        }
+
+        // The Unity Test Framework names the scene it runs Play Mode tests in InitTestScene and digits.
+        internal static void DeleteTestSceneSavedData(string storageRoot)
+        {
+            DeleteSavedDataOfScenes(storageRoot, @"InitTestScene\d+");
+        }
+
+        private static void DeleteSavedDataOfScenes(string storageRoot, string scenePattern)
         {
             if (!Directory.Exists(storageRoot))
             {
                 return;
             }
 
-            var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_" + Regex.Escape(sceneName) + @"\.json$");
+            var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_(" + scenePattern + @")\.json$");
             foreach (string file in Directory.GetFiles(storageRoot, "*.json", SearchOption.AllDirectories))
             {
                 if (sceneFile.IsMatch(Path.GetFileName(file)))

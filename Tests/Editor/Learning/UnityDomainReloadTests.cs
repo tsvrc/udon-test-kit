@@ -1,7 +1,7 @@
-using System;
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
 using UnityEditor;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
@@ -9,8 +9,8 @@ using UnityEngine.TestTools;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
-    // TestRun registers its Unity Test Framework callbacks on every domain load, and keeps whether a
-    // run is in progress in SessionState.
+    // TestRun and TestSceneSavedData register their Unity Test Framework callbacks on every domain
+    // load, and TestRun keeps whether a run is in progress in SessionState.
     public class UnityDomainReloadTests
     {
         private const string Key = "Tsvrc.UdonTestKit.Editor.Tests.Learning.UnityDomainReloadTests";
@@ -26,14 +26,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         {
             // Arrange
             ScriptableObject.CreateInstance<TestRunnerApi>().RegisterCallbacks(new Callbacks());
-            Assert.That(RegisteredCallbacks().OfType<Callbacks>(), Is.Not.Empty);
+            Assert.That(TestRunnerCallbacks.Registered().OfType<Callbacks>(), Is.Not.Empty);
 
             // Act
             EditorUtility.RequestScriptReload();
             yield return new WaitForDomainReload();
 
             // Assert
-            Assert.That(RegisteredCallbacks().OfType<Callbacks>(), Is.Empty);
+            Assert.That(TestRunnerCallbacks.Registered().OfType<Callbacks>(), Is.Empty);
         }
 
         [UnityTest]
@@ -48,14 +48,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 
             // Assert
             Assert.That(SessionState.GetBool(Key, false), Is.True);
-        }
-
-        // TestRunnerApi keeps the callbacks in an internal singleton.
-        private static ICallbacks[] RegisteredCallbacks()
-        {
-            Type holder = typeof(TestRunnerApi).Assembly.GetType("UnityEditor.TestTools.TestRunner.Api.CallbacksHolder", throwOnError: true);
-            object instance = PrivateFieldAccess.InvokeStatic(holder, "get_instance");
-            return (ICallbacks[])PrivateFieldAccess.InvokeInstance(instance, "GetAll");
         }
 
         private sealed class Callbacks : ICallbacks
