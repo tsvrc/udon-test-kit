@@ -15,12 +15,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(UdonSharpUploadCompile.Run(), Is.Empty);
         }
 
+        // The errors are logged as well, and only Run expecting them keeps them from failing the test at
+        // its end.
         [Test]
-        public void Run_ProgramAssetOfATestsOnlyScript_ReturnsTheError()
+        public void Run_ProgramAssetOfATestsOnlyScript_ReturnsTheErrorAndExpectsIt()
         {
             // Arrange
             using var programAsset = new TestsOnlyProgramAsset();
-            LogAssert.ignoreFailingMessages = true;
 
             // Act
             IReadOnlyList<string> errors = UdonSharpUploadCompile.Run();

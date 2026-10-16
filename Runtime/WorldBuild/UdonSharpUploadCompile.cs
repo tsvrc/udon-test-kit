@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UdonSharp.Compiler;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Tsvrc.UdonTestKit
 {
@@ -12,8 +13,10 @@ namespace Tsvrc.UdonTestKit
     public static class UdonSharpUploadCompile
     {
         /// <summary>Compiles every UdonSharp program for upload and returns the errors that compile
-        /// logged. Then it compiles them for the Editor again, since the upload compile leaves out code
-        /// inside <c>#if UNITY_EDITOR</c>.</summary>
+        /// logged, which it marks expected, so the test decides what they mean. Then it compiles them
+        /// for the Editor again, since the upload compile leaves out code inside <c>#if UNITY_EDITOR</c>.
+        /// Call it from a test: outside one, Unity Test Framework has no log scope to expect errors in,
+        /// and LogAssert throws InvalidOperationException.</summary>
         public static IReadOnlyList<string> Run()
         {
             var errors = new List<string>();
@@ -38,6 +41,10 @@ namespace Tsvrc.UdonTestKit
             {
                 Application.logMessageReceived -= Record;
                 UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions());
+            }
+            foreach (string error in errors)
+            {
+                LogAssert.Expect(LogType.Error, error);
             }
             return errors;
         }
