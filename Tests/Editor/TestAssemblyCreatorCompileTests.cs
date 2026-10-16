@@ -56,7 +56,7 @@ public class KitProbe__RUN__ : UdonTestBase
         yield return UdonHost.ExpectUdonException(() => log.SendCustomEvent(""Throw""));
         using var calls = new CallLog();
         PrivateFieldAccess.SetField(calls.CreateSpy(), ""_calls"", UdonHost.Calls(log));
-        if (TestRun.IsActive && BuiltWorld.FromOpenScene().HoldsProgramOf(typeof(UdonCallLog)))
+        if (TestRun.IsActive && BuiltWorld.FromWorldScene().HoldsProgramOf(typeof(UdonCallLog)))
         {
             UdonSharpUploadCompile.Run();
             ClientSimProjectSettings.Fix();
