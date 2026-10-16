@@ -42,7 +42,8 @@ namespace Tsvrc.UdonTestKit
         /// descriptor, or was never saved.</summary>
         public static BuiltWorld FromOpenScene()
         {
-            // The exporter asks about both with a dialog, which waits for a click outside batch mode.
+            // The exporter builds neither. It asks about the descriptors with a dialog, and on Windows
+            // about the scene never saved too, and outside batch mode a dialog waits for a click.
             int descriptors = Object.FindObjectsOfType<VRC_SceneDescriptor>(true).Length;
             if (descriptors != 1)
             {
@@ -50,7 +51,7 @@ namespace Tsvrc.UdonTestKit
             }
             if (string.IsNullOrEmpty(SceneManager.GetActiveScene().path))
             {
-                throw new InvalidOperationException("The open scene was never saved. The world exporter of the VRChat SDK asks where to save it before it builds.");
+                throw new InvalidOperationException("The open scene was never saved. The world exporter of the VRChat SDK builds only a saved scene.");
             }
 
             string previousFile = EditorPrefs.GetString(WorldFileKey);

@@ -17,7 +17,11 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
         private readonly RawClientSim _clientSim = new RawClientSim();
 
         [TearDown]
-        public void TearDown() => _clientSim.End();
+        public void TearDown()
+        {
+            _clientSim.End();
+            ClientSimSession.DestroySavedDataObjects();
+        }
 
         [UnityTest]
         public IEnumerator SpawnRemotePlayer_NameInUse_SpawnsASecondPlayerWithIt()

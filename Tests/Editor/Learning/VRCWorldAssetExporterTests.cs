@@ -21,11 +21,11 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     // for the Editor. So BuiltWorld reads the path there, puts back the one recorded before, and says
     // which programs its world holds.
     //
-    // It builds a scene with exactly one scene descriptor, active or not, and unsaved changes. A scene
-    // with any other number of descriptors, or one never saved, it asks about with a dialog and
-    // builds nothing; in batch mode Unity cancels the dialog and logs that it did. So
-    // BuiltWorld.FromOpenScene checks both before it builds, since outside batch mode the dialog
-    // waits for a click.
+    // It builds a scene with exactly one scene descriptor, active or not, and unsaved changes. It
+    // builds nothing from a scene with any other number of descriptors, which it asks about with a
+    // dialog, or from a scene never saved, which on Windows it asks about with a dialog too. In batch
+    // mode Unity cancels a dialog and logs that it did. So BuiltWorld.FromOpenScene checks both before
+    // it builds, since outside batch mode a dialog waits for a click.
     public class VRCWorldAssetExporterTests
     {
         private string _previousFile;
@@ -99,14 +99,28 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(built, Is.False);
         }
 
-        [Test]
-        public void ExportCurrentSceneResource_SceneNeverSaved_AsksWhereToSaveItAndBuildsNothing()
+        [Test, UnityPlatform(RuntimePlatform.WindowsEditor)]
+        public void ExportCurrentSceneResource_SceneNeverSavedOnWindows_AsksWhereToSaveItAndBuildsNothing()
         {
             // Arrange
             IgnoreOutsideBatchMode();
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            AddDescriptors(1, 0);
+            NewSceneWithADescriptor();
             LogAssert.Expect(LogType.Assert, new Regex("^Cancelling FileDialog: Save Scene"));
+            LogAssert.Expect(LogType.Error, "AssetBundle was not built");
+
+            // Act
+            bool built = Export();
+
+            // Assert
+            Assert.That(built, Is.False);
+        }
+
+        [Test, UnityPlatform(exclude = new[] { RuntimePlatform.WindowsEditor })]
+        public void ExportCurrentSceneResource_SceneNeverSaved_BuildsNothing()
+        {
+            // Arrange
+            IgnoreOutsideBatchMode();
+            NewSceneWithADescriptor();
             LogAssert.Expect(LogType.Error, "AssetBundle was not built");
 
             // Act
@@ -144,6 +158,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         }
 
         private static bool Export() => new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { });
+
+        private static void NewSceneWithADescriptor()
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            AddDescriptors(1, 0);
+        }
 
         private static void AddDescriptors(int active, int inactive)
         {

@@ -104,7 +104,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 
             // Act and assert
             Assert.That(() => BuiltWorld.FromOpenScene(), Throws.InvalidOperationException.With.Message.EqualTo(
-                "The open scene was never saved. The world exporter of the VRChat SDK asks where to save it before it builds."));
+                "The open scene was never saved. The world exporter of the VRChat SDK builds only a saved scene."));
         }
 
         [Test]
