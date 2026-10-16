@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 namespace Tsvrc.UdonTestKit.Tests
@@ -26,6 +28,52 @@ namespace Tsvrc.UdonTestKit.Tests
             _created = Udon.Create<UdonProbe>("Probe").gameObject;
 
             // Assert: in CheckWhatTheTestCreatedIsGone.
+        }
+    }
+
+    public class UdonTestBasePerTestSceneTests : UdonTestBase
+    {
+        private const string SceneName = "Tsvrc.UdonTestKit.UdonPerTestScene";
+
+        private readonly List<int> _sceneHandles = new List<int>();
+
+        public UdonTestBasePerTestSceneTests() : base(TestScene.Empty(SceneName))
+        {
+        }
+
+        [Test]
+        public void Create_EachTest_GoesInTheTestsOwnScene([Values(1, 2)] int test)
+        {
+            // Act
+            Scene scene = Udon.Create<UdonProbe>("Probe").gameObject.scene;
+
+            // Assert
+            Assert.That(scene.name, Is.EqualTo(SceneName));
+            Assert.That(_sceneHandles, Has.No.Member(scene.handle));
+            _sceneHandles.Add(scene.handle);
+        }
+    }
+
+    public class UdonTestBasePerFixtureSceneTests : UdonTestBase
+    {
+        private const string SceneName = "Tsvrc.UdonTestKit.UdonPerFixtureScene";
+
+        private int? _firstSceneHandle;
+
+        public UdonTestBasePerFixtureSceneTests() : base(TestScene.Empty(SceneName), TestSceneLifetime.PerFixture)
+        {
+        }
+
+        [Test]
+        public void Create_EachTest_GoesInTheFixturesScene([Values(1, 2)] int test)
+        {
+            // Act
+            Scene scene = Udon.Create<UdonProbe>("Probe").gameObject.scene;
+
+            // Assert
+            _firstSceneHandle ??= scene.handle;
+            Assert.That(scene.name, Is.EqualTo(SceneName));
+            Assert.That(scene.handle, Is.EqualTo(_firstSceneHandle));
         }
     }
 }
