@@ -12,10 +12,10 @@ work around it if you know.
 
 ## What happens next
 
-You'll get a reply within 7 days. Once the report is confirmed, I prepare the fix in a private
-security advisory, then publish the advisory with the release that fixes it, crediting you unless
-you'd rather not be named. A vulnerability is made public within 90 days of the report, fixed or
-not, so users can protect themselves.
+You'll get a reply within 7 days, and updates while I work on it. Once the report is confirmed, I
+prepare the fix in a private security advisory, then publish the advisory with the release that
+fixes it, crediting you unless you'd rather not be named. The advisory comes out within 90 days of
+the report, with a fix if there is one, unless we agree on a later date.
 
 ## Scope
 
