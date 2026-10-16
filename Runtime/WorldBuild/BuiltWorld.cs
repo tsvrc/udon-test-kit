@@ -4,7 +4,10 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using VRC.SDK3.Editor.Builder;
+using VRC.SDKBase;
+using Object = UnityEngine.Object;
 
 namespace Tsvrc.UdonTestKit
 {
@@ -34,9 +37,22 @@ namespace Tsvrc.UdonTestKit
         /// without the callbacks the SDK runs before a build, reads the file and deletes it. Without
         /// those callbacks UdonSharp doesn't compile for upload first, so the world holds each program
         /// as last compiled for the Editor. The exporter records the path of the file in EditorPrefs,
-        /// which every Unity project of the user shares, so the path recorded before is put back.</summary>
+        /// which every Unity project of the user shares, so the path recorded before is put back.
+        /// Throws InvalidOperationException when the open scene doesn't have exactly one scene
+        /// descriptor, or was never saved.</summary>
         public static BuiltWorld FromOpenScene()
         {
+            // The exporter asks about both with a dialog, which waits for a click outside batch mode.
+            int descriptors = Object.FindObjectsOfType<VRC_SceneDescriptor>(true).Length;
+            if (descriptors != 1)
+            {
+                throw new InvalidOperationException($"The open scene has {descriptors} scene descriptors. The world exporter of the VRChat SDK builds a scene with exactly one.");
+            }
+            if (string.IsNullOrEmpty(SceneManager.GetActiveScene().path))
+            {
+                throw new InvalidOperationException("The open scene was never saved. The world exporter of the VRChat SDK asks where to save it before it builds.");
+            }
+
             string previousFile = EditorPrefs.GetString(WorldFileKey);
             string file;
             try
