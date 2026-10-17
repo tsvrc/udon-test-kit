@@ -158,7 +158,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         public void ExportCurrentSceneResource_WorldSceneNeverSaved_BuildsNothing()
         {
             // Arrange
-            IgnoreOutsideBatchMode();
             using var scene = new BuildableScene();
             MakeAnotherSceneTheWorldSceneNeverSaved(scene);
             LogAssert.Expect(LogType.Error, "AssetBundle was not built");
