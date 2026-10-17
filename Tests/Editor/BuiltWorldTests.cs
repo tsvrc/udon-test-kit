@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
 using Tsvrc.UdonTestKit.Tests;
@@ -7,22 +8,39 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRC.SDK3.Components;
+using VRC.SDKBase.Editor;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
 {
+    // The fixture builds its world over a made-up record of earlier builds, with stand-in world files,
+    // and puts the record of the user back when it ends.
     public class BuiltWorldTests
     {
-        private const string PathRecordedBefore = "Tsvrc.UdonTestKit.BuiltWorldTests.PathRecordedBefore";
-
-        private string _realPathRecordedBefore;
+        private SdkBuildRecord _userRecord;
+        private string _folder;
+        private string _lastBuild;
+        private string _buildBefore;
+        private string[] _recordBefore;
         private BuildableScene _scene;
         private BuiltWorld _world;
 
         [OneTimeSetUp]
         public void BuildAWorld()
         {
-            _realPathRecordedBefore = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
-            EditorPrefs.SetString(BuiltWorld.WorldFileKey, PathRecordedBefore);
+            _userRecord = new SdkBuildRecord();
+            _folder = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
+            Directory.CreateDirectory(_folder);
+            _lastBuild = Path.Combine(_folder, "last build.vrcw");
+            _buildBefore = Path.Combine(_folder, "build before.vrcw");
+            File.WriteAllText(_lastBuild, "");
+            File.WriteAllText(_buildBefore, "");
+            foreach (string key in SdkEditorPrefsKeys)
+            {
+                EditorPrefs.SetString(key, "Recorded before: " + key);
+            }
+            SessionState.SetString(SdkBuildRecord.BuildBeforeKey, _buildBefore);
+            VRC_SdkBuilder.VRCPath = _lastBuild;
+            _recordBefore = SdkRecord();
             _scene = new BuildableScene(typeof(UdonCallLog));
             _world = BuiltWorld.FromWorldScene();
         }
@@ -31,7 +49,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void RemoveTheScene()
         {
             _scene?.Dispose();
-            EditorPrefs.SetString(BuiltWorld.WorldFileKey, _realPathRecordedBefore);
+            _userRecord?.Dispose();
+            Directory.Delete(_folder, recursive: true);
         }
 
         [Test]
@@ -63,9 +82,16 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void FromWorldScene_AfterTheBuild_PutsBackThePathRecordedBefore()
+        public void FromWorldScene_AfterTheBuild_PutsBackWhatTheSdkRecordedBefore()
         {
-            Assert.That(EditorPrefs.GetString(BuiltWorld.WorldFileKey), Is.EqualTo(PathRecordedBefore));
+            Assert.That(SdkRecord(), Is.EqualTo(_recordBefore));
+        }
+
+        [Test]
+        public void FromWorldScene_AfterTheBuild_KeepsTheWorldFilesOfEarlierBuilds()
+        {
+            Assert.That(File.Exists(_lastBuild), Is.True, "The world file of the last build was deleted.");
+            Assert.That(File.Exists(_buildBefore), Is.True, "The world file of the build before was deleted.");
         }
 
         [Test]
@@ -151,22 +177,31 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void FromWorldScene_ExportBuildsNothing_ThrowsAndPutsBackThePathRecordedBefore()
+        public void FromWorldScene_ExportBuildsNothing_ThrowsAndPutsBackWhatTheSdkRecordedBefore()
         {
             // Arrange
             using var scene = new BuildableScene();
-            string before = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
 
             // Act
             var failure = Assert.Throws<System.InvalidOperationException>(() => BuiltWorld.FromWorldScene(() =>
             {
-                EditorPrefs.SetString(BuiltWorld.WorldFileKey, "A path the failed export recorded");
+                EditorPrefs.SetString(SdkBuildRecord.WorldFileKey, "A path the failed export recorded");
                 return false;
             }));
 
             // Assert
             Assert.That(failure.Message, Is.EqualTo("The world exporter of the VRChat SDK didn't build the world scene."));
-            Assert.That(EditorPrefs.GetString(BuiltWorld.WorldFileKey), Is.EqualTo(before));
+            Assert.That(SdkRecord(), Is.EqualTo(_recordBefore));
         }
+
+        private static readonly string[] SdkEditorPrefsKeys =
+            { SdkBuildRecord.WorldFileKey, SdkBuildRecord.LastBuildKey, SdkBuildRecord.SignatureKey };
+
+        // What the exporter records in EditorPrefs, the build before it keeps in SessionState, and the
+        // last build since the scripts last reloaded.
+        private static string[] SdkRecord() => SdkEditorPrefsKeys.Select(EditorPrefs.GetString)
+            .Append(SessionState.GetString(SdkBuildRecord.BuildBeforeKey, ""))
+            .Append(VRC_SdkBuilder.VRCPath)
+            .ToArray();
     }
 }
