@@ -37,7 +37,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         public void CompileSync_ForTheEditorWithAProgramAssetOfATestsOnlyScript_CompilesWithoutErrors()
         {
             // Arrange
-            using var programAsset = new TestsOnlyProgramAsset();
+            using var programAsset = new TemporaryProgramAsset(typeof(TestsOnlyBehaviour));
 
             // Act
             Record(() => UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions()));
@@ -51,7 +51,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         public void BuildRequested_ProgramAssetOfATestsOnlyScript_LogsAnErrorAndCompilesNothing()
         {
             // Arrange
-            using var programAsset = new TestsOnlyProgramAsset();
+            using var programAsset = new TemporaryProgramAsset(typeof(TestsOnlyBehaviour));
             // As in a world, where the Editor compiled it before any upload.
             UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions());
 

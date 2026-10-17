@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Tests;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
-using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
@@ -37,7 +37,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void Create_EmptyFolder_WritesTheThreeAssembliesWithExamples()
+        public void Create_EmptyFolder_WritesTheFourAssembliesWithExamples()
         {
             // Act
             string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new string[0]);
@@ -49,23 +49,39 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(File.Exists(Path.Combine(tests, "PlayMode", "ExamplePlayModeTests.cs")));
             Assert.That(File.Exists(Path.Combine(tests, "Doubles", "MyWorld.Tests.Doubles.asmdef")));
             Assert.That(File.Exists(Path.Combine(tests, "Doubles", "ExampleSpy.cs")));
+            Assert.That(File.Exists(Path.Combine(tests, "UdonDoubles", "MyWorld.Tests.UdonDoubles.asmdef")));
+            Assert.That(File.Exists(Path.Combine(tests, "UdonDoubles", "ExampleUdonDouble.cs")));
+        }
+
+        [TestCase("EditMode", "ExampleEditModeTests.cs")]
+        [TestCase("PlayMode", "ExamplePlayModeTests.cs")]
+        [TestCase("Doubles", "ExampleSpy.cs")]
+        [TestCase("UdonDoubles", "ExampleUdonDouble.cs")]
+        public void Create_EmptyFolder_ExampleIsInTheNamespaceOfThePrefix(string folder, string example)
+        {
+            // Act
+            string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new string[0]);
+
+            // Assert
+            Assert.That(Lines(File.ReadAllText(Path.Combine(tests, folder, example))), Does.Contain("namespace MyWorld.Tests\n"));
         }
 
         [TestCase("EditMode", "MyWorld.Tests.EditMode.asmdef")]
         [TestCase("PlayMode", "MyWorld.Tests.PlayMode.asmdef")]
-        public void Create_EmptyFolder_TestAssemblyReferencesTheDoubles(string folder, string assemblyDefinition)
+        public void Create_EmptyFolder_TestAssemblyReferencesBothDoubles(string folder, string assemblyDefinition)
         {
             // Act
             string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new[] { "MyWorld.Runtime" });
 
             // Assert
             AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, folder, assemblyDefinition)));
-            Assert.That(definition.references, Has.Member("MyWorld.Tests.Doubles").And.Member("MyWorld.Runtime"));
+            Assert.That(definition.references, Has.Member("MyWorld.Tests.Doubles").And.Member("MyWorld.Tests.UdonDoubles").And.Member("MyWorld.Runtime"));
         }
 
         [TestCase("EditMode", "MyWorld.Tests.EditMode.asmdef")]
         [TestCase("PlayMode", "MyWorld.Tests.PlayMode.asmdef")]
         [TestCase("Doubles", "MyWorld.Tests.Doubles.asmdef")]
+        [TestCase("UdonDoubles", "MyWorld.Tests.UdonDoubles.asmdef")]
         public void Create_TwoWorldAssemblies_AssemblyReferencesBoth(string folder, string assemblyDefinition)
         {
             // Act
@@ -89,7 +105,20 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             // Assert
             AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, folder, assemblyDefinition)));
             Assert.That(definition.references.Concat(definition.precompiledReferences.Select(Path.GetFileNameWithoutExtension)),
-                Is.SupersetOf(AssembliesThePublicKitApiUses()));
+                Is.SupersetOf(AssembliesThePublicApiUses(typeof(CallLog).Assembly, typeof(UdonCallLog).Assembly)));
+        }
+
+        // An Udon double can use every public member of UdonCallLog, the one kit type in player builds.
+        [Test]
+        public void Create_EmptyFolder_UdonDoublesReferenceEachAssemblyThePublicApiOfUdonCallLogUses()
+        {
+            // Act
+            string tests = TestAssemblyCreator.Create(_parent, "MyWorld", new string[0]);
+
+            // Assert
+            AssemblyDefinition definition = Parse(File.ReadAllText(Path.Combine(tests, "UdonDoubles", "MyWorld.Tests.UdonDoubles.asmdef")));
+            Assert.That(definition.references.Concat(definition.precompiledReferences.Select(Path.GetFileNameWithoutExtension)),
+                Is.SupersetOf(AssembliesThePublicApiUses(typeof(UdonCallLog).Assembly)));
         }
 
         // The warning for scripts in Assembly-CSharp says Edit Mode tests for them can go in an Editor
@@ -172,6 +201,31 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void AssemblyDefinitionJson_UdonDoubles_TargetsEveryPlatformInPlayerBuilds()
+        {
+            // Act
+            AssemblyDefinition definition = Parse(TestAssemblyCreator.AssemblyDefinitionJson("A.Tests.UdonDoubles",
+                TestAssemblyCreator.AssemblyKind.UdonDoubles, new string[0]));
+
+            // Assert
+            Assert.That(definition.includePlatforms, Is.Empty);
+            Assert.That(definition.defineConstraints, Is.Empty);
+            Assert.That(definition.references, Has.Member("Tsvrc.UdonTestKit.UdonSpies").And.No.Member("Tsvrc.UdonTestKit").And.None.Contains("TestRunner"));
+            Assert.That(definition.precompiledReferences, Has.No.Member("nunit.framework.dll"));
+        }
+
+        // Player builds include each assembly the Udon doubles assembly references.
+        [Test]
+        public void UdonDoublesReferences_EachIsAPlayerAssemblyInThisProject()
+        {
+            // Arrange
+            IEnumerable<string> player = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies).Select(assembly => assembly.name);
+
+            // Act and Assert
+            Assert.That(TestAssemblyCreator.UdonDoublesReferences, Is.SubsetOf(player));
+        }
+
+        [Test]
         public void AssemblyDefinitionJson_WorldAssemblies_AreReferencedOnce()
         {
             // Act
@@ -237,84 +291,31 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assembly package = CompiledAssembly("VRC.SDK3", "Packages/com.vrchat.worlds/Runtime/Sdk.cs");
             Assembly assemblyCSharp = CompiledAssembly("Assembly-CSharp", "Assets/Loose.cs");
             Assembly audio = CompiledAssembly("MyWorld.Audio", "Assets/MyWorld/Audio/Music.cs");
+            Assembly udonDoubles = CompiledAssembly("MyWorld.Tests.UdonDoubles", "Assets/Tests/UdonDoubles/ExampleUdonDouble.cs");
 
             // Act
-            IEnumerable<string> names = TestAssemblyCreator.WorldAssemblyNames(new[] { tests }, new[] { world, tests, package, assemblyCSharp, audio });
+            IEnumerable<string> names = TestAssemblyCreator.WorldAssemblyNames(new[] { tests }, new[] { world, tests, package, assemblyCSharp, audio, udonDoubles });
 
             // Assert
             Assert.That(names, Is.EqualTo(new[] { "MyWorld.Audio", "MyWorld.Runtime" }));
         }
 
-        [Test]
-        public void CreateAndImport_FolderOutsideAssets_ReturnsTheTestsFolderAndLogsIt()
+        // Neither folder is in the AssetDatabase, so nothing is written there even when Create goes on.
+        [TestCase("Temp")]
+        [TestCase("AssetsCopy")]
+        public void Create_FolderOutsideAssets_ThrowsArgumentException(string folder)
         {
-            // Arrange
-            string expected = Path.Combine(_parent, "Tests").Replace('\\', '/');
-            LogAssert.Expect(LogType.Log, $"[UdonTestKit] Created test assemblies in {expected}.");
+            var failure = Assert.Throws<System.ArgumentException>(() => TestAssemblyCreator.Create(folder));
 
-            // Act
-            string tests = TestAssemblyCreator.CreateAndImport(_parent, new Assembly[0], new Assembly[0]);
-
-            // Assert
-            Assert.That(tests, Is.EqualTo(expected));
-        }
-
-        [Test]
-        public void CreateAndImport_TestAssembliesWithTheProductNameExist_NumbersTheNewOnes()
-        {
-            // Arrange
-            string prefix = TestAssemblyCreator.AssemblyPrefix(Application.productName);
-            Assembly existing = CompiledAssembly(prefix + TestAssemblyCreator.EditModeSuffix, "Assets/Tests/EditMode/Tests.cs");
-
-            // Act
-            string tests = TestAssemblyCreator.CreateAndImport(_parent, new[] { existing }, new Assembly[0]);
-
-            // Assert
-            Assert.That(File.Exists(Path.Combine(tests, "EditMode", prefix + "2" + TestAssemblyCreator.EditModeSuffix + ".asmdef")));
-        }
-
-        [Test]
-        public void CreateAndImport_WorldAssemblyInThePlayerBuild_IsReferenced()
-        {
-            // Arrange
-            Assembly world = CompiledAssembly("MyWorld.Runtime", "Assets/MyWorld/Door.cs");
-
-            // Act
-            string tests = TestAssemblyCreator.CreateAndImport(_parent, new Assembly[0], new[] { world });
-
-            // Assert
-            AssemblyDefinition definition = Parse(File.ReadAllText(Directory.GetFiles(Path.Combine(tests, "PlayMode"), "*.asmdef").Single()));
-            Assert.That(definition.references, Has.Member("MyWorld.Runtime"));
+            Assert.That(failure.Message, Does.StartWith($"{folder} isn't Assets or a folder under it, where the test assemblies go."));
         }
 
         [TestCase("Assembly-CSharp", "Assets/Loose.cs", ExpectedResult = true)]
         [TestCase("Assembly-CSharp", "Packages/com.example/Loose.cs", ExpectedResult = false)]
         [TestCase("MyWorld.Runtime", "Assets/MyWorld/Door.cs", ExpectedResult = false)]
-        public bool CreateAndImport_PlayerAssembly_WarnsOnlyForAssemblyCSharpScriptsUnderAssets(string assembly, string script)
+        public bool HasScriptsInAssemblyCSharp_PlayerAssembly_IsTrueOnlyForAssemblyCSharpScriptsUnderAssets(string assembly, string script)
         {
-            // Arrange
-            var warnings = new List<string>();
-            Application.LogCallback record = (message, stackTrace, type) =>
-            {
-                if (type == LogType.Warning)
-                {
-                    warnings.Add(message);
-                }
-            };
-            Application.logMessageReceived += record;
-
-            // Act
-            try
-            {
-                TestAssemblyCreator.CreateAndImport(_parent, new Assembly[0], new[] { CompiledAssembly(assembly, script) });
-            }
-            finally
-            {
-                Application.logMessageReceived -= record;
-            }
-
-            // Assert
-            return warnings.Contains(TestAssemblyCreator.AssemblyCSharpWarning);
+            return TestAssemblyCreator.HasScriptsInAssemblyCSharp(new[] { CompiledAssembly(assembly, script) });
         }
 
         [Test]
@@ -380,10 +381,11 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(prefix, Is.EqualTo("MyWorld3"));
         }
 
-        [Test]
-        public void UniquePrefix_OnlyTheDoublesAssemblyExists_NumbersThePrefix()
+        [TestCase("MyWorld.Tests.Doubles")]
+        [TestCase("MyWorld.Tests.UdonDoubles")]
+        public void UniquePrefix_OnlyADoublesAssemblyExists_NumbersThePrefix(string existing)
         {
-            Assert.That(TestAssemblyCreator.UniquePrefix("MyWorld", new[] { "MyWorld.Tests.Doubles" }), Is.EqualTo("MyWorld2"));
+            Assert.That(TestAssemblyCreator.UniquePrefix("MyWorld", new[] { existing }), Is.EqualTo("MyWorld2"));
         }
 
         [TestCase("My World 2", "MyWorld2")]
@@ -394,25 +396,33 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(TestAssemblyCreator.AssemblyPrefix(productName), Is.EqualTo(expected));
         }
 
-        // The examples Create writes are also scripts under Tests/, which compile and run with the kit
-        // tests, so the examples a world gets work.
+        // The examples Create writes are also scripts under Tests/, in the namespace of the kit's own
+        // test assemblies, which compile and run with the kit tests, so the examples a world gets work.
         [Test]
         public void ExampleSpy_WrittenByCreate_IsATestedScript()
         {
-            Assert.That(SourceOf(typeof(ExampleSpy)), Is.EqualTo(Lines(TestAssemblyCreator.ExampleSpy)));
+            Assert.That(SourceOf(typeof(ExampleSpy)), Is.EqualTo(KitCopy(TestAssemblyCreator.ExampleSpy)));
+        }
+
+        [Test]
+        public void ExampleUdonDouble_WrittenByCreate_IsATestedScript()
+        {
+            Assert.That(SourceOf(typeof(ExampleUdonDouble)), Is.EqualTo(KitCopy(TestAssemblyCreator.ExampleUdonDouble)));
         }
 
         [Test]
         public void ExampleEditModeTests_WrittenByCreate_IsATestedScript()
         {
-            Assert.That(SourceOf(typeof(ExampleEditModeTests)), Is.EqualTo(Lines(TestAssemblyCreator.ExampleEditModeTests)));
+            Assert.That(SourceOf(typeof(ExampleEditModeTests)), Is.EqualTo(KitCopy(TestAssemblyCreator.ExampleEditModeTests)));
         }
 
         [Test]
         public void ExamplePlayModeTests_WrittenByCreate_IsATestedScript()
         {
-            Assert.That(SourceOf(typeof(ExamplePlayModeTests)), Is.EqualTo(Lines(TestAssemblyCreator.ExamplePlayModeTests)));
+            Assert.That(SourceOf(typeof(ExamplePlayModeTests)), Is.EqualTo(KitCopy(TestAssemblyCreator.ExamplePlayModeTests)));
         }
+
+        private static string KitCopy(string example) => Lines(TestAssemblyCreator.Example(example, "Tsvrc.UdonTestKit"));
 
         private static string SourceOf(System.Type script)
         {
@@ -426,14 +436,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         // TestAssemblyCreator.cs, into CRLF.
         private static string Lines(string text) => text.Replace("\r\n", "\n");
 
-        // The assemblies the public and protected members of the kit's types take, return or derive
-        // from, but the ones that ship with the Unity Editor, which every assembly references.
-        private static IEnumerable<string> AssembliesThePublicKitApiUses()
+        // The assemblies the public and protected members of the types of kitAssemblies take, return or
+        // derive from, but the ones that ship with the Unity Editor, which every assembly references.
+        private static IEnumerable<string> AssembliesThePublicApiUses(params System.Reflection.Assembly[] kitAssemblies)
         {
             const System.Reflection.BindingFlags members = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly;
             string editor = Path.GetFullPath(EditorApplication.applicationContentsPath);
-            return new[] { typeof(CallLog).Assembly, typeof(UdonCallLog).Assembly }
+            return kitAssemblies
                 .SelectMany(assembly => assembly.GetExportedTypes())
                 .SelectMany(type => new[] { type, type.BaseType }
                     .Concat(type.GetMethods(members).Where(IsVisible).SelectMany(method =>
