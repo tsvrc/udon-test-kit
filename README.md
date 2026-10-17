@@ -73,8 +73,8 @@ namespace MyWorld.Tests
 - `UdonSharpUploadCompile` and `BuiltWorld`, to check that your world compiles for upload and what
   its build holds.
 - `PrivateFieldAccess` for private members, and `TestRun` to keep editor tooling out of test runs.
-- Menu items that create the test assemblies of your world and fix the project settings ClientSim
-  checks before it starts.
+- Menu items that create the test assemblies of your world, add the assembly definitions your
+  world gets later to them, and fix the project settings ClientSim checks before it starts.
 - [`Invoke-UnityTests.ps1`](Scripts~/Invoke-UnityTests.ps1) and
   [`run_unity_tests.sh`](Scripts~/run_unity_tests.sh), which run the tests of any Unity project
   from PowerShell or Bash and report the ones that didn't pass.
