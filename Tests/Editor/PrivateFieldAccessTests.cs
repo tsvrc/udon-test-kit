@@ -222,6 +222,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(failure.Message, Is.EqualTo("Method 'Generic' on Derived takes none of these arguments."));
         }
 
+        [Test]
+        public void InvokeInstance_NullForAMethodWithTypeParameters_FailsAsTakingNoneOfTheArguments()
+        {
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(new Derived(), "Generic", new object[] { null }));
+
+            Assert.That(failure.Message, Is.EqualTo("Method 'Generic' on Derived takes none of these arguments."));
+        }
+
         [TestCase(1, ExpectedResult = "int")]
         [TestCase("a", ExpectedResult = "string")]
         public object InvokeStatic_OverloadsOfTwoParameterTypes_CallsTheOneTheArgumentFits(object argument)

@@ -51,7 +51,8 @@ namespace Tsvrc.UdonTestKit
             {
                 MethodInfo[] declared = current.GetMethods(flags | BindingFlags.DeclaredOnly).Where(method => method.Name == name).ToArray();
                 named |= declared.Length > 0;
-                // A method with type parameters can't be called without type arguments.
+                // A method with type parameters can't be called without type arguments, and the
+                // binder picks one for a null argument.
                 object[] arguments = args;
                 MethodBase[] overloads = declared.Where(method => !method.ContainsGenericParameters && TakesTheNulls(method, arguments)).ToArray<MethodBase>();
                 if (overloads.Length == 0)
