@@ -31,7 +31,10 @@
         "VRCSDK3-Editor.dll",
         "VRCSDKBase-Editor.dll",
         "VRCCore-Editor.dll",
-        "VRC.Udon.Common.dll"
+        "VRC.Udon.Common.dll",
+        "Microsoft.CodeAnalysis.dll",
+        "Microsoft.CodeAnalysis.CSharp.dll",
+        "System.Collections.Immutable.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

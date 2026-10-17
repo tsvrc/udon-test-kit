@@ -82,6 +82,7 @@ namespace Tsvrc.UdonTestKit
             bool restored = false;
             events.Subscribe<ClientSimOnPlayerRestoredEvent>(restore => restored |= restore.player.isLocal);
 #else
+            // ClientSim keeps no saved data without the define.
             const bool restored = true;
 #endif
 

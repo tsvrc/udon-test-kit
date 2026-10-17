@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
@@ -14,11 +15,12 @@ using VRC.SDKBase;
 namespace Tsvrc.UdonTestKit.Tests.Learning
 {
     // The hidden object ClientSim saves a player's data with outlives ClientSim's teardown and
-    // overwrites newer saves, and a change made before the local player is restored isn't saved.
-    // ClientSimSession.End and Start handle both.
+    // overwrites newer saves, and a save file that isn't whole JSON makes the next session log an
+    // error, which fails the test running then. A change made before the local player is restored
+    // isn't saved. ClientSimSession.End and Start handle each, and the learning tests that start
+    // ClientSim themselves destroy the storage after each test.
     public class ClientSimSavedDataTests
     {
-
         private readonly RawClientSim _clientSim = new RawClientSim();
         private List<ClientSimPlayerObjectStorage> _existingBefore;
 
@@ -117,6 +119,49 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 
             // Assert
             Assert.That(File.ReadAllText(saveFile), Is.Not.EqualTo(SavedData.NewerSave));
+        }
+
+        // ClientSim writes a save file on a worker thread, so a leaked storage can leave one half
+        // written as the next session reads it.
+        [UnityTest]
+        public IEnumerator Start_PlayerObjectsFileNotWholeJson_LogsThatItCantParseIt()
+        {
+            // Arrange: a first session gives the file the local player's PlayerObjects come from.
+            yield return _clientSim.Start();
+            ClientSimPlayerObjectStorage storage = CreatedStorages().FirstOrDefault();
+            Assume.That(storage != null, SavedData.PersistenceOffMessage);
+            string saveFile = SavedData.PlayerObjectFileOf(storage);
+            _clientSim.End();
+            ClientSimSession.DestroySavedDataObjects();
+            yield return new WaitForSecondsRealtime(SavedData.SettleSeconds);
+            File.WriteAllText(saveFile, "{\"unfinished");
+            var errors = new List<string>();
+            Application.LogCallback record = (message, stackTrace, type) =>
+            {
+                if (type == LogType.Error)
+                {
+                    errors.Add(message);
+                }
+            };
+
+            // Act
+            Application.logMessageReceived += record;
+            try
+            {
+                yield return _clientSim.Start();
+                for (int frame = 0; frame < 10 && errors.Count == 0; frame++)
+                {
+                    yield return null;
+                }
+            }
+            finally
+            {
+                Application.logMessageReceived -= record;
+            }
+
+            // Assert
+            Assert.That(errors, Has.Some.Contains("Error initializing PlayerObjects: UnableToParse"));
+            LogAssert.Expect(LogType.Error, new Regex("Error initializing PlayerObjects: UnableToParse"));
         }
 
         [UnityTest]
