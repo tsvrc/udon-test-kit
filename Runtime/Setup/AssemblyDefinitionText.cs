@@ -37,7 +37,7 @@ namespace Tsvrc.UdonTestKit
             Group present = array.Groups["items"];
             string kept = present.Value.TrimEnd();
             string added;
-            if (kept.Trim().Length == 0)
+            if (kept.Length == 0)
             {
                 added = string.Join(", ", quoted);
             }

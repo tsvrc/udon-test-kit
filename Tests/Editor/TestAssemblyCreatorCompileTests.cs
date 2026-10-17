@@ -23,6 +23,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         private const string LogsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Logs";
         private const string CallsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Calls";
         private const string UploadErrorsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.UploadErrors";
+        private const string ChangedKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Changed";
         private const string FolderKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Folder";
         private const string Parent = "Assets/UdonTestKitCreatorCompileTests";
         private const string Tests = Parent + "/Tests";
@@ -95,6 +96,7 @@ public class EditorRunnerUsage__RUN__
             SessionState.EraseString(LogsKey);
             SessionState.EraseString(CallsKey);
             SessionState.EraseString(UploadErrorsKey);
+            SessionState.EraseString(ChangedKey);
         }
 
         [UnityTearDown]
@@ -182,7 +184,7 @@ public class EditorRunnerUsage__RUN__
         // The Play Mode test assembly references by GUID, as the Unity Editor writes them with Use
         // GUIDs on.
         [UnityTest]
-        public IEnumerator UpdateMenuItem_WorldAssemblyDefinitionsAddedAfterTheSet_AddsThemToTheSet()
+        public IEnumerator Update_WorldAssemblyDefinitionsAddedAfterTheSet_AddsThemToTheSetAndReturnsItsDefinitions()
         {
             // Arrange
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(Parent));
@@ -197,18 +199,22 @@ public class EditorRunnerUsage__RUN__
             yield return new WaitForDomainReload();
 
             // Act
-            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => EditorApplication.ExecuteMenuItem(TestAssemblyUpdater.MenuPath))));
+            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => SessionState.SetString(ChangedKey, string.Join("\n", TestAssemblyUpdater.Update())))));
             yield return new WaitForDomainReload();
 
             // Assert
             (Assembly editMode, Assembly playMode, Assembly doubles, Assembly udonDoubles) = CreatedAssemblies();
+            string[] changed = SessionState.GetString(ChangedKey, "").Split('\n');
+            Assert.That(changed, Is.EquivalentTo(new[] { editMode, playMode, doubles, udonDoubles }
+                .Select(assembly => CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(assembly.name))));
+            Assert.That(SessionState.GetString(LogsKey, "").Split('\n'),
+                Has.Member($"[UdonTestKit] Added the world's assembly definitions to {string.Join(", ", changed)}."));
             Assert.That(ReferencesOf(editMode), Has.Member(WorldAssembly).And.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(playMode), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(doubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(udonDoubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(AssemblyDefinitionText.Items(File.ReadAllText(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(playMode.name)), "references"),
                 Has.All.StartsWith("GUID:"));
-            Assert.That(SessionState.GetString(LogsKey, ""), Does.StartWith("[UdonTestKit] Added the world's assembly definitions to "));
             Assert.That(TestAssemblyUpdater.Update(), Is.Empty);
         }
 

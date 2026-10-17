@@ -77,7 +77,7 @@ namespace Tsvrc.UdonTestKit
             List<string> present = AssemblyDefinitionText.Items(json, "references");
             bool guids = present.Any(reference => reference.StartsWith(GuidReference));
             var named = new HashSet<string>(present.Select(reference => reference.StartsWith(GuidReference) ? AssemblyNameOf(reference) : reference));
-            IEnumerable<string> missing = references.Distinct().Where(name => !named.Contains(name))
+            IEnumerable<string> missing = references.Where(name => !named.Contains(name))
                 .Select(name => guids ? GuidReference + AssetDatabase.AssetPathToGUID(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(name)) : name);
             return AssemblyDefinitionText.WithItemsAdded(json, "references", missing);
         }
