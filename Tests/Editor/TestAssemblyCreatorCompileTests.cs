@@ -29,6 +29,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         // Compiles into Assembly-CSharp, which references every assembly that allows it.
         private const string LooseScript = Parent + "/UdonTestKitLooseScript.cs";
         private const string WorldAssembly = "UdonTestKitCreatorWorld";
+        private const string WorldEditorAssembly = "UdonTestKitCreatorWorldEditor";
         private const string KitUsage = Tests + "/PlayMode/KitUsage.cs";
         private const string EditorRunnerUsage = Tests + "/EditMode/EditorRunnerUsage.cs";
 
@@ -113,6 +114,8 @@ public class EditorRunnerUsage__RUN__
             Write(LooseScript, "public class UdonTestKitLooseScript { }");
             Write($"{Parent}/World/{WorldAssembly}.asmdef", $"{{ \"name\": \"{WorldAssembly}\" }}");
             Write($"{Parent}/World/{WorldAssembly}.cs", $"public class {WorldAssembly} {{ }}");
+            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.asmdef", $"{{ \"name\": \"{WorldEditorAssembly}\", \"includePlatforms\": [\"Editor\"] }}");
+            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.cs", $"public class {WorldEditorAssembly} {{ }}");
             AssetDatabase.Refresh();
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<DefaultAsset>(Parent);
 
@@ -144,15 +147,19 @@ public class EditorRunnerUsage__RUN__
             Assert.That(playMode.compiledAssemblyReferences.Select(Path.GetFileName), Has.Member("nunit.framework.dll"));
             Assert.That(doubles.compiledAssemblyReferences.Select(Path.GetFileName), Has.No.Member("nunit.framework.dll"));
             Assert.That(udonDoubles.compiledAssemblyReferences.Select(Path.GetFileName), Has.No.Member("nunit.framework.dll"));
-            Assert.That(created.Select(assembly => assembly.assemblyReferences.Select(reference => reference.name)), Has.All.Member(WorldAssembly));
-            Assert.That(AssemblyOf(editor, LooseScript).assemblyReferences.Select(assembly => assembly.name).Intersect(createdNames), Is.Empty);
+            Assert.That(created.Select(ReferencesOf), Has.All.Member(WorldAssembly));
+            Assert.That(ReferencesOf(editMode), Has.Member(WorldEditorAssembly));
+            Assert.That(new[] { playMode, doubles, udonDoubles }.Select(ReferencesOf), Has.None.Member(WorldEditorAssembly));
+            Assert.That(ReferencesOf(AssemblyOf(editor, LooseScript)).Intersect(createdNames), Is.Empty);
 
-            // A second set, with the first compiled, numbers its names and leaves the doubles
-            // assemblies of the first, which only tests use, out of its references.
+            // A second set, with the first compiled, numbers its names and leaves the assemblies of the
+            // first, which only tests use, out of its references.
             string second = TestAssemblyCreator.Create(Parent);
             string prefix = editMode.name.Substring(0, editMode.name.Length - TestAssemblyCreator.EditModeSuffix.Length);
+            string secondEditMode = File.ReadAllText($"{second}/EditMode/{prefix}2{TestAssemblyCreator.EditModeSuffix}.asmdef");
             string secondPlayMode = File.ReadAllText($"{second}/PlayMode/{prefix}2{TestAssemblyCreator.PlayModeSuffix}.asmdef");
             Assert.That(second, Is.EqualTo(Tests + " 1"));
+            Assert.That(secondEditMode, Does.Contain($"\"{WorldEditorAssembly}\"").And.Not.Contain($"\"{editMode.name}\""));
             Assert.That(secondPlayMode, Does.Not.Contain($"\"{doubles.name}\"").And.Not.Contain($"\"{udonDoubles.name}\""));
         }
 
@@ -177,6 +184,8 @@ public class EditorRunnerUsage__RUN__
             Assert.That(SessionState.GetString(UploadErrorsKey, "not run"), Is.Empty);
             Assert.That(SessionState.GetString(CallsKey, ""), Is.EqualTo("Example.OnExample"));
         }
+
+        private static IEnumerable<string> ReferencesOf(Assembly assembly) => assembly.assemblyReferences.Select(reference => reference.name);
 
         private static string[] RunTheExampleUdonDouble(string tests)
         {
