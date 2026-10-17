@@ -76,12 +76,12 @@ namespace Tsvrc.UdonTestKit
             return null;
         }
 
-        // Whether each null argument goes to a parameter that takes null, as C# requires. The default
-        // binder takes null for a value type parameter too, which makes such overloads ambiguous.
+        // Whether each null argument goes to a parameter that takes null, as C# requires, matching
+        // arguments to parameters by position. The default binder takes null for a value type
+        // parameter too, which makes such overloads ambiguous.
         private static bool TakesTheNulls(MethodInfo method, object[] args)
         {
-            ParameterInfo[] parameters = method.GetParameters();
-            return parameters.Length != args.Length || parameters.Zip(args, (parameter, argument) =>
+            return method.GetParameters().Zip(args, (parameter, argument) =>
                 argument != null || TakesNull(parameter.ParameterType.IsByRef ? parameter.ParameterType.GetElementType() : parameter.ParameterType)).All(takes => takes);
         }
 

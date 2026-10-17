@@ -164,11 +164,38 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             return PrivateFieldAccess.InvokeInstance(new Derived(), method, new object[] { null });
         }
 
+        [Test]
+        public void InvokeInstance_NullAndAnotherArgument_CallsTheOverloadWhoseParameterTakesTheNull()
+        {
+            Assert.That(PrivateFieldAccess.InvokeInstance(new Derived(), "Two", null, "b"), Is.EqualTo("string, string"));
+        }
+
+        [Test]
+        public void InvokeInstance_MethodWithAParamsArray_PassesTheLastArgumentsInTheArray()
+        {
+            Assert.That(PrivateFieldAccess.InvokeInstance(new Derived(), "Spread", 2, "a", "b"), Is.EqualTo("2: a, b"));
+        }
+
+        [Test]
+        public void InvokeInstance_NullForAValueTypeParameterOfAMethodWithAParamsArray_FailsAsTakingNoneOfTheArguments()
+        {
+            var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeInstance(new Derived(), "Spread", null, "a", "b"));
+
+            Assert.That(failure.Message, Is.EqualTo("Method 'Spread' on Derived takes none of these arguments."));
+        }
+
         [TestCase(1, ExpectedResult = "Base.Over(int)")]
         [TestCase("a", ExpectedResult = "Derived.Over(string)")]
         public object InvokeInstance_OverloadsOnTwoClassesOfTheHierarchy_CallsTheOneTheArgumentFits(object argument)
         {
             return PrivateFieldAccess.InvokeInstance(new Derived(), "Over", argument);
+        }
+
+        // C# leaves out the overloads of a base class once one of the type itself takes the arguments.
+        [Test]
+        public void InvokeInstance_OverloadOfTheTypeTakesTheArgument_CallsItOverAMoreSpecificOneOfABaseClass()
+        {
+            Assert.That(PrivateFieldAccess.InvokeInstance(new Derived(), "Near", "a"), Is.EqualTo("Derived.Near(object)"));
         }
 
         [Test]
@@ -203,6 +230,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
+        public void InvokeStatic_NullArgumentArray_PassesOneNullArgument()
+        {
+            Assert.That(PrivateFieldAccess.InvokeStatic(typeof(Base), "StaticPick", null), Is.EqualTo("string"));
+        }
+
+        [Test]
         public void InvokeStatic_ArgumentNoOverloadTakes_FailsNamingTheMethodAndType()
         {
             var failure = Assert.Throws<AssertionException>(() => PrivateFieldAccess.InvokeStatic(typeof(Base), "StaticPick", 1.5));
@@ -215,6 +248,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             public int PublicField = 3;
 
             public static int PublicStaticMethod(int x) => x + 1;
+
+            public string Near(string value) => "Base.Near(string)";
 
 #pragma warning disable CS0414, IDE0051, IDE0044, IDE0060 // Reached only through reflection.
             private int _baseField = 1;
@@ -231,6 +266,9 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             private string RefPick(string value) => "string";
             private string NullablePick(int value) => "int";
             private string NullablePick(int? value) => "int?";
+            private string Two(int first, string second) => "int, string";
+            private string Two(string first, string second) => "string, string";
+            private string Spread(int first, params string[] rest) => $"{first}: {string.Join(", ", rest)}";
             private static string StaticPick(int value) => "int";
             private static string StaticPick(string value) => "string";
 #pragma warning restore CS0414, IDE0051, IDE0044, IDE0060
@@ -241,6 +279,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 #pragma warning disable CS0414, IDE0044, IDE0051, IDE0052, IDE0060 // Reached only through reflection.
             private string _derivedField = "hello";
             private string Over(string value) => "Derived.Over(string)";
+            private string Near(object value) => "Derived.Near(object)";
 #pragma warning restore CS0414, IDE0044, IDE0051, IDE0052, IDE0060
         }
     }
