@@ -17,15 +17,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     // for that m_Name.
     public class UnityBundleToolsTests
     {
-        private SdkBuildRecord _userRecord;
-        private string _previousFile;
+        private ExportedWorld _exported;
         private string _folder;
 
         [SetUp]
         public void SetUp()
         {
-            _userRecord = new SdkBuildRecord();
-            _previousFile = EditorPrefs.GetString(SdkBuildRecord.WorldFileKey);
+            _exported = new ExportedWorld();
             _folder = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             Directory.CreateDirectory(_folder);
         }
@@ -33,12 +31,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         [TearDown]
         public void TearDown()
         {
-            string file = EditorPrefs.GetString(SdkBuildRecord.WorldFileKey);
-            if (file != _previousFile && File.Exists(file))
-            {
-                File.Delete(file);
-            }
-            _userRecord.Dispose();
+            _exported.Dispose();
             Directory.Delete(_folder, recursive: true);
         }
 

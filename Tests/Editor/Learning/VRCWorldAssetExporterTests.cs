@@ -34,28 +34,21 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     // batch mode a dialog waits for a click.
     public class VRCWorldAssetExporterTests
     {
-        private SdkBuildRecord _userRecord;
-        private string _previousFile;
+        private ExportedWorld _exported;
         private string _standIn;
 
         [SetUp]
         public void SetUp()
         {
-            _userRecord = new SdkBuildRecord();
-            _previousFile = EditorPrefs.GetString(SdkBuildRecord.WorldFileKey);
+            _exported = new ExportedWorld();
             _standIn = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
         }
 
         [TearDown]
         public void TearDown()
         {
-            string file = EditorPrefs.GetString(SdkBuildRecord.WorldFileKey);
-            if (file != _previousFile && File.Exists(file))
-            {
-                File.Delete(file);
-            }
             File.Delete(_standIn);
-            _userRecord.Dispose();
+            _exported.Dispose();
         }
 
         [Test]
