@@ -12,8 +12,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         [Test]
         public void GetUdonSharpProgramAsset_ClassWithAProgramAsset_ReturnsIt()
         {
-            Assert.That(UdonSharpEditorUtility.GetUdonSharpProgramAsset(typeof(UdonProbe)).sourceCsScript.GetClass(),
-                Is.EqualTo(typeof(UdonProbe)));
+            Assert.That(UdonSharpEditorUtility.GetUdonSharpProgramAsset(typeof(UdonDouble)).sourceCsScript.GetClass(),
+                Is.EqualTo(typeof(UdonDouble)));
         }
 
         [Test]

@@ -79,14 +79,14 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             }
         }
 
-        // Makes a probe throw, then waits for the copy of its error.
+        // Makes an Udon double throw, then waits for the copy of its error.
         private IEnumerator ThrowAndWaitForCopy()
         {
-            UdonBehaviour probe = Udon.Create<UdonProbe>("Probe");
+            UdonBehaviour udonDouble = Udon.Create<UdonDouble>("Double");
             LogAssert.Expect(LogType.Error, new Regex(Regex.Escape(UdonHost.HaltError)));
             _copied = false;
             Application.logMessageReceived += RecordCopy;
-            probe.SendCustomEvent(nameof(UdonProbe._Throw));
+            udonDouble.SendCustomEvent(nameof(UdonDouble._Throw));
             Application.logMessageReceived -= RecordCopy;
             _copiedDuringTheCall = _copied;
             yield return WaitForCopy();

@@ -6,8 +6,8 @@ using VRC.SDKBase;
 
 namespace Tsvrc.UdonTestKit.Tests
 {
-    // One session for every test in the fixture. Unity Test Framework 1.1.33 has no yielding
-    // one-time setup, so the first [UnitySetUp] starts it and [OneTimeTearDown] ends it.
+    // One session for every test in the fixture. The Unity Test Framework the kit depends on has no
+    // yielding one-time setup, so the first [UnitySetUp] starts it and [OneTimeTearDown] ends it.
     public class ClientSimSessionSharedTests
     {
         private readonly ClientSimSession _session = new ClientSimSession();

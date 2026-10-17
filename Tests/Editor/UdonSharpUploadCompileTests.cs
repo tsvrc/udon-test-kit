@@ -51,7 +51,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             UdonSharpUploadCompile.Run();
 
             // Assert
-            Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.Member(UdonProbe.EditorOnlyMarker));
+            Assert.That(ProgramHeap.Strings(typeof(UdonDouble)), Has.Member(UdonDouble.EditorOnlyMarker));
         }
     }
 }

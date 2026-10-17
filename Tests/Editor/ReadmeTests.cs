@@ -28,7 +28,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(Read("README.md"), Does.Contain($"**{TestAssemblyCreator.MenuPath.Replace("/", " > ")}**"));
         }
 
-        // A VPM range ^3.8.2 takes 3.8.2 and every later 3.x version.
+        // A VPM range ^x.y.z takes that version and every later one with the same major number.
         [TestCase("README.md")]
         [TestCase("CONTRIBUTING.md")]
         public void Requirements_InTheDoc_AreThoseOfThePackageManifest(string doc)

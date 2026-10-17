@@ -15,8 +15,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     // Creates test assemblies in this project and compiles them, which reloads the domain. A test
     // resumes after a reload with its local variables reset, so it finds the assemblies again, and
-    // keeps what it needs in SessionState. The probe classes carry a name of the run in place of
-    // __RUN__, so an assembly an earlier run left compiled can't pass a test.
+    // keeps what it needs in SessionState. The classes a test writes carry a name of the run in
+    // place of __RUN__, so an assembly an earlier run left compiled can't pass a test.
     public class TestAssemblyCreatorCompileTests
     {
         private const string RunKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Run";
@@ -29,12 +29,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         // Compiles into Assembly-CSharp, which references every assembly that allows it.
         private const string LooseScript = Parent + "/UdonTestKitLooseScript.cs";
         private const string WorldAssembly = "UdonTestKitCreatorWorld";
-        private const string KitProbe = Tests + "/PlayMode/KitProbe.cs";
-        private const string EditorProbe = Tests + "/EditMode/EditorProbe.cs";
+        private const string KitUsage = Tests + "/PlayMode/KitUsage.cs";
+        private const string EditorRunnerUsage = Tests + "/EditMode/EditorRunnerUsage.cs";
 
         // Uses each public type of the kit, each SDK type its members take or return, and a type
         // from each other assembly the test assemblies reference. It only has to compile.
-        private const string KitProbeSource = @"using System;
+        private const string KitUsageSource = @"using System;
 using System.Collections;
 using Tsvrc.UdonTestKit;
 using VRC.SDK3.ClientSim;
@@ -44,14 +44,14 @@ using VRC.SDKBase;
 using VRC.SDKBase.Validation;
 using VRC.Udon;
 
-public class KitSceneProbe : ClientSimTestBase
+public class KitSceneUsage : ClientSimTestBase
 {
-    public KitSceneProbe() : base(TestScene.Empty(""Probe""), TestSceneLifetime.PerFixture)
+    public KitSceneUsage() : base(TestScene.Empty(""Usage""), TestSceneLifetime.PerFixture)
     {
     }
 }
 
-public class KitProbe__RUN__ : UdonTestBase
+public class KitUsage__RUN__ : UdonTestBase
 {
     private static readonly Type[] SdkTypes = { typeof(ClientSimMain), typeof(VRCSceneDescriptor), typeof(PhysBoneGrabHelper), typeof(WorldValidation) };
 
@@ -76,9 +76,9 @@ public class KitProbe__RUN__ : UdonTestBase
 ";
 
         // Uses the Editor test runner, which only the Edit Mode test assembly references.
-        private const string EditorProbeSource = @"using UnityEditor.TestTools.TestRunner.Api;
+        private const string EditorRunnerUsageSource = @"using UnityEditor.TestTools.TestRunner.Api;
 
-public class EditorProbe__RUN__
+public class EditorRunnerUsage__RUN__
 {
     public TestRunnerApi Api;
 }
@@ -118,10 +118,10 @@ public class EditorProbe__RUN__
 
             // Act
             SessionState.SetString(LogsKey, string.Join("\n", LogsOf(() => EditorApplication.ExecuteMenuItem(TestAssemblyCreator.MenuPath))));
-            File.WriteAllText(KitProbe, KitProbeSource.Replace("__RUN__", Run));
-            File.WriteAllText(EditorProbe, EditorProbeSource.Replace("__RUN__", Run));
-            AssetDatabase.ImportAsset(KitProbe);
-            AssetDatabase.ImportAsset(EditorProbe);
+            File.WriteAllText(KitUsage, KitUsageSource.Replace("__RUN__", Run));
+            File.WriteAllText(EditorRunnerUsage, EditorRunnerUsageSource.Replace("__RUN__", Run));
+            AssetDatabase.ImportAsset(KitUsage);
+            AssetDatabase.ImportAsset(EditorRunnerUsage);
             yield return new WaitForDomainReload();
 
             // Assert
@@ -134,8 +134,8 @@ public class EditorProbe__RUN__
             string[] createdNames = created.Select(assembly => assembly.name).ToArray();
             Assert.That(SessionState.GetString(LogsKey, "").Split('\n'),
                 Has.Member($"[UdonTestKit] Created test assemblies in {Tests}.").And.Member(TestAssemblyCreator.AssemblyCSharpWarning));
-            Assert.That(Type.GetType("KitProbe" + Run + ", " + playMode.name), Is.Not.Null);
-            Assert.That(Type.GetType("EditorProbe" + Run + ", " + editMode.name), Is.Not.Null);
+            Assert.That(Type.GetType("KitUsage" + Run + ", " + playMode.name), Is.Not.Null);
+            Assert.That(Type.GetType("EditorRunnerUsage" + Run + ", " + editMode.name), Is.Not.Null);
             Assert.That(CompilationPipeline.GetAssemblies(AssembliesType.Player).Select(assembly => assembly.name),
                 Is.SupersetOf(new[] { playMode.name, doubles.name, udonDoubles.name }).And.No.Member(editMode.name));
             Assert.That(CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies).Select(assembly => assembly.name)

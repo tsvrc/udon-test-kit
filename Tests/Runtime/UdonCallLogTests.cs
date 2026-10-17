@@ -10,15 +10,15 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             UdonBehaviour log = Udon.Create<UdonCallLog>("Log");
-            UdonBehaviour first = Udon.Create<UdonProbe>("First");
-            UdonBehaviour second = Udon.Create<UdonProbe>("Second");
-            first.SetProgramVariable(nameof(UdonProbe.Log), log);
-            second.SetProgramVariable(nameof(UdonProbe.Log), log);
+            UdonBehaviour first = Udon.Create<UdonDouble>("First");
+            UdonBehaviour second = Udon.Create<UdonDouble>("Second");
+            first.SetProgramVariable(nameof(UdonDouble.Log), log);
+            second.SetProgramVariable(nameof(UdonDouble.Log), log);
 
             // Act
-            second.SendCustomEvent(nameof(UdonProbe._Record));
-            first.SendCustomEvent(nameof(UdonProbe._Record));
-            second.SendCustomEvent(nameof(UdonProbe._Record));
+            second.SendCustomEvent(nameof(UdonDouble._Record));
+            first.SendCustomEvent(nameof(UdonDouble._Record));
+            second.SendCustomEvent(nameof(UdonDouble._Record));
 
             // Assert
             Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Second._Record", "First._Record", "Second._Record" }));
@@ -39,11 +39,11 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             UdonBehaviour log = Udon.Create<UdonCallLog>("Log");
-            UdonBehaviour probe = Udon.Create<UdonProbe>("Semi;colon");
-            probe.SetProgramVariable(nameof(UdonProbe.Log), log);
+            UdonBehaviour udonDouble = Udon.Create<UdonDouble>("Semi;colon");
+            udonDouble.SetProgramVariable(nameof(UdonDouble.Log), log);
 
             // Act
-            probe.SendCustomEvent(nameof(UdonProbe._Record));
+            udonDouble.SendCustomEvent(nameof(UdonDouble._Record));
 
             // Assert
             Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Semi;colon._Record" }));
@@ -54,15 +54,15 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             UdonBehaviour log = Udon.Create<UdonCallLog>("Log");
-            UdonBehaviour probe = Udon.Create<UdonProbe>("Probe");
-            probe.SetProgramVariable(nameof(UdonProbe.Log), log);
-            probe.SendCustomEvent(nameof(UdonProbe._Record));
+            UdonBehaviour udonDouble = Udon.Create<UdonDouble>("Double");
+            udonDouble.SetProgramVariable(nameof(UdonDouble.Log), log);
+            udonDouble.SendCustomEvent(nameof(UdonDouble._Record));
 
             // Act
             UdonHost.Calls(log)[0] = "Changed";
 
             // Assert
-            Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Probe._Record" }));
+            Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Double._Record" }));
         }
     }
 }
