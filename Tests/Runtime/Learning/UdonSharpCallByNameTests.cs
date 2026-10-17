@@ -6,10 +6,10 @@ using UnityEngine.TestTools;
 
 namespace Tsvrc.UdonTestKit.Tests.Learning
 {
-    // Outside Udon, as in a test, SendCustomEvent calls the public method with that exact name and
-    // silently ignores a name it doesn't have, and delayed events never arrive. So CallbackSpy
-    // declares each callback as a real method, and a test checks what its CallLog recorded rather
-    // than the absence of errors.
+    // Outside Udon, as in a test, SendCustomEvent calls only a public method with that exact name and
+    // no parameters, silently ignores any other name, and delayed events never arrive. So
+    // CallbackSpy declares each callback as a public method without parameters, and a test checks
+    // what its CallLog recorded rather than the absence of errors.
     public class UdonSharpCallByNameTests
     {
         private GameObject _host;
@@ -41,6 +41,26 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             Assert.DoesNotThrow(() => target.SendCustomEvent("NoSuchMethod"));
         }
 
+        [Test]
+        public void SendCustomEvent_PrivateMethodName_IsSilentlyIgnored()
+        {
+            TargetBehaviour target = CreateTarget();
+
+            target.SendCustomEvent(TargetBehaviour.PrivateCountName);
+
+            Assert.That(target.CountCalls, Is.Zero);
+        }
+
+        [Test]
+        public void SendCustomEvent_MethodWithAParameter_IsSilentlyIgnored()
+        {
+            TargetBehaviour target = CreateTarget();
+
+            target.SendCustomEvent(nameof(TargetBehaviour.CountBy));
+
+            Assert.That(target.CountCalls, Is.Zero);
+        }
+
         [UnityTest]
         public IEnumerator SendCustomEventDelayedFrames_OutsideUdon_NeverCallsTheMethod()
         {
@@ -49,6 +69,21 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 
             // Act
             target.SendCustomEventDelayedFrames(nameof(TargetBehaviour.Count), 0);
+            yield return null;
+            yield return null;
+
+            // Assert
+            Assert.That(target.CountCalls, Is.Zero);
+        }
+
+        [UnityTest]
+        public IEnumerator SendCustomEventDelayedSeconds_OutsideUdon_NeverCallsTheMethod()
+        {
+            // Arrange
+            TargetBehaviour target = CreateTarget();
+
+            // Act
+            target.SendCustomEventDelayedSeconds(nameof(TargetBehaviour.Count), 0f);
             yield return null;
             yield return null;
 
