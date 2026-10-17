@@ -85,21 +85,25 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             Assert.That(File.GetLastWriteTimeUtc(saveFile), Is.GreaterThan(lastWriteAfterEnd));
         }
 
+        // The storage of the first session is destroyed before the second starts: left alive, it can be
+        // writing the file as the second session reads it.
         [UnityTest]
-        public IEnumerator End_BackToBackSessions_LeaksShareOneSaveFile()
+        public IEnumerator Start_SecondSessionInTheSameScene_SavesToTheFileOfTheFirst()
         {
             // Arrange
             yield return _clientSim.Start();
+            ClientSimPlayerObjectStorage first = CreatedStorages().FirstOrDefault();
+            Assume.That(first != null, SavedData.PersistenceOffMessage);
+            string firstFile = SavedData.PlayerObjectFileOf(first);
             _clientSim.End();
+            ClientSimSession.DestroySavedDataObjects();
+            yield return new WaitForSecondsRealtime(SavedData.SettleSeconds);
 
             // Act
             yield return _clientSim.Start();
-            _clientSim.End();
 
             // Assert
-            List<ClientSimPlayerObjectStorage> leaked = CreatedStorages();
-            Assume.That(leaked.Count, Is.EqualTo(2), SavedData.PersistenceOffMessage);
-            Assert.That(SavedData.PlayerObjectFileOf(leaked[1]), Is.EqualTo(SavedData.PlayerObjectFileOf(leaked[0])));
+            Assert.That(SavedData.PlayerObjectFileOf(CreatedStorages().Single()), Is.EqualTo(firstFile));
         }
 
         [UnityTest]
