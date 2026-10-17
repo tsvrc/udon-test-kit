@@ -210,7 +210,7 @@ public class EditorRunnerUsage__RUN__
             Assert.That(changed, Is.EquivalentTo(new[] { editMode, playMode, doubles, udonDoubles }
                 .Select(assembly => CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(assembly.name))));
             Assert.That(SessionState.GetString(LogsKey, "").Split('\n'),
-                Has.Member($"[UdonTestKit] Added the world's assembly definitions to {string.Join(", ", changed)}."));
+                Has.Member($"[UdonTestKit] Added the assembly definitions of the world to {string.Join(", ", changed)}."));
             Assert.That(ReferencesOf(editMode), Has.Member(WorldAssembly).And.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(playMode), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(doubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));

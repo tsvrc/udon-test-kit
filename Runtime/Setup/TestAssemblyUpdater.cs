@@ -51,7 +51,7 @@ namespace Tsvrc.UdonTestKit
             AssetDatabase.Refresh();
 
             Debug.Log(changed.Count == 0 ? "[UdonTestKit] The test assemblies reference every assembly definition of the world."
-                : $"[UdonTestKit] Added the world's assembly definitions to {string.Join(", ", changed)}.");
+                : $"[UdonTestKit] Added the assembly definitions of the world to {string.Join(", ", changed)}.");
             return changed;
         }
 
