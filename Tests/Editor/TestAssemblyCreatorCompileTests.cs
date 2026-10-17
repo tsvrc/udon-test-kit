@@ -185,6 +185,47 @@ public class EditorRunnerUsage__RUN__
             Assert.That(SessionState.GetString(CallsKey, ""), Is.EqualTo("Example.OnExample"));
         }
 
+        // The world got two assembly definitions after the set was created, one of them Editor-only.
+        // The Play Mode test assembly references by GUID, as the Unity Editor writes them with Use
+        // GUIDs on.
+        [UnityTest]
+        public IEnumerator UpdateMenuItem_WorldAssemblyDefinitionsAddedAfterTheSet_AddsThemToTheSet()
+        {
+            // Arrange
+            AssetDatabase.CreateFolder("Assets", Path.GetFileName(Parent));
+            string tests = TestAssemblyCreator.Create(Parent);
+            Write($"{Parent}/World/{WorldAssembly}.asmdef", $"{{ \"name\": \"{WorldAssembly}\" }}");
+            Write($"{Parent}/World/{WorldAssembly}.cs", $"public class {WorldAssembly} {{ }}");
+            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.asmdef", $"{{ \"name\": \"{WorldEditorAssembly}\", \"includePlatforms\": [\"Editor\"] }}");
+            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.cs", $"public class {WorldEditorAssembly} {{ }}");
+            AssetDatabase.Refresh();
+            string playModeDefinition = Directory.GetFiles(tests + "/PlayMode", "*.asmdef").Single().Replace('\\', '/');
+            string byName = File.ReadAllText(playModeDefinition);
+            File.WriteAllText(playModeDefinition, AssemblyDefinitionText.Items(byName, "references").Aggregate(byName,
+                (json, name) => json.Replace($"\"{name}\"", $"\"GUID:{AssetDatabase.AssetPathToGUID(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(name))}\"")));
+            AssetDatabase.ImportAsset(playModeDefinition);
+            yield return new WaitForDomainReload();
+
+            // Act
+            SessionState.SetString(LogsKey, string.Join("\n", LogsOf(() => EditorApplication.ExecuteMenuItem(TestAssemblyUpdater.MenuPath))));
+            yield return new WaitForDomainReload();
+
+            // Assert
+            Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
+            Assembly editMode = AssemblyOf(editor, Tests + "/EditMode/ExampleEditModeTests.cs");
+            Assembly playMode = AssemblyOf(editor, Tests + "/PlayMode/ExamplePlayModeTests.cs");
+            Assembly doubles = AssemblyOf(editor, Tests + "/Doubles/ExampleSpy.cs");
+            Assembly udonDoubles = AssemblyOf(editor, Tests + "/UdonDoubles/ExampleUdonDouble.cs");
+            Assert.That(ReferencesOf(editMode), Has.Member(WorldAssembly).And.Member(WorldEditorAssembly));
+            Assert.That(ReferencesOf(playMode), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
+            Assert.That(ReferencesOf(doubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
+            Assert.That(ReferencesOf(udonDoubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
+            Assert.That(AssemblyDefinitionText.Items(File.ReadAllText(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(playMode.name)), "references"),
+                Has.All.StartsWith("GUID:"));
+            Assert.That(SessionState.GetString(LogsKey, ""), Does.StartWith("[UdonTestKit] Added the world's assembly definitions to "));
+            Assert.That(TestAssemblyUpdater.Update(), Is.Empty);
+        }
+
         private static IEnumerable<string> ReferencesOf(Assembly assembly) => assembly.assemblyReferences.Select(reference => reference.name);
 
         private static string[] RunTheExampleUdonDouble(string tests)
