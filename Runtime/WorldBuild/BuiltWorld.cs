@@ -34,11 +34,11 @@ namespace Tsvrc.UdonTestKit
         /// world file with the world exporter of the VRChat SDK, without the callbacks the SDK runs
         /// before a build, reads the file and deletes it. Without those callbacks UdonSharp doesn't
         /// compile for upload first, so the world holds each program as last compiled for the Editor.
-        /// The SDK's record of your own builds stays as it was: the last build, which Test Last Build
-        /// and Reload Last Build in the SDK control panel use, and the world files of earlier builds,
-        /// which the exporter would otherwise delete. Throws InvalidOperationException when the loaded
-        /// scenes don't hold exactly one scene descriptor, when the world scene was never saved, or
-        /// when the exporter builds nothing.</summary>
+        /// The record the SDK keeps of your own builds stays as it was: the last build, which
+        /// Test Last Build and Reload Last Build in the SDK control panel use, and the world files of
+        /// earlier builds, which the exporter would otherwise delete. Throws InvalidOperationException
+        /// when the loaded scenes don't hold exactly one scene descriptor, when the world scene was
+        /// never saved, or when the exporter builds nothing.</summary>
         public static BuiltWorld FromWorldScene()
         {
             return FromWorldScene(() => new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { }));
