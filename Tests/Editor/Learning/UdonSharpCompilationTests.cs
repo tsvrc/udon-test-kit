@@ -1,9 +1,9 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UdonSharp.Compiler;
 using UdonSharpEditor;
 using UnityEditor;
@@ -21,8 +21,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     {
         private const string Folder = "Assets/UdonTestKitCompilationTests";
         private const string Copy = Folder + "/UdonDouble.cs";
-
-        private readonly List<string> _errors = new List<string>();
 
         [TearDown]
         public void CompileWithoutTheCopy()
@@ -42,10 +40,10 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             using var programAsset = new TemporaryProgramAsset(typeof(EditorOnlyBehaviour));
 
             // Act
-            RecordErrors(() => UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions()));
+            IEnumerable<string> errors = CompileErrors();
 
             // Assert
-            Assert.That(_errors, Has.Some.Contains("EditorOnlyBehaviour.cs' does not belong to a U# assembly"));
+            Assert.That(errors, Has.Some.Contains("EditorOnlyBehaviour.cs' does not belong to a U# assembly"));
         }
 
         [Test]
@@ -58,32 +56,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             UdonSharpEditorUtility.ResetAssemblyCaches();
 
             // Act
-            RecordErrors(() => UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions()));
+            IEnumerable<string> errors = CompileErrors();
 
             // Assert
-            Assert.That(_errors, Has.Some.Contains("error CS0101: The namespace 'Tsvrc.UdonTestKit.Tests' already contains a definition for 'UdonDouble'"));
+            Assert.That(errors, Has.Some.Contains("error CS0101: The namespace 'Tsvrc.UdonTestKit.Tests' already contains a definition for 'UdonDouble'"));
         }
 
-        private void RecordErrors(Action compile)
-        {
-            Application.LogCallback record = (message, stackTrace, type) =>
-            {
-                if (type == LogType.Error)
-                {
-                    _errors.Add(message);
-                }
-            };
-            Application.logMessageReceived += record;
-            LogAssert.ignoreFailingMessages = true;
-            try
-            {
-                compile();
-            }
-            finally
-            {
-                LogAssert.ignoreFailingMessages = false;
-                Application.logMessageReceived -= record;
-            }
-        }
+        private static IEnumerable<string> CompileErrors() =>
+            Logs.During(() => UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions()), ignoreFailingMessages: true).Messages(LogType.Error);
     }
 }

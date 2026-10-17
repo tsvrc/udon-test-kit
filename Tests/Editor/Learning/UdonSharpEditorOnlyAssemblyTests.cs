@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
@@ -24,24 +26,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         {
             // Arrange
             _host = new GameObject(nameof(UdonSharpEditorOnlyAssemblyTests));
-            var logs = new List<string>();
-            Application.LogCallback record = (message, stackTrace, type) => logs.Add(message);
-            Application.logMessageReceived += record;
+            EditorOnlyBehaviour added = null;
 
             // Act
-            EditorOnlyBehaviour added;
-            try
-            {
-                added = _host.AddComponent<EditorOnlyBehaviour>();
-            }
-            finally
-            {
-                Application.logMessageReceived -= record;
-            }
+            List<(LogType Type, string Message)> logs = Logs.During(() => added = _host.AddComponent<EditorOnlyBehaviour>());
 
             // Assert
             Assert.That(added == null, "AddComponent added a behaviour from an Editor-only assembly.");
-            Assert.That(logs, Has.Some.Contains("because it is an editor script"));
+            Assert.That(logs.Select(log => log.Message), Has.Some.Contains("because it is an editor script"));
         }
     }
 }

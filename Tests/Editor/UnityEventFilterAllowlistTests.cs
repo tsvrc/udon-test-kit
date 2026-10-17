@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -35,29 +36,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             // Arrange
             var existing = new object();
             WorkingFilter.Entries[typeof(KnownListenerType)] = existing;
-            var warnings = new List<string>();
-            Application.LogCallback record = (message, stackTrace, type) =>
-            {
-                if (type == LogType.Warning)
-                {
-                    warnings.Add(message);
-                }
-            };
-            Application.logMessageReceived += record;
 
             // Act
-            try
-            {
-                UnityEventFilterAllowlist.Apply(typeof(WorkingFilter), KnownListener);
-            }
-            finally
-            {
-                Application.logMessageReceived -= record;
-            }
+            List<(LogType Type, string Message)> logs = Logs.During(() => UnityEventFilterAllowlist.Apply(typeof(WorkingFilter), KnownListener));
 
             // Assert: Unity Test Framework doesn't fail a test on a warning, so this collects them.
             Assert.That(WorkingFilter.Entries[typeof(KnownListenerType)], Is.SameAs(existing));
-            Assert.That(warnings, Is.Empty);
+            Assert.That(logs.Messages(LogType.Warning), Is.Empty);
         }
 
         [Test]

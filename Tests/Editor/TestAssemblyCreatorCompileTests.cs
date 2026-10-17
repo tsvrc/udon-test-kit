@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEditor;
 using UnityEditor.Compilation;
-using UnityEngine;
 using UnityEngine.TestTools;
 using VRC.Udon;
 
@@ -112,15 +112,12 @@ public class EditorRunnerUsage__RUN__
             SessionState.SetString(RunKey, Guid.NewGuid().ToString("N"));
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(Parent));
             Write(LooseScript, "public class UdonTestKitLooseScript { }");
-            Write($"{Parent}/World/{WorldAssembly}.asmdef", $"{{ \"name\": \"{WorldAssembly}\" }}");
-            Write($"{Parent}/World/{WorldAssembly}.cs", $"public class {WorldAssembly} {{ }}");
-            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.asmdef", $"{{ \"name\": \"{WorldEditorAssembly}\", \"includePlatforms\": [\"Editor\"] }}");
-            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.cs", $"public class {WorldEditorAssembly} {{ }}");
+            WriteWorldAssemblies();
             AssetDatabase.Refresh();
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<DefaultAsset>(Parent);
 
             // Act
-            SessionState.SetString(LogsKey, string.Join("\n", LogsOf(() => EditorApplication.ExecuteMenuItem(TestAssemblyCreator.MenuPath))));
+            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => EditorApplication.ExecuteMenuItem(TestAssemblyCreator.MenuPath))));
             File.WriteAllText(KitUsage, KitUsageSource.Replace("__RUN__", Run));
             File.WriteAllText(EditorRunnerUsage, EditorRunnerUsageSource.Replace("__RUN__", Run));
             AssetDatabase.ImportAsset(KitUsage);
@@ -128,11 +125,7 @@ public class EditorRunnerUsage__RUN__
             yield return new WaitForDomainReload();
 
             // Assert
-            Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
-            Assembly editMode = AssemblyOf(editor, Tests + "/EditMode/ExampleEditModeTests.cs");
-            Assembly playMode = AssemblyOf(editor, Tests + "/PlayMode/ExamplePlayModeTests.cs");
-            Assembly doubles = AssemblyOf(editor, Tests + "/Doubles/ExampleSpy.cs");
-            Assembly udonDoubles = AssemblyOf(editor, Tests + "/UdonDoubles/ExampleUdonDouble.cs");
+            (Assembly editMode, Assembly playMode, Assembly doubles, Assembly udonDoubles) = CreatedAssemblies();
             Assembly[] created = { editMode, playMode, doubles, udonDoubles };
             string[] createdNames = created.Select(assembly => assembly.name).ToArray();
             Assert.That(SessionState.GetString(LogsKey, "").Split('\n'),
@@ -150,7 +143,7 @@ public class EditorRunnerUsage__RUN__
             Assert.That(created.Select(ReferencesOf), Has.All.Member(WorldAssembly));
             Assert.That(ReferencesOf(editMode), Has.Member(WorldEditorAssembly));
             Assert.That(new[] { playMode, doubles, udonDoubles }.Select(ReferencesOf), Has.None.Member(WorldEditorAssembly));
-            Assert.That(ReferencesOf(AssemblyOf(editor, LooseScript)).Intersect(createdNames), Is.Empty);
+            Assert.That(ReferencesOf(AssemblyOf(CompilationPipeline.GetAssemblies(AssembliesType.Editor), LooseScript)).Intersect(createdNames), Is.Empty);
 
             // A second set, with the first compiled, numbers its names and leaves the assemblies of the
             // first, which only tests use, out of its references.
@@ -194,10 +187,7 @@ public class EditorRunnerUsage__RUN__
             // Arrange
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(Parent));
             string tests = TestAssemblyCreator.Create(Parent);
-            Write($"{Parent}/World/{WorldAssembly}.asmdef", $"{{ \"name\": \"{WorldAssembly}\" }}");
-            Write($"{Parent}/World/{WorldAssembly}.cs", $"public class {WorldAssembly} {{ }}");
-            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.asmdef", $"{{ \"name\": \"{WorldEditorAssembly}\", \"includePlatforms\": [\"Editor\"] }}");
-            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.cs", $"public class {WorldEditorAssembly} {{ }}");
+            WriteWorldAssemblies();
             AssetDatabase.Refresh();
             string playModeDefinition = Directory.GetFiles(tests + "/PlayMode", "*.asmdef").Single().Replace('\\', '/');
             string byName = File.ReadAllText(playModeDefinition);
@@ -207,15 +197,11 @@ public class EditorRunnerUsage__RUN__
             yield return new WaitForDomainReload();
 
             // Act
-            SessionState.SetString(LogsKey, string.Join("\n", LogsOf(() => EditorApplication.ExecuteMenuItem(TestAssemblyUpdater.MenuPath))));
+            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => EditorApplication.ExecuteMenuItem(TestAssemblyUpdater.MenuPath))));
             yield return new WaitForDomainReload();
 
             // Assert
-            Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
-            Assembly editMode = AssemblyOf(editor, Tests + "/EditMode/ExampleEditModeTests.cs");
-            Assembly playMode = AssemblyOf(editor, Tests + "/PlayMode/ExamplePlayModeTests.cs");
-            Assembly doubles = AssemblyOf(editor, Tests + "/Doubles/ExampleSpy.cs");
-            Assembly udonDoubles = AssemblyOf(editor, Tests + "/UdonDoubles/ExampleUdonDouble.cs");
+            (Assembly editMode, Assembly playMode, Assembly doubles, Assembly udonDoubles) = CreatedAssemblies();
             Assert.That(ReferencesOf(editMode), Has.Member(WorldAssembly).And.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(playMode), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(doubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
@@ -243,20 +229,23 @@ public class EditorRunnerUsage__RUN__
             return UdonHost.Calls(log);
         }
 
-        private static List<string> LogsOf(Action act)
+        private static IEnumerable<string> Messages(Action act) => Logs.During(act).Select(log => log.Message);
+
+        // The created set in Tests, each assembly found by its example.
+        private static (Assembly EditMode, Assembly PlayMode, Assembly Doubles, Assembly UdonDoubles) CreatedAssemblies()
         {
-            var logs = new List<string>();
-            Application.LogCallback record = (message, stackTrace, type) => logs.Add(message);
-            Application.logMessageReceived += record;
-            try
-            {
-                act();
-            }
-            finally
-            {
-                Application.logMessageReceived -= record;
-            }
-            return logs;
+            Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
+            return (AssemblyOf(editor, Tests + "/EditMode/ExampleEditModeTests.cs"), AssemblyOf(editor, Tests + "/PlayMode/ExamplePlayModeTests.cs"),
+                AssemblyOf(editor, Tests + "/Doubles/ExampleSpy.cs"), AssemblyOf(editor, Tests + "/UdonDoubles/ExampleUdonDouble.cs"));
+        }
+
+        // Two assembly definitions of the world, one of them Editor-only.
+        private static void WriteWorldAssemblies()
+        {
+            Write($"{Parent}/World/{WorldAssembly}.asmdef", $"{{ \"name\": \"{WorldAssembly}\" }}");
+            Write($"{Parent}/World/{WorldAssembly}.cs", $"public class {WorldAssembly} {{ }}");
+            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.asmdef", $"{{ \"name\": \"{WorldEditorAssembly}\", \"includePlatforms\": [\"Editor\"] }}");
+            Write($"{Parent}/WorldEditor/{WorldEditorAssembly}.cs", $"public class {WorldEditorAssembly} {{ }}");
         }
 
         private static void Write(string path, string text)

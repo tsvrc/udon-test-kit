@@ -4,27 +4,26 @@ using System.Linq;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
 using Tsvrc.UdonTestKit.Tests;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UdonSharp;
 using UdonSharp.Compiler;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.TestTools;
 using VRC.SDKBase.Editor.BuildPipeline;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
     // Before a world build, the VRChat SDK has UdonSharp compile every program for upload. The Editor
     // compile reads every assembly that has a U# assembly definition, but the upload compile reads only
-    // player assemblies. A program asset whose script is outside the assemblies
-    // the upload compile reads makes it log an error and compile nothing, and the build still goes on.
-    // So UdonCallLog and the kit's own Udon test doubles are in player assemblies. The upload compile
-    // leaves out code inside #if UNITY_EDITOR, so UdonSharpUploadCompile compiles for the Editor again
-    // after it.
+    // player assemblies. A program asset whose script is outside them makes the upload compile log an
+    // error and compile nothing, and the build still goes on. So UdonCallLog and the kit's own Udon
+    // test doubles are in player assemblies. The upload compile leaves out code inside
+    // #if UNITY_EDITOR, so UdonSharpUploadCompile compiles for the Editor again after it.
     public class UdonSharpBuildCompileTests
     {
         private const string CompiledLog = "Compile of ";
 
-        private readonly List<(LogType type, string message)> _logs = new List<(LogType, string)>();
+        private readonly List<(LogType Type, string Message)> _logs = new List<(LogType, string)>();
 
         [TearDown]
         public void TearDown()
@@ -112,9 +111,9 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(Errors, Has.Some.Contains(UploadFailingBehaviour.UploadError));
         }
 
-        private IEnumerable<string> Messages => _logs.Select(log => log.message);
+        private IEnumerable<string> Messages => _logs.Select(log => log.Message);
 
-        private IEnumerable<string> Errors => _logs.Where(log => log.type == LogType.Error).Select(log => log.message);
+        private IEnumerable<string> Errors => _logs.Messages(LogType.Error);
 
         // Runs the callback UdonSharp registers with the VRChat SDK for a world build, which UdonSharp
         // keeps internal.
@@ -127,20 +126,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             return buildGoesOn;
         }
 
-        private void Record(Action compile)
-        {
-            Application.LogCallback record = (message, stackTrace, type) => _logs.Add((type, message));
-            Application.logMessageReceived += record;
-            LogAssert.ignoreFailingMessages = true;
-            try
-            {
-                compile();
-            }
-            finally
-            {
-                LogAssert.ignoreFailingMessages = false;
-                Application.logMessageReceived -= record;
-            }
-        }
+        private void Record(Action compile) => _logs.AddRange(Logs.During(compile, ignoreFailingMessages: true));
     }
 }

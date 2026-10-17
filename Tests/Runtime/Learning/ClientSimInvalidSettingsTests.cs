@@ -22,7 +22,6 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
         private const string NoGraphicDevice = "No graphic device is available";
 
         private readonly RawClientSim _clientSim = new RawClientSim();
-        private readonly List<string> _loggedErrors = new List<string>();
         private object _savedCheckHook;
         private object _savedOpenHook;
 
@@ -45,9 +44,6 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             {
                 UnityEngine.Object.DestroyImmediate(window);
             }
-
-            Application.logMessageReceived -= RecordError;
-            LogAssert.ignoreFailingMessages = false;
         }
 
         [Test]
@@ -86,22 +82,12 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             {
                 Assert.Ignore("Only batch mode has no graphics device for the window.");
             }
-            LogAssert.ignoreFailingMessages = true;
-            Application.logMessageReceived += RecordError;
 
             // Act
-            ClientSimSettingsWindow.Init();
+            List<(LogType Type, string Message)> logs = Logs.During(ClientSimSettingsWindow.Init, ignoreFailingMessages: true);
 
             // Assert
-            Assert.That(_loggedErrors, Has.Some.Contains(NoGraphicDevice));
-        }
-
-        private void RecordError(string message, string stackTrace, LogType type)
-        {
-            if (type == LogType.Error)
-            {
-                _loggedErrors.Add(message);
-            }
+            Assert.That(logs.Messages(LogType.Error), Has.Some.Contains(NoGraphicDevice));
         }
 
         private static FieldInfo CheckHookField() => HookField("checkValidSettingsHook");
