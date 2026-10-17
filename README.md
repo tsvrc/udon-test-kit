@@ -81,8 +81,8 @@ namespace MyWorld.Tests
 
 ## Install
 
-Requires Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or a later 3.x version, in the Editor on
-Windows or on Linux with the Windows build target, batch mode included.
+Requires Unity 2022.3 and the VRChat Worlds SDK 3.10.5 or a later 3.x version, in the Editor
+on Windows or on Linux with the Windows build target, batch mode included.
 
 Install **Udon Test Kit** (`com.tsvrc.udon-test-kit`) as
 [Install a TsVRC package](https://tsvrc.com/docs/install-a-package) describes. The `.unitypackage`

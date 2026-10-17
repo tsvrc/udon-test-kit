@@ -18,8 +18,8 @@ with the kit, that fails because of the bug.
 
 The kit tests need a VRChat world project to run in.
 
-1. Create a world project with Unity 2022.3 and the VRChat Worlds SDK 3.8.2 or a later 3.x version,
-   through the [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
+1. Create a world project with Unity 2022.3 and the VRChat Worlds SDK 3.10.5 or a later 3.x
+   version, through the [VRChat Creator Companion](https://vcc.docs.vrchat.com/).
 2. Clone this repository into the `Assets` folder of that project:
 
    ```powershell
