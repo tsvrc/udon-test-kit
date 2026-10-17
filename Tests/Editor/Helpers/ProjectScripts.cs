@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UdonSharp.Compiler;
 using UnityEditor;
 using UnityEditor.TestTools.TestRunner.Api;
@@ -7,7 +8,9 @@ using UnityEngine.TestTools;
 namespace Tsvrc.UdonTestKit.Editor.Tests.Helpers
 {
     // Compiles scripts a test wrote into the project. While a test runs, Unity Test Framework locks
-    // assembly reloads, and Unity compiles nothing while they're locked.
+    // assembly reloads, and Unity compiles nothing while they're locked: from the import of a script
+    // it reports a compile until reloads are unlocked, and refuses to add a behaviour meanwhile. So a
+    // test that imports scripts deletes them with DeleteFolders, which lets that compile run.
     internal static class ProjectScripts
     {
         // Runs the compile an import asked for, which has to fail: a compile that succeeds reloads the
@@ -28,18 +31,26 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Helpers
             }
         }
 
-        // Deletes a folder of scripts and, once they were imported, waits for the compile without
-        // them and the domain reload that follows.
-        internal static IEnumerator DeleteFolder(string folder)
+        // Deletes folders the test wrote scripts into and, once any of them was imported, waits for
+        // the compile without them and the domain reload that follows. Return it from [UnityTearDown]:
+        // after the reload, Unity Test Framework resumes the enumerator that method returned.
+        internal static IEnumerator DeleteFolders(params string[] folders)
         {
-            if (!AssetDatabase.IsValidFolder(folder))
+            string[] imported = folders.Where(AssetDatabase.IsValidFolder).ToArray();
+            foreach (string folder in folders.Except(imported))
             {
                 FileUtil.DeleteFileOrDirectory(folder);
+            }
+            if (imported.Length == 0)
+            {
                 yield break;
             }
 
-            DeleteCompiledPrograms(folder);
-            AssetDatabase.DeleteAsset(folder);
+            foreach (string folder in imported)
+            {
+                DeleteCompiledPrograms(folder);
+                AssetDatabase.DeleteAsset(folder);
+            }
             yield return new WaitForDomainReload();
             // Before a reload, Unity Test Framework 1.1 saves the step the current test method reached,
             // and after it, starts the next test method at that step. In [UnityTearDown] the test

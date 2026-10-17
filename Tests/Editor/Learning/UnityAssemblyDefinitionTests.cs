@@ -23,7 +23,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         private readonly List<string> _errors = new List<string>();
 
         [UnityTearDown]
-        public IEnumerator DeleteTheFolder() => ProjectScripts.DeleteFolder(Folder);
+        public IEnumerator DeleteTheFolder() => ProjectScripts.DeleteFolders(Folder);
 
         [UnityTest]
         public IEnumerator Compile_AssemblyDefinitionReferencingAssemblyCSharp_CantUseItsScripts()

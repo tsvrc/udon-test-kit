@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
@@ -19,16 +20,20 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     public class UdonSharpCompilationTests
     {
         private const string Folder = "Assets/UdonTestKitCompilationTests";
+        private const string Copy = Folder + "/UdonProbe.cs";
 
         private readonly List<string> _errors = new List<string>();
 
         [TearDown]
-        public void TearDown()
+        public void CompileWithoutTheCopy()
         {
-            AssetDatabase.DeleteAsset(Folder);
+            AssetDatabase.DeleteAsset(Copy);
             UdonSharpEditorUtility.ResetAssemblyCaches();
             UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions());
         }
+
+        [UnityTearDown]
+        public IEnumerator DeleteTheFolder() => ProjectScripts.DeleteFolders(Folder);
 
         [Test]
         public void CompileSync_ProgramAssetOfAScriptInAnAssemblyNoUdonSharpAssemblyDefinitionNames_LogsAnError()
@@ -48,8 +53,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         {
             // Arrange: the class of a kit Udon double, again, in Assembly-CSharp.
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(Folder));
-            File.WriteAllText(Folder + "/UdonProbe.cs", "namespace Tsvrc.UdonTestKit.Tests { public class UdonProbe : UdonSharp.UdonSharpBehaviour { } }");
-            AssetDatabase.ImportAsset(Folder + "/UdonProbe.cs");
+            File.WriteAllText(Copy, "namespace Tsvrc.UdonTestKit.Tests { public class UdonProbe : UdonSharp.UdonSharpBehaviour { } }");
+            AssetDatabase.ImportAsset(Copy);
             UdonSharpEditorUtility.ResetAssemblyCaches();
 
             // Act

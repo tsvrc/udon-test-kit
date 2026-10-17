@@ -1,11 +1,14 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
 using Tsvrc.UdonTestKit.Tests;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
+using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
@@ -33,8 +36,10 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Directory.Delete(_parent, recursive: true);
             Selection.activeObject = null;
             AssetDatabase.DeleteAsset(SelectionFolder);
-            AssetDatabase.DeleteAsset(EditorFolderParent);
         }
+
+        [UnityTearDown]
+        public IEnumerator DeleteTheScripts() => ProjectScripts.DeleteFolders(EditorFolderParent);
 
         [Test]
         public void Create_EmptyFolder_WritesTheFourAssembliesWithExamples()

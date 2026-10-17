@@ -101,7 +101,7 @@ public class EditorProbe__RUN__
         {
             string folder = SessionState.GetString(FolderKey, Parent);
             SessionState.EraseString(FolderKey);
-            return ProjectScripts.DeleteFolder(folder);
+            return ProjectScripts.DeleteFolders(folder);
         }
 
         [UnityTest]
