@@ -8,7 +8,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 {
     // UdonManager runs the events a program delays with SendCustomEventDelayedFrames and
     // SendCustomEventDelayedSeconds for a behaviour UdonHost created: never during the call that
-    // delays them, and not before the delay passed. So a test of code that delays an event, run
+    // delays them, and not before the delay has passed. So a test of code that delays an event, run
     // through UdonHost, yields until the event ran instead of calling the delayed method itself.
     public class UdonDelayedEventTests : UdonTestBase
     {
