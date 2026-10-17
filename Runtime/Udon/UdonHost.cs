@@ -45,12 +45,8 @@ namespace Tsvrc.UdonTestKit
         {
             foreach (GameObject host in _hosts)
             {
-                if (host != null)
-                {
-                    Object.DestroyImmediate(host);
-                }
+                Object.DestroyImmediate(host);
             }
-            _hosts.Clear();
         }
 
         internal static UdonSharpProgramAsset ProgramAssetOf(Type udonSharpClass)
