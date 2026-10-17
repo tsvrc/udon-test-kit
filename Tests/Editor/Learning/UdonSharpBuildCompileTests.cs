@@ -15,7 +15,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
     // Before a world build, the VRChat SDK has UdonSharp compile every program for upload. The Editor
     // compile reads every assembly that has a U# assembly definition, but the upload compile reads only
-    // player assemblies, not tests-only ones. A program asset whose script is outside the assemblies
+    // player assemblies. A program asset whose script is outside the assemblies
     // the upload compile reads makes it log an error and compile nothing, and the build still goes on.
     // So UdonCallLog and the kit's own Udon test doubles are in player assemblies. The upload compile
     // leaves out code inside #if UNITY_EDITOR, so UdonSharpUploadCompile compiles for the Editor again
