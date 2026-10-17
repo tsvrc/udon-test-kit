@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UdonSharp.Compiler;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -34,11 +33,7 @@ namespace Tsvrc.UdonTestKit
             Application.logMessageReceived += Record;
             try
             {
-                UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions
-                {
-                    IsEditorBuild = false,
-                    CurrentBuildTarget = EditorUserBuildSettings.activeBuildTarget,
-                });
+                UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions { IsEditorBuild = false });
             }
             finally
             {
