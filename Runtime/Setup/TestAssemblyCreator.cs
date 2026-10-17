@@ -58,6 +58,8 @@ namespace Tsvrc.UdonTestKit
             UdonDoubles,
         }
 
+        internal static readonly AssemblyKind[] Kinds = { AssemblyKind.EditModeTests, AssemblyKind.PlayModeTests, AssemblyKind.Doubles, AssemblyKind.UdonDoubles };
+
         [MenuItem(MenuPath, priority = 90)]
         private static void CreateFromMenu()
         {
@@ -92,6 +94,8 @@ namespace Tsvrc.UdonTestKit
         // Unity compiles scripts without an assembly definition into the predefined assemblies:
         // Assembly-CSharp, Assembly-CSharp-firstpass, and their Editor ones.
         internal static bool IsPredefined(string assemblyName) => assemblyName.StartsWith("Assembly-CSharp");
+
+        internal static bool IsKitAssembly(string assemblyName) => assemblyName.StartsWith("Tsvrc.UdonTestKit");
 
         internal static bool HasScriptsInPredefinedAssemblies(IEnumerable<Assembly> playerAssemblies)
         {
@@ -199,7 +203,7 @@ namespace Tsvrc.UdonTestKit
         }
 
         private static bool IsWorldAssembly(Assembly assembly, Func<string, bool> isTestAssembly) =>
-            !IsPredefined(assembly.name) && !assembly.name.StartsWith("Tsvrc.UdonTestKit") && assembly.sourceFiles.Any(file => file.StartsWith("Assets/"))
+            !IsPredefined(assembly.name) && !IsKitAssembly(assembly.name) && assembly.sourceFiles.Any(file => file.StartsWith("Assets/"))
             && !isTestAssembly(assembly.name);
 
         internal static string AssemblyPrefix(string productName)
@@ -214,7 +218,7 @@ namespace Tsvrc.UdonTestKit
         {
             var existing = new HashSet<string>(existingAssemblies);
             string candidate = prefix;
-            for (int i = 2; new[] { EditModeSuffix, PlayModeSuffix, DoublesSuffix, UdonDoublesSuffix }.Any(suffix => existing.Contains(candidate + suffix)); i++)
+            for (int i = 2; Kinds.Any(kind => existing.Contains(candidate + SuffixOf(kind))); i++)
             {
                 candidate = prefix + i;
             }
