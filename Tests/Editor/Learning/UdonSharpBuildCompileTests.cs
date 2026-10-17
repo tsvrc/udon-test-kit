@@ -91,6 +91,27 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(ProgramHeap.Strings(typeof(UdonDouble)), Has.No.Member(UdonDouble.EditorOnlyMarker));
         }
 
+        // UdonSharp runs one compile at a time and queues the last one asked for meanwhile. CompileSync
+        // finishes the compile under way, asks for its own and finishes the compile under way again,
+        // which is the queued one when there was one. So UdonSharpUploadCompile compiles for the
+        // Editor first, after which nothing is queued.
+        [Test]
+        public void CompileSync_CompileUnderWayAndAnotherQueued_ReturnsBeforeItsOwnCompileLogsItsErrors()
+        {
+            // Arrange
+            using var programAsset = new TemporaryProgramAsset(typeof(UploadFailingBehaviour));
+            UdonSharpCompilerV1.Compile();
+            UdonSharpCompilerV1.Compile();
+
+            // Act
+            Record(() => UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions { IsEditorBuild = false }));
+
+            // Assert
+            Assert.That(Errors, Is.Empty);
+            Record(() => PrivateFieldAccess.InvokeStatic(typeof(UdonSharpCompilerV1), "WaitForCompile"));
+            Assert.That(Errors, Has.Some.Contains(UploadFailingBehaviour.UploadError));
+        }
+
         private IEnumerable<string> Messages => _logs.Select(log => log.message);
 
         private IEnumerable<string> Errors => _logs.Where(log => log.type == LogType.Error).Select(log => log.message);

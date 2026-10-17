@@ -28,6 +28,9 @@ namespace Tsvrc.UdonTestKit
                 }
             }
 
+            // With a compile under way and another queued, CompileSync returns before its own compile
+            // runs. A compile for the Editor first leaves nothing queued.
+            UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions());
             Application.logMessageReceived += Record;
             try
             {
