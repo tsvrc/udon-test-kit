@@ -17,8 +17,8 @@ namespace Tsvrc.UdonTestKit
         {
         }
 
-        /// <summary>Runs every test in <paramref name="scene"/>, loaded before the derived class's
-        /// setup and unloaded once ClientSim has ended.</summary>
+        /// <summary>Runs every test in <paramref name="scene"/>, loaded before the setup of the
+        /// derived class and unloaded once ClientSim has ended.</summary>
         protected UdonTestBase(TestScene scene, TestSceneLifetime lifetime = TestSceneLifetime.PerTest) : base(scene, lifetime)
         {
         }

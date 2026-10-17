@@ -8,8 +8,8 @@ namespace Tsvrc.UdonTestKit
 {
     /// <summary>
     /// Whether a Unity Test Framework run is in progress: from when the run reports its start until
-    /// it reports its end, across domain reloads, and from the start of a batch-mode process started
-    /// with -runTests. Editor tooling that rewrites assets when the domain reloads or a scene changes
+    /// it reports its end, across domain reloads, and for the whole of a process started with
+    /// -runTests. Editor tooling that rewrites assets when the domain reloads or a scene changes
     /// can check it to leave tests alone. A Play Mode run reports its start only after the domain
     /// reload into Play Mode, so tooling that reacts to that reload also checks
     /// EditorApplication.isPlayingOrWillChangePlaymode.

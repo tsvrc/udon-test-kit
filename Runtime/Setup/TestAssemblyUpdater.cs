@@ -10,8 +10,8 @@ using AssemblyKind = Tsvrc.UdonTestKit.TestAssemblyCreator.AssemblyKind;
 namespace Tsvrc.UdonTestKit
 {
     /// <summary>
-    /// Adds to the test assemblies <see cref="TestAssemblyCreator"/> created under Assets the world's
-    /// assembly definitions they don't reference yet, such as one the world got after they were
+    /// Adds to the test assemblies <see cref="TestAssemblyCreator"/> created under Assets the assembly
+    /// definitions of the world they don't reference yet, such as one the world got after they were
     /// created, as TestAssemblyCreator gives them: the Editor-only ones to the Edit Mode test assembly
     /// only. Nothing is removed, and the rest of each assembly definition stays as it is.
     /// </summary>
