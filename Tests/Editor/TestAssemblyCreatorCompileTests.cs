@@ -160,12 +160,13 @@ public class EditorRunnerUsage__RUN__
 
         // The Udon doubles assembly is a player assembly with a U# assembly definition, so its example
         // compiles for a world upload and runs as Udon. This assembly can't reference it, so the
-        // test reaches it by reflection.
+        // test reaches it by reflection. This project's only scripts without an assembly definition
+        // are UdonSharp's utility scripts, so creating the assemblies warns about none.
         [UnityTest]
         public IEnumerator Create_NoFolderGiven_CreatesAnUdonDoubleThatCompilesForUploadAndRunsAsUdon()
         {
             // Arrange
-            SessionState.SetString(FolderKey, TestAssemblyCreator.Create());
+            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => SessionState.SetString(FolderKey, TestAssemblyCreator.Create()))));
             yield return new WaitForDomainReload();
 
             // Act
@@ -176,6 +177,7 @@ public class EditorRunnerUsage__RUN__
 
             // Assert
             Assert.That(SessionState.GetString(FolderKey, ""), Does.StartWith("Assets/Tests"));
+            Assert.That(SessionState.GetString(LogsKey, "").Split('\n'), Has.No.Member(TestAssemblyCreator.AssemblyCSharpWarning));
             Assert.That(SessionState.GetString(UploadErrorsKey, "not run"), Is.Empty);
             Assert.That(SessionState.GetString(CallsKey, ""), Is.EqualTo("Example.OnExample"));
         }

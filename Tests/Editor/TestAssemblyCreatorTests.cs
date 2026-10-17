@@ -391,7 +391,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         [TestCase("Assembly-CSharp-firstpass", "Assets/Plugins/Loose.cs", ExpectedResult = true)]
         [TestCase("Assembly-CSharp", "Packages/com.example/Loose.cs", ExpectedResult = false)]
         [TestCase("MyWorld.Runtime", "Assets/MyWorld/Door.cs", ExpectedResult = false)]
-        public bool HasScriptsInPredefinedAssemblies_PlayerAssembly_IsTrueOnlyForTheirScriptsUnderAssets(string assembly, string script)
+        [TestCase("Assembly-CSharp", "Assets/UdonSharp/UtilityScripts/InteractToggle.cs", ExpectedResult = false)]
+        public bool HasScriptsInPredefinedAssemblies_PlayerAssembly_IsTrueOnlyForTheWorldsScriptsUnderAssets(string assembly, string script)
         {
             return TestAssemblyCreator.HasScriptsInPredefinedAssemblies(new[] { CompiledAssembly(assembly, script) });
         }
