@@ -4,12 +4,12 @@ using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
 using Tsvrc.UdonTestKit.Tests;
 using UdonSharp.Compiler;
+using UdonSharpEditor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using UdonSharpEditor;
 using VRC.SDK3.Components;
 using VRC.SDK3.Editor.Builder;
 

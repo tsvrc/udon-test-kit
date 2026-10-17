@@ -20,9 +20,9 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         [TearDown]
         public void TearDown()
         {
-            SerializedObject projectSettings = ProjectSettings();
-            projectSettings.FindProperty("activeInputHandler").intValue = _originalInputHandler;
-            projectSettings.ApplyModifiedProperties();
+            SerializedProperty inputHandler = InputHandler();
+            inputHandler.intValue = _originalInputHandler;
+            inputHandler.serializedObject.ApplyModifiedProperties();
         }
 
         [Test]

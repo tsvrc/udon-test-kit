@@ -10,21 +10,22 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
     {
         private string _storageRoot;
 
+        [SetUp]
+        public void SetUp() => _storageRoot = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
+
         [TearDown]
         public void TearDown()
         {
-            if (_storageRoot != null)
+            if (Directory.Exists(_storageRoot))
             {
                 Directory.Delete(_storageRoot, recursive: true);
             }
-            _storageRoot = null;
         }
 
         [Test]
         public void RunFinished_TestSceneSavedData_DeletesIt()
         {
             // Arrange
-            _storageRoot = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             string file = Path.Combine(_storageRoot, "PlayerData", "PlayerData_1_InitTestScene639276975825145332.json");
             Directory.CreateDirectory(Path.GetDirectoryName(file));
             File.WriteAllText(file, "{}");
