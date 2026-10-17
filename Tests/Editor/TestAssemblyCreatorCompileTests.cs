@@ -172,7 +172,7 @@ public class EditorRunnerUsage__RUN__
             // Act
             SessionState.SetString(UploadErrorsKey, string.Join("\n", UdonSharpUploadCompile.Run()));
             yield return new EnterPlayMode();
-            SessionState.SetString(CallsKey, string.Join("\n", RunTheExampleUdonDouble(SessionState.GetString(FolderKey, ""))));
+            SessionState.SetString(CallsKey, RunTheExampleUdonDouble(SessionState.GetString(FolderKey, "")));
             yield return new ExitPlayMode();
 
             // Assert
@@ -222,19 +222,28 @@ public class EditorRunnerUsage__RUN__
 
         private static IEnumerable<string> ReferencesOf(Assembly assembly) => assembly.assemblyReferences.Select(reference => reference.name);
 
-        private static string[] RunTheExampleUdonDouble(string tests)
+        // The calls the example double made, or what it threw: Unity Test Framework loses an exception
+        // thrown between EnterPlayMode and ExitPlayMode and passes the test, so the assertion shows it.
+        private static string RunTheExampleUdonDouble(string tests)
         {
-            Assembly udonDoubles = AssemblyOf(CompilationPipeline.GetAssemblies(AssembliesType.Editor), tests + "/UdonDoubles/ExampleUdonDouble.cs");
-            string prefix = udonDoubles.name.Substring(0, udonDoubles.name.Length - TestAssemblyCreator.UdonDoublesSuffix.Length);
-            Type exampleType = Type.GetType($"{prefix}.Tests.ExampleUdonDouble, {udonDoubles.name}", throwOnError: true);
+            try
+            {
+                Assembly udonDoubles = AssemblyOf(CompilationPipeline.GetAssemblies(AssembliesType.Editor), tests + "/UdonDoubles/ExampleUdonDouble.cs");
+                string prefix = udonDoubles.name.Substring(0, udonDoubles.name.Length - TestAssemblyCreator.UdonDoublesSuffix.Length);
+                Type exampleType = Type.GetType($"{prefix}.Tests.ExampleUdonDouble, {udonDoubles.name}", throwOnError: true);
 
-            using var udon = new UdonHost();
-            UdonBehaviour log = udon.Create<UdonCallLog>("Log");
-            var example = (UdonBehaviour)typeof(UdonHost).GetMethod(nameof(UdonHost.Create)).MakeGenericMethod(exampleType)
-                .Invoke(udon, new object[] { "Example", true });
-            example.SetProgramVariable("Log", log);
-            example.SendCustomEvent("OnExample");
-            return UdonHost.Calls(log);
+                using var udon = new UdonHost();
+                UdonBehaviour log = udon.Create<UdonCallLog>("Log");
+                var example = (UdonBehaviour)typeof(UdonHost).GetMethod(nameof(UdonHost.Create)).MakeGenericMethod(exampleType)
+                    .Invoke(udon, new object[] { "Example", true });
+                example.SetProgramVariable("Log", log);
+                example.SendCustomEvent("OnExample");
+                return string.Join("\n", UdonHost.Calls(log));
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
         }
 
         private static IEnumerable<string> Messages(Action act) => Logs.During(act).Select(log => log.Message);
