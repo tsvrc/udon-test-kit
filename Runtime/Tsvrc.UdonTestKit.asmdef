@@ -7,7 +7,6 @@
         "Tsvrc.UdonTestKit.UdonSpies",
         "UdonSharp.Runtime",
         "UdonSharp.Editor",
-        "VRC.SDKBase",
         "VRC.Udon",
         "VRC.Udon.Editor",
         "VRC.SDK3",
