@@ -82,7 +82,10 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
         public void OpenSettingsWindow_InBatchMode_LogsNoGraphicDeviceError()
         {
             // Arrange
-            Assume.That(Application.isBatchMode, Is.True, "Only batch mode has no graphics device for the window.");
+            if (!Application.isBatchMode)
+            {
+                Assert.Ignore("Only batch mode has no graphics device for the window.");
+            }
             LogAssert.ignoreFailingMessages = true;
             Application.logMessageReceived += RecordError;
 
