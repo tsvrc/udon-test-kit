@@ -165,6 +165,10 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(editorFolder.assemblyReferences.Select(assembly => assembly.name),
                 Is.SupersetOf(new[] { "Assembly-CSharp", "Assembly-CSharp-firstpass", "Tsvrc.UdonTestKit", "Tsvrc.UdonTestKit.UdonSpies" }));
             Assert.That(editorFolder.compiledAssemblyReferences.Select(Path.GetFileName), Has.Member("nunit.framework.dll"));
+            Assert.That(TestAssemblyCreator.AssemblyCSharpWarning, Is.EqualTo(
+                "[UdonTestKit] Some scripts under Assets have no assembly definition, so they compile into Assembly-CSharp or " +
+                "Assembly-CSharp-firstpass, which the created test assemblies can't reference. Edit Mode tests for them can go " +
+                "in an Editor folder without an assembly definition. Play Mode tests need those scripts in an assembly definition."));
         }
 
         // A script in a Plugins folder without an assembly definition is one TestAssemblyCreator warns
@@ -248,7 +252,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             // Assert
             Assert.That(definition.includePlatforms, Is.Empty);
             Assert.That(definition.defineConstraints, Is.Empty);
-            Assert.That(definition.references, Has.Member("Tsvrc.UdonTestKit.UdonSpies").And.No.Member("Tsvrc.UdonTestKit").And.None.Contains("TestRunner"));
+            Assert.That(definition.references, Is.SupersetOf(new[] { "Tsvrc.UdonTestKit.UdonSpies", "UdonSharp.Runtime", "VRC.SDKBase", "VRC.Udon", "VRC.SDK3" }));
+            Assert.That(definition.references, Has.No.Member("Tsvrc.UdonTestKit").And.None.Contains("TestRunner"));
             Assert.That(definition.precompiledReferences, Has.No.Member("nunit.framework.dll"));
         }
 
@@ -352,13 +357,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assembly package = CompiledAssembly("VRC.SDK3.Editor", "Packages/com.vrchat.worlds/Editor/Sdk.cs", AssemblyFlags.EditorAssembly);
             Assembly predefined = CompiledAssembly("Assembly-CSharp-Editor", "Assets/Editor/Loose.cs", AssemblyFlags.EditorAssembly);
             Assembly kit = CompiledAssembly("Tsvrc.UdonTestKit.Editor.Tests", "Assets/udon-test-kit/Tests/Editor/Tests.cs", AssemblyFlags.EditorAssembly);
+            Assembly audioTooling = CompiledAssembly("MyWorld.Audio.Editor", "Assets/MyWorld/Audio/Editor/Mixer.cs", AssemblyFlags.EditorAssembly);
 
             // Act
             IEnumerable<string> names = TestAssemblyCreator.EditorWorldAssemblyNames(
-                new[] { tooling, world, tests, package, predefined, kit }, name => name == "MyWorld.Tests.EditMode");
+                new[] { tooling, world, tests, package, predefined, kit, audioTooling }, name => name == "MyWorld.Tests.EditMode");
 
             // Assert
-            Assert.That(names, Is.EqualTo(new[] { "MyWorld.Editor" }));
+            Assert.That(names, Is.EqualTo(new[] { "MyWorld.Audio.Editor", "MyWorld.Editor" }));
         }
 
         [TestCase("Tsvrc.UdonTestKit.Editor.Tests", ExpectedResult = true)]
@@ -385,7 +391,8 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         [TestCase("Assembly-CSharp-firstpass", "Assets/Plugins/Loose.cs", ExpectedResult = true)]
         [TestCase("Assembly-CSharp", "Packages/com.example/Loose.cs", ExpectedResult = false)]
         [TestCase("MyWorld.Runtime", "Assets/MyWorld/Door.cs", ExpectedResult = false)]
-        public bool HasScriptsInPredefinedAssemblies_PlayerAssembly_IsTrueOnlyForTheirScriptsUnderAssets(string assembly, string script)
+        [TestCase("Assembly-CSharp", "Assets/UdonSharp/UtilityScripts/InteractToggle.cs", ExpectedResult = false)]
+        public bool HasScriptsInPredefinedAssemblies_PlayerAssembly_IsTrueOnlyForTheWorldsScriptsUnderAssets(string assembly, string script)
         {
             return TestAssemblyCreator.HasScriptsInPredefinedAssemblies(new[] { CompiledAssembly(assembly, script) });
         }
@@ -453,9 +460,11 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(prefix, Is.EqualTo("MyWorld3"));
         }
 
+        [TestCase("MyWorld.Tests.EditMode")]
+        [TestCase("MyWorld.Tests.PlayMode")]
         [TestCase("MyWorld.Tests.Doubles")]
         [TestCase("MyWorld.Tests.UdonDoubles")]
-        public void UniquePrefix_OnlyADoublesAssemblyExists_NumbersThePrefix(string existing)
+        public void UniquePrefix_OnlyOneAssemblyOfASetExists_NumbersThePrefix(string existing)
         {
             Assert.That(TestAssemblyCreator.UniquePrefix("MyWorld", new[] { existing }), Is.EqualTo("MyWorld2"));
         }

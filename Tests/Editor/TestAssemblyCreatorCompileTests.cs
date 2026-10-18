@@ -9,7 +9,6 @@ using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine.TestTools;
-using VRC.Udon;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
 {
@@ -21,8 +20,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
     {
         private const string RunKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Run";
         private const string LogsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Logs";
-        private const string CallsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Calls";
-        private const string UploadErrorsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.UploadErrors";
+        private const string ChangedKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Changed";
         private const string FolderKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Folder";
         private const string Parent = "Assets/UdonTestKitCreatorCompileTests";
         private const string Tests = Parent + "/Tests";
@@ -93,8 +91,7 @@ public class EditorRunnerUsage__RUN__
             Selection.activeObject = null;
             SessionState.EraseString(RunKey);
             SessionState.EraseString(LogsKey);
-            SessionState.EraseString(CallsKey);
-            SessionState.EraseString(UploadErrorsKey);
+            SessionState.EraseString(ChangedKey);
         }
 
         [UnityTearDown]
@@ -157,32 +154,35 @@ public class EditorRunnerUsage__RUN__
         }
 
         // The Udon doubles assembly is a player assembly with a U# assembly definition, so its example
-        // compiles for a world upload and runs as Udon. This assembly can't reference it, so the
-        // test reaches it by reflection.
+        // compiles for a world upload, and the example has the program asset UdonHost runs it from;
+        // the Play Mode tests run the kit's copy of it as Udon. This assembly can't reference it, so
+        // the test finds it by reflection. This project's only scripts without an assembly
+        // definition are UdonSharp's utility scripts, so creating the assemblies warns about none.
+        // Unity Test Framework loses a failure that comes after an Edit Mode test enters Play Mode,
+        // so the test checks all of it in Edit Mode.
         [UnityTest]
-        public IEnumerator Create_NoFolderGiven_CreatesAnUdonDoubleThatCompilesForUploadAndRunsAsUdon()
+        public IEnumerator Create_NoFolderGiven_CreatesAnUdonDoubleThatCompilesForUploadFromItsProgramAsset()
         {
             // Arrange
-            SessionState.SetString(FolderKey, TestAssemblyCreator.Create());
+            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => SessionState.SetString(FolderKey, TestAssemblyCreator.Create()))));
             yield return new WaitForDomainReload();
 
             // Act
-            SessionState.SetString(UploadErrorsKey, string.Join("\n", UdonSharpUploadCompile.Run()));
-            yield return new EnterPlayMode();
-            SessionState.SetString(CallsKey, string.Join("\n", RunTheExampleUdonDouble(SessionState.GetString(FolderKey, ""))));
-            yield return new ExitPlayMode();
+            IReadOnlyList<string> uploadErrors = UdonSharpUploadCompile.Run();
 
             // Assert
+            Type example = ExampleUdonDouble(SessionState.GetString(FolderKey, ""));
             Assert.That(SessionState.GetString(FolderKey, ""), Does.StartWith("Assets/Tests"));
-            Assert.That(SessionState.GetString(UploadErrorsKey, "not run"), Is.Empty);
-            Assert.That(SessionState.GetString(CallsKey, ""), Is.EqualTo("Example.OnExample"));
+            Assert.That(SessionState.GetString(LogsKey, "").Split('\n'), Has.No.Member(TestAssemblyCreator.AssemblyCSharpWarning));
+            Assert.That(uploadErrors, Is.Empty);
+            Assert.That(UdonHost.ProgramAssetOf(example).sourceCsScript.GetClass(), Is.EqualTo(example));
         }
 
         // The world got two assembly definitions after the set was created, one of them Editor-only.
         // The Play Mode test assembly references by GUID, as the Unity Editor writes them with Use
         // GUIDs on.
         [UnityTest]
-        public IEnumerator UpdateMenuItem_WorldAssemblyDefinitionsAddedAfterTheSet_AddsThemToTheSet()
+        public IEnumerator Update_WorldAssemblyDefinitionsAddedAfterTheSet_AddsThemToTheSetAndReturnsItsDefinitions()
         {
             // Arrange
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(Parent));
@@ -197,36 +197,32 @@ public class EditorRunnerUsage__RUN__
             yield return new WaitForDomainReload();
 
             // Act
-            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => EditorApplication.ExecuteMenuItem(TestAssemblyUpdater.MenuPath))));
+            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => SessionState.SetString(ChangedKey, string.Join("\n", TestAssemblyUpdater.Update())))));
             yield return new WaitForDomainReload();
 
             // Assert
             (Assembly editMode, Assembly playMode, Assembly doubles, Assembly udonDoubles) = CreatedAssemblies();
+            string[] changed = SessionState.GetString(ChangedKey, "").Split('\n');
+            Assert.That(changed, Is.EquivalentTo(new[] { editMode, playMode, doubles, udonDoubles }
+                .Select(assembly => CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(assembly.name))));
+            Assert.That(SessionState.GetString(LogsKey, "").Split('\n'),
+                Has.Member($"[UdonTestKit] Added the assembly definitions of the world to {string.Join(", ", changed)}."));
             Assert.That(ReferencesOf(editMode), Has.Member(WorldAssembly).And.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(playMode), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(doubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(ReferencesOf(udonDoubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(AssemblyDefinitionText.Items(File.ReadAllText(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(playMode.name)), "references"),
                 Has.All.StartsWith("GUID:"));
-            Assert.That(SessionState.GetString(LogsKey, ""), Does.StartWith("[UdonTestKit] Added the world's assembly definitions to "));
             Assert.That(TestAssemblyUpdater.Update(), Is.Empty);
         }
 
         private static IEnumerable<string> ReferencesOf(Assembly assembly) => assembly.assemblyReferences.Select(reference => reference.name);
 
-        private static string[] RunTheExampleUdonDouble(string tests)
+        private static Type ExampleUdonDouble(string tests)
         {
             Assembly udonDoubles = AssemblyOf(CompilationPipeline.GetAssemblies(AssembliesType.Editor), tests + "/UdonDoubles/ExampleUdonDouble.cs");
             string prefix = udonDoubles.name.Substring(0, udonDoubles.name.Length - TestAssemblyCreator.UdonDoublesSuffix.Length);
-            Type exampleType = Type.GetType($"{prefix}.Tests.ExampleUdonDouble, {udonDoubles.name}", throwOnError: true);
-
-            using var udon = new UdonHost();
-            UdonBehaviour log = udon.Create<UdonCallLog>("Log");
-            var example = (UdonBehaviour)typeof(UdonHost).GetMethod(nameof(UdonHost.Create)).MakeGenericMethod(exampleType)
-                .Invoke(udon, new object[] { "Example", true });
-            example.SetProgramVariable("Log", log);
-            example.SendCustomEvent("OnExample");
-            return UdonHost.Calls(log);
+            return Type.GetType($"{prefix}.Tests.ExampleUdonDouble, {udonDoubles.name}", throwOnError: true);
         }
 
         private static IEnumerable<string> Messages(Action act) => Logs.During(act).Select(log => log.Message);

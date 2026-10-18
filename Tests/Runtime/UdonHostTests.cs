@@ -108,14 +108,17 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [Test]
-        public void Dispose_GameObjectTheTestDestroyed_SkipsIt()
+        public void Dispose_GameObjectTheTestDestroyed_ThrowsAndLogsNothing()
         {
             // Arrange
             var udon = new UdonHost();
             Object.DestroyImmediate(udon.Create<UdonDouble>("Double").gameObject);
 
-            // Act and assert
-            Assert.That(() => udon.Dispose(), Throws.Nothing);
+            // Act
+            List<(LogType Type, string Message)> logs = Logs.During(udon.Dispose);
+
+            // Assert
+            Assert.That(logs, Is.Empty);
         }
 
         [UnityTest]

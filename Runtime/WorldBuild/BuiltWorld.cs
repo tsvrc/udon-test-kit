@@ -17,9 +17,6 @@ namespace Tsvrc.UdonTestKit
     /// </summary>
     public sealed class BuiltWorld
     {
-        // Where the VRChat SDK's world exporter records the path of the world file it built.
-        internal const string WorldFileKey = "currentBuildingAssetBundlePath";
-
         private BuiltWorld(string file, string text)
         {
             FilePath = file;
@@ -37,10 +34,11 @@ namespace Tsvrc.UdonTestKit
         /// world file with the world exporter of the VRChat SDK, without the callbacks the SDK runs
         /// before a build, reads the file and deletes it. Without those callbacks UdonSharp doesn't
         /// compile for upload first, so the world holds each program as last compiled for the Editor.
-        /// The exporter records the path of the file in EditorPrefs, which every Unity project of the
-        /// user shares, so the path recorded before is put back. Throws InvalidOperationException when
-        /// the loaded scenes don't hold exactly one scene descriptor, when the world scene was never
-        /// saved, or when the exporter builds nothing.</summary>
+        /// The record the SDK keeps of your own builds stays as it was: the last build, which
+        /// Test Last Build and Reload Last Build in the SDK control panel use, and the world files of
+        /// earlier builds, which the exporter would otherwise delete. Throws InvalidOperationException
+        /// when the loaded scenes don't hold exactly one scene descriptor, when the world scene was
+        /// never saved, or when the exporter builds nothing.</summary>
         public static BuiltWorld FromWorldScene()
         {
             return FromWorldScene(() => new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { }));
@@ -60,19 +58,14 @@ namespace Tsvrc.UdonTestKit
                 throw new InvalidOperationException("The world scene, which holds the scene descriptor, was never saved. The world exporter of the VRChat SDK builds only a saved scene.");
             }
 
-            string previousFile = EditorPrefs.GetString(WorldFileKey);
             string file;
-            try
+            using (new SdkBuildRecord())
             {
                 if (!export())
                 {
                     throw new InvalidOperationException("The world exporter of the VRChat SDK didn't build the world scene.");
                 }
-                file = EditorPrefs.GetString(WorldFileKey);
-            }
-            finally
-            {
-                EditorPrefs.SetString(WorldFileKey, previousFile);
+                file = EditorPrefs.GetString(SdkBuildRecord.WorldFileKey);
             }
             try
             {

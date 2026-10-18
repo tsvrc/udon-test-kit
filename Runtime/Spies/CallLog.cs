@@ -15,7 +15,7 @@ namespace Tsvrc.UdonTestKit
     public sealed class CallLog : IReadOnlyList<string>, IDisposable
     {
         private readonly List<string> _calls = new List<string>();
-        private readonly List<CallbackSpy> _spies = new List<CallbackSpy>();
+        private readonly List<GameObject> _hosts = new List<GameObject>();
 
         /// <summary>Creates a spy on a new GameObject with this name.</summary>
         public CallbackSpy CreateSpy(string name = "Spy") => CreateSpy<CallbackSpy>(name);
@@ -25,7 +25,7 @@ namespace Tsvrc.UdonTestKit
         {
             var spy = new GameObject(name).AddComponent<TSpy>();
             spy.Calls = this;
-            _spies.Add(spy);
+            _hosts.Add(spy.gameObject);
             return spy;
         }
 
@@ -34,14 +34,10 @@ namespace Tsvrc.UdonTestKit
 
         public void Dispose()
         {
-            foreach (CallbackSpy spy in _spies)
+            foreach (GameObject host in _hosts)
             {
-                if (spy != null)
-                {
-                    Object.DestroyImmediate(spy.gameObject);
-                }
+                Object.DestroyImmediate(host);
             }
-            _spies.Clear();
         }
 
         public int Count => _calls.Count;

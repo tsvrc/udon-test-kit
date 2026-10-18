@@ -17,13 +17,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     // for that m_Name.
     public class UnityBundleToolsTests
     {
-        private string _previousFile;
+        private ExportedWorld _exported;
         private string _folder;
 
         [SetUp]
         public void SetUp()
         {
-            _previousFile = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
+            _exported = new ExportedWorld();
             _folder = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
             Directory.CreateDirectory(_folder);
         }
@@ -31,12 +31,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         [TearDown]
         public void TearDown()
         {
-            string file = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
-            if (file != _previousFile && File.Exists(file))
-            {
-                File.Delete(file);
-            }
-            EditorPrefs.SetString(BuiltWorld.WorldFileKey, _previousFile);
+            _exported.Dispose();
             Directory.Delete(_folder, recursive: true);
         }
 
@@ -47,7 +42,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             using var scene = new BuildableScene(typeof(UdonCallLog));
             new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { });
             string world = Path.Combine(_folder, "world");
-            File.Copy(EditorPrefs.GetString(BuiltWorld.WorldFileKey), world);
+            File.Copy(EditorPrefs.GetString(SdkBuildRecord.WorldFileKey), world);
             RunTool("WebExtract", $"\"{world}\"");
 
             // Act

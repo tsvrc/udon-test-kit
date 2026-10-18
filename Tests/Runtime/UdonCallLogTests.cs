@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UdonSharp;
 using VRC.Udon;
 
 namespace Tsvrc.UdonTestKit.Tests
@@ -63,6 +64,12 @@ namespace Tsvrc.UdonTestKit.Tests
 
             // Assert
             Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Double._Record" }));
+        }
+
+        [Test]
+        public void SyncMode_Compiled_IsNone()
+        {
+            Assert.That(UdonHost.ProgramAssetOf(typeof(UdonCallLog)).behaviourSyncMode, Is.EqualTo(BehaviourSyncMode.None));
         }
     }
 }

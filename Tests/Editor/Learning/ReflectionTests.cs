@@ -12,7 +12,9 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     // does. When no overload takes the arguments it throws MissingMethodException, and when two take
     // them equally well AmbiguousMatchException. So PrivateFieldAccess binds a method call through it,
     // one class of the hierarchy at a time. Unlike C#, it lets null fit a parameter of a value type,
-    // so PrivateFieldAccess first leaves out the overloads a null argument can't go to.
+    // so PrivateFieldAccess first leaves out the overloads a null argument can't go to. It also lets
+    // null fit a type parameter, and picks a method with type parameters, which can't be called
+    // without type arguments, so PrivateFieldAccess leaves those methods out too.
     public class ReflectionTests
     {
         private const BindingFlags InstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -39,6 +41,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         public void BindToMethod_ArgumentsTwoOverloadsTakeEquallyWell_ThrowsAmbiguousMatchException()
         {
             Assert.That(() => Bind(nameof(Overloads.Tie), "a", "b"), Throws.TypeOf<AmbiguousMatchException>());
+        }
+
+        [Test]
+        public void BindToMethod_NullArgumentMethodWithTypeParameters_PicksIt()
+        {
+            Assert.That(Bind(nameof(Overloads.Generic), new object[] { null }).ContainsGenericParameters, Is.True);
         }
 
         [Test]
@@ -95,6 +103,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             public void StringOrInt(int value) { }
             public void Tie(string first, object second) { }
             public void Tie(object first, string second) { }
+            public T Generic<T>(T value) => value;
         }
 #pragma warning restore IDE0060
     }

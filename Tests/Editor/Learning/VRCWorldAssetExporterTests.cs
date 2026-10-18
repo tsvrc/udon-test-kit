@@ -12,14 +12,19 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using VRC.SDK3.Components;
 using VRC.SDK3.Editor.Builder;
+using VRC.SDKBase.Editor;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
     // The VRChat SDK's world exporter builds the world scene, the loaded scene that holds the scene
-    // descriptor, into a world file and records the path of the file in EditorPrefs. It doesn't run
-    // the callbacks the SDK runs before a build, among them the UdonSharp compile for upload, so the
-    // world holds each program as UdonSharp last compiled it for the Editor. So BuiltWorld reads the
-    // path there, puts back the one recorded before, and says which programs its world holds.
+    // descriptor, into a world file and records the path of the file in EditorPrefs, as the current
+    // build and as the last build, with the signature of the world. It deletes the world file of the
+    // last build since the scripts last reloaded, and the one of the build before, whose path it
+    // keeps in SessionState and replaces with the last build. It doesn't run the callbacks the SDK
+    // runs before a build, among them the UdonSharp compile for upload, so the world holds each
+    // program as UdonSharp last compiled it for the Editor. So BuiltWorld reads the path there, keeps
+    // both files and puts back what the SDK recorded (SdkBuildRecord), and says which programs its
+    // world holds.
     //
     // It counts the scene descriptors of every loaded scene, inactive ones too, and builds only when
     // there is exactly one, whichever scene is active, even with unsaved changes. It builds nothing
@@ -29,39 +34,73 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     // batch mode a dialog waits for a click.
     public class VRCWorldAssetExporterTests
     {
-        private string _previousFile;
+        private ExportedWorld _exported;
+        private string _standIn;
 
         [SetUp]
         public void SetUp()
         {
-            _previousFile = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
+            _exported = new ExportedWorld();
+            _standIn = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
         }
 
         [TearDown]
         public void TearDown()
         {
-            string file = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
-            if (file != _previousFile && File.Exists(file))
-            {
-                File.Delete(file);
-            }
-            EditorPrefs.SetString(BuiltWorld.WorldFileKey, _previousFile);
+            File.Delete(_standIn);
+            _exported.Dispose();
         }
 
         [Test]
-        public void ExportCurrentSceneResource_BuildableScene_RecordsTheWorldFileInEditorPrefs()
+        public void ExportCurrentSceneResource_BuildableScene_RecordsTheWorldFileAsTheCurrentAndTheLastBuild()
         {
             // Arrange
             using var scene = new BuildableScene();
-            EditorPrefs.SetString(BuiltWorld.WorldFileKey, "");
+            EditorPrefs.SetString(SdkBuildRecord.WorldFileKey, "");
+            EditorPrefs.SetString(SdkBuildRecord.LastBuildKey, "");
+            EditorPrefs.SetString(SdkBuildRecord.SignatureKey, "");
 
             // Act
             bool built = Export();
 
             // Assert
-            string file = EditorPrefs.GetString(BuiltWorld.WorldFileKey);
+            string file = EditorPrefs.GetString(SdkBuildRecord.WorldFileKey);
             Assert.That(built, Is.True);
             Assert.That(File.Exists(file), Is.True, $"No world file at '{file}'.");
+            Assert.That(EditorPrefs.GetString(SdkBuildRecord.LastBuildKey), Is.EqualTo(file));
+            Assert.That(EditorPrefs.GetString(SdkBuildRecord.SignatureKey), Is.Not.Empty);
+        }
+
+        [Test]
+        public void ExportCurrentSceneResource_LastBuildSinceTheScriptsReloaded_DeletesItsWorldFile()
+        {
+            // Arrange
+            using var scene = new BuildableScene();
+            File.WriteAllText(_standIn, "");
+            VRC_SdkBuilder.VRCPath = _standIn;
+
+            // Act
+            Export();
+
+            // Assert
+            Assert.That(File.Exists(_standIn), Is.False);
+        }
+
+        [Test]
+        public void ExportCurrentSceneResource_BuildBefore_DeletesItsWorldFileAndPutsTheLastBuildInItsPlace()
+        {
+            // Arrange
+            using var scene = new BuildableScene();
+            File.WriteAllText(_standIn, "");
+            SessionState.SetString(SdkBuildRecord.BuildBeforeKey, _standIn);
+            EditorPrefs.SetString(SdkBuildRecord.WorldFileKey, "The last build");
+
+            // Act
+            Export();
+
+            // Assert
+            Assert.That(File.Exists(_standIn), Is.False);
+            Assert.That(SessionState.GetString(SdkBuildRecord.BuildBeforeKey, ""), Is.EqualTo("The last build"));
         }
 
         [Test]
@@ -131,7 +170,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             bool built = Export();
 
             // Assert
-            string text = BuiltWorld.Read(EditorPrefs.GetString(BuiltWorld.WorldFileKey));
+            string text = BuiltWorld.Read(EditorPrefs.GetString(SdkBuildRecord.WorldFileKey));
             Assert.That(built, Is.True);
             Assert.That(text, Does.Contain(ProgramName(typeof(UdonCallLog))));
             Assert.That(text, Does.Not.Contain(ProgramName(typeof(UdonDouble))));

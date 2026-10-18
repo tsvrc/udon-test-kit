@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
+using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -95,14 +97,17 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void Dispose_SpyAlreadyDestroyed_DoesNotThrow()
+        public void Dispose_SpyTheTestDestroyed_ThrowsAndLogsNothing()
         {
             // Arrange
             var calls = new CallLog();
             Object.DestroyImmediate(calls.CreateSpy().gameObject);
 
-            // Act and assert
-            Assert.DoesNotThrow(calls.Dispose);
+            // Act
+            List<(LogType Type, string Message)> logs = Logs.During(calls.Dispose);
+
+            // Assert
+            Assert.That(logs, Is.Empty);
         }
 
         [Test]

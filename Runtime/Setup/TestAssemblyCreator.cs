@@ -97,9 +97,14 @@ namespace Tsvrc.UdonTestKit
 
         internal static bool IsKitAssembly(string assemblyName) => assemblyName.StartsWith("Tsvrc.UdonTestKit");
 
+        // UdonSharp copies its utility scripts, which have no assembly definition, into a folder named
+        // UtilityScripts next to its data asset. They aren't the world's.
         internal static bool HasScriptsInPredefinedAssemblies(IEnumerable<Assembly> playerAssemblies)
         {
-            return playerAssemblies.Any(assembly => IsPredefined(assembly.name) && assembly.sourceFiles.Any(file => file.StartsWith("Assets/")));
+            string dataAsset = AssetDatabase.FindAssets("t:UdonSharpDataLocator").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
+            string utilityScripts = $"{Path.GetDirectoryName(dataAsset)}/UtilityScripts/".Replace('\\', '/');
+            return playerAssemblies.Any(assembly => IsPredefined(assembly.name)
+                && assembly.sourceFiles.Any(file => file.StartsWith("Assets/") && !file.StartsWith(utilityScripts)));
         }
 
         // Writes the Tests folder into parentFolder and returns its path, without refreshing the
