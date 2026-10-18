@@ -18,7 +18,8 @@ namespace Tsvrc.UdonTestKit
     /// Creates a Tests folder with an Edit Mode and a Play Mode test assembly, and two test doubles
     /// assemblies both of them reference: one for behaviours the tests add to GameObjects, such as
     /// spies, and one for behaviours that run as Udon. They reference the kit, UdonSharp, the VRChat
-    /// SDK, and the world's own assemblies under Assets. Each gets an example.
+    /// SDK, and the world's own assembly definitions under Assets, the Editor-only ones from the Edit
+    /// Mode test assembly only. Each gets an example.
     /// </summary>
     public static class TestAssemblyCreator
     {
@@ -39,8 +40,9 @@ namespace Tsvrc.UdonTestKit
 
         internal const string AssemblyCSharpWarning =
             "[UdonTestKit] Some scripts under Assets have no assembly definition, so they compile into " +
-            "Assembly-CSharp, which the created test assemblies can't reference. Edit Mode tests for them can go " +
-            "in an Editor folder without an assembly definition. Play Mode tests need those scripts in an assembly definition.";
+            "Assembly-CSharp or Assembly-CSharp-firstpass, which the created test assemblies can't reference. Edit Mode " +
+            "tests for them can go in an Editor folder without an assembly definition. Play Mode tests need those " +
+            "scripts in an assembly definition.";
 
         // The examples go in the namespace <prefix>.Tests, which this stands for.
         internal const string PrefixToken = "__PREFIX__";
@@ -76,54 +78,70 @@ namespace Tsvrc.UdonTestKit
             Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
             Assembly[] player = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
             string prefix = UniquePrefix(AssemblyPrefix(Application.productName), editor.Select(assembly => assembly.name));
-            string folder = Create(parentFolder, prefix, WorldAssemblyNames(editor, player));
+            string folder = Create(parentFolder, prefix, WorldAssemblyNames(player, IsTestAssembly), EditorWorldAssemblyNames(editor, IsTestAssembly));
             AssetDatabase.Refresh();
             CreateUdonSharpAssets(folder + "/UdonDoubles", prefix + UdonDoublesSuffix);
             Debug.Log($"[UdonTestKit] Created test assemblies in {folder}.");
-            if (HasScriptsInAssemblyCSharp(player))
+            if (HasScriptsInPredefinedAssemblies(player))
             {
                 Debug.LogWarning(AssemblyCSharpWarning);
             }
             return folder;
         }
 
-        internal static bool HasScriptsInAssemblyCSharp(IEnumerable<Assembly> playerAssemblies)
+        // Unity compiles scripts without an assembly definition into the predefined assemblies:
+        // Assembly-CSharp, Assembly-CSharp-firstpass, and their Editor ones.
+        internal static bool IsPredefined(string assemblyName) => assemblyName.StartsWith("Assembly-CSharp");
+
+        internal static bool HasScriptsInPredefinedAssemblies(IEnumerable<Assembly> playerAssemblies)
         {
-            return playerAssemblies.Any(assembly => assembly.name == "Assembly-CSharp" && assembly.sourceFiles.Any(file => file.StartsWith("Assets/")));
+            return playerAssemblies.Any(assembly => IsPredefined(assembly.name) && assembly.sourceFiles.Any(file => file.StartsWith("Assets/")));
         }
 
         // Writes the Tests folder into parentFolder and returns its path, without refreshing the
         // AssetDatabase.
-        internal static string Create(string parentFolder, string assemblyPrefix, IEnumerable<string> worldAssemblies)
+        internal static string Create(string parentFolder, string assemblyPrefix, IEnumerable<string> worldAssemblies,
+            IEnumerable<string> editorWorldAssemblies)
         {
             string testsFolder = UniqueFolder(Path.Combine(parentFolder, "Tests"));
             List<string> world = worldAssemblies.ToList();
-            string doubles = assemblyPrefix + DoublesSuffix;
-            string udonDoubles = assemblyPrefix + UdonDoublesSuffix;
-            List<string> worldAndDoubles = world.Append(doubles).Append(udonDoubles).ToList();
+            List<string> editorWorld = editorWorldAssemblies.ToList();
+            string[] doubles = { assemblyPrefix + DoublesSuffix, assemblyPrefix + UdonDoublesSuffix };
 
-            WriteAssembly(Path.Combine(testsFolder, "UdonDoubles"), udonDoubles, AssemblyKind.UdonDoubles, world,
-                "ExampleUdonDouble.cs", Example(ExampleUdonDouble, assemblyPrefix));
-            WriteAssembly(Path.Combine(testsFolder, "Doubles"), doubles, AssemblyKind.Doubles, world,
-                "ExampleSpy.cs", Example(ExampleSpy, assemblyPrefix));
-            WriteAssembly(Path.Combine(testsFolder, "EditMode"), assemblyPrefix + EditModeSuffix, AssemblyKind.EditModeTests, worldAndDoubles,
-                "ExampleEditModeTests.cs", Example(ExampleEditModeTests, assemblyPrefix));
-            WriteAssembly(Path.Combine(testsFolder, "PlayMode"), assemblyPrefix + PlayModeSuffix, AssemblyKind.PlayModeTests, worldAndDoubles,
-                "ExamplePlayModeTests.cs", Example(ExamplePlayModeTests, assemblyPrefix));
+            WriteAssembly(Path.Combine(testsFolder, "UdonDoubles"), assemblyPrefix + UdonDoublesSuffix, AssemblyKind.UdonDoubles,
+                WorldReferencesOf(AssemblyKind.UdonDoubles, world, editorWorld), "ExampleUdonDouble.cs", Example(ExampleUdonDouble, assemblyPrefix));
+            WriteAssembly(Path.Combine(testsFolder, "Doubles"), assemblyPrefix + DoublesSuffix, AssemblyKind.Doubles,
+                WorldReferencesOf(AssemblyKind.Doubles, world, editorWorld), "ExampleSpy.cs", Example(ExampleSpy, assemblyPrefix));
+            WriteAssembly(Path.Combine(testsFolder, "EditMode"), assemblyPrefix + EditModeSuffix, AssemblyKind.EditModeTests,
+                WorldReferencesOf(AssemblyKind.EditModeTests, world, editorWorld).Concat(doubles), "ExampleEditModeTests.cs", Example(ExampleEditModeTests, assemblyPrefix));
+            WriteAssembly(Path.Combine(testsFolder, "PlayMode"), assemblyPrefix + PlayModeSuffix, AssemblyKind.PlayModeTests,
+                WorldReferencesOf(AssemblyKind.PlayModeTests, world, editorWorld).Concat(doubles), "ExamplePlayModeTests.cs", Example(ExamplePlayModeTests, assemblyPrefix));
 
             return testsFolder.Replace('\\', '/');
         }
 
         internal static string Example(string example, string assemblyPrefix) => example.Replace(PrefixToken, assemblyPrefix);
 
-        internal static string AssemblyDefinitionJson(string name, AssemblyKind kind, IEnumerable<string> otherReferences)
+        // The world's assemblies an assembly of a kind references: those in player builds, and the
+        // Editor-only ones for the Edit Mode test assembly, the one Editor-only assembly of a set.
+        private static IEnumerable<string> WorldReferencesOf(AssemblyKind kind, IEnumerable<string> worldAssemblies, IEnumerable<string> editorWorldAssemblies)
         {
-            bool tests = kind == AssemblyKind.EditModeTests || kind == AssemblyKind.PlayModeTests;
+            return kind == AssemblyKind.EditModeTests ? worldAssemblies.Concat(editorWorldAssemblies) : worldAssemblies;
+        }
+
+        // Unity Test Framework for the test assemblies, and the kit.
+        internal static IEnumerable<string> KitReferencesOf(AssemblyKind kind)
+        {
             IEnumerable<string> testRunner = kind == AssemblyKind.EditModeTests ? new[] { "UnityEngine.TestRunner", "UnityEditor.TestRunner" }
                 : kind == AssemblyKind.PlayModeTests ? new[] { "UnityEngine.TestRunner" }
                 : Enumerable.Empty<string>();
-            IEnumerable<string> kit = kind == AssemblyKind.UdonDoubles ? UdonDoublesReferences : KitReferences;
-            IEnumerable<string> references = testRunner.Concat(kit).Concat(otherReferences).Distinct();
+            return testRunner.Concat(kind == AssemblyKind.UdonDoubles ? UdonDoublesReferences : KitReferences);
+        }
+
+        internal static string AssemblyDefinitionJson(string name, AssemblyKind kind, IEnumerable<string> otherReferences)
+        {
+            bool tests = kind == AssemblyKind.EditModeTests || kind == AssemblyKind.PlayModeTests;
+            IEnumerable<string> references = KitReferencesOf(kind).Concat(otherReferences).Distinct();
             IEnumerable<string> dlls = tests ? SdkDlls.Prepend("nunit.framework.dll") : SdkDlls;
 
             var json = new StringBuilder();
@@ -144,23 +162,37 @@ namespace Tsvrc.UdonTestKit
             return json.ToString();
         }
 
-        // The world's own assemblies: assembly definitions with source files under Assets, other
-        // than test assemblies, the kit's, and the Udon doubles assemblies the kit created. Scripts
-        // without an assembly definition compile into Assembly-CSharp, which an assembly definition
-        // can't reference.
-        internal static IEnumerable<string> WorldAssemblyNames(IEnumerable<Assembly> editorAssemblies, IEnumerable<Assembly> playerAssemblies)
+        // The world's own assemblies in player builds: assembly definitions with source files under
+        // Assets, other than test assemblies, the kit's, and the Udon doubles assemblies the kit
+        // created. An assembly definition can't use the scripts of a predefined assembly.
+        internal static IEnumerable<string> WorldAssemblyNames(IEnumerable<Assembly> playerAssemblies, Func<string, bool> isTestAssembly)
         {
-            HashSet<string> testAssemblies = new HashSet<string>(editorAssemblies
-                .Where(assembly => assembly.allReferences.Any(path => Path.GetFileName(path) == "nunit.framework.dll"))
-                .Select(assembly => assembly.name));
-
             return playerAssemblies
-                .Where(assembly => assembly.name != "Assembly-CSharp" && !testAssemblies.Contains(assembly.name) && !assembly.name.StartsWith("Tsvrc.UdonTestKit")
-                    && !assembly.name.EndsWith(UdonDoublesSuffix))
-                .Where(assembly => assembly.sourceFiles.Any(file => file.StartsWith("Assets/")))
+                .Where(assembly => IsWorldAssembly(assembly, isTestAssembly) && !assembly.name.EndsWith(UdonDoublesSuffix))
                 .Select(assembly => assembly.name)
                 .OrderBy(name => name);
         }
+
+        // The world's own Editor-only assemblies, such as its Editor tooling.
+        internal static IEnumerable<string> EditorWorldAssemblyNames(IEnumerable<Assembly> editorAssemblies, Func<string, bool> isTestAssembly)
+        {
+            return editorAssemblies
+                .Where(assembly => (assembly.flags & AssemblyFlags.EditorAssembly) != 0 && IsWorldAssembly(assembly, isTestAssembly))
+                .Select(assembly => assembly.name)
+                .OrderBy(name => name);
+        }
+
+        // A test assembly is one whose assembly definition lists NUnit. The references Unity compiles
+        // an assembly with can't tell: an Editor-only assembly definition gets NUnit without listing it.
+        internal static bool IsTestAssembly(string assemblyName)
+        {
+            string definition = CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(assemblyName);
+            return definition != null && AssemblyDefinitionText.Items(File.ReadAllText(definition), "precompiledReferences").Contains("nunit.framework.dll");
+        }
+
+        private static bool IsWorldAssembly(Assembly assembly, Func<string, bool> isTestAssembly) =>
+            !IsPredefined(assembly.name) && !assembly.name.StartsWith("Tsvrc.UdonTestKit") && assembly.sourceFiles.Any(file => file.StartsWith("Assets/"))
+            && !isTestAssembly(assembly.name);
 
         internal static string AssemblyPrefix(string productName)
         {
@@ -195,11 +227,11 @@ namespace Tsvrc.UdonTestKit
             AssetDatabase.CreateAsset(programAsset, $"{folder}/ExampleUdonDouble.asset");
         }
 
-        private static void WriteAssembly(string folder, string name, AssemblyKind kind, IEnumerable<string> references,
+        private static void WriteAssembly(string folder, string name, AssemblyKind kind, IEnumerable<string> otherReferences,
             string exampleFileName, string exampleSource)
         {
             Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, name + ".asmdef"), AssemblyDefinitionJson(name, kind, references));
+            File.WriteAllText(Path.Combine(folder, name + ".asmdef"), AssemblyDefinitionJson(name, kind, otherReferences));
             File.WriteAllText(Path.Combine(folder, exampleFileName), exampleSource);
         }
 
