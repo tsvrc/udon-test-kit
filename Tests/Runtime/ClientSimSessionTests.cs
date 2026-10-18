@@ -126,6 +126,14 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [UnityTest]
+        public IEnumerator Start_SceneWithoutADescriptor_AddsOneNamedTestSceneDescriptor()
+        {
+            yield return Session.Start();
+
+            Assert.That(SceneDescriptors().Single().name, Is.EqualTo("__TestSceneDescriptor"));
+        }
+
+        [UnityTest]
         public IEnumerator Start_SceneHasADescriptor_SpawnsAtItsSpawnPoint()
         {
             // Arrange
