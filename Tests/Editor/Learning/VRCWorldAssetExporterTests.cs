@@ -9,23 +9,24 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using VRC.Core;
+using UdonSharpEditor;
 using VRC.SDK3.Components;
 using VRC.SDK3.Editor.Builder;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
-    // The VRChat SDK's world exporter builds the open scene into a world file and records the path of
-    // the file in EditorPrefs. It doesn't run the callbacks the SDK runs before a build, among them
-    // the UdonSharp compile for upload, so the world holds each program as UdonSharp last compiled it
-    // for the Editor. So BuiltWorld reads the path there, puts back the one recorded before, and says
-    // which programs its world holds.
+    // The VRChat SDK's world exporter builds the world scene, the loaded scene that holds the scene
+    // descriptor, into a world file and records the path of the file in EditorPrefs. It doesn't run
+    // the callbacks the SDK runs before a build, among them the UdonSharp compile for upload, so the
+    // world holds each program as UdonSharp last compiled it for the Editor. So BuiltWorld reads the
+    // path there, puts back the one recorded before, and says which programs its world holds.
     //
-    // It builds a scene with exactly one scene descriptor, active or not, and unsaved changes. It
-    // builds nothing from a scene with any other number of descriptors, which it asks about with a
-    // dialog, or from a scene never saved, which on Windows it asks about with a dialog too. In batch
-    // mode Unity cancels a dialog and logs that it did. So BuiltWorld.FromOpenScene checks both before
-    // it builds, since outside batch mode a dialog waits for a click.
+    // It counts the scene descriptors of every loaded scene, inactive ones too, and builds only when
+    // there is exactly one, whichever scene is active, even with unsaved changes. It builds nothing
+    // with any other number, which it asks about with a dialog, or when the world scene was never
+    // saved, which on Windows it asks about with a dialog too. In batch mode Unity cancels a dialog
+    // and logs that it did. So BuiltWorld.FromWorldScene checks both before it builds, since outside
+    // batch mode a dialog waits for a click.
     public class VRCWorldAssetExporterTests
     {
         private string _previousFile;
@@ -79,6 +80,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.Member(UdonProbe.EditorOnlyMarker));
         }
 
+
         [TestCase(0, 0)]
         [TestCase(2, 0)]
         [TestCase(1, 1)]
@@ -88,9 +90,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             IgnoreOutsideBatchMode();
             using var scene = new BuildableScene();
             Object.DestroyImmediate(Object.FindObjectOfType<VRCSceneDescriptor>().gameObject);
-            AddDescriptors(active, inactive);
-            EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
-            LogAssert.Expect(LogType.Assert, new Regex("^Cancelling DisplayDialog: Build Custom Scene Scene needs exactly one VRC_SceneDescriptor"));
+            for (int i = 0; i < active + inactive; i++)
+            {
+                BuildableScene.AddDescriptor(active: i < active);
+            }
+            EditorSceneManager.SaveScene(scene.Scene);
+            LogAssert.Expect(LogType.Assert, new Regex("^" + Regex.Escape(DescriptorDialog)));
 
             // Act
             bool built = Export();
@@ -99,12 +104,46 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(built, Is.False);
         }
 
-        [Test, UnityPlatform(RuntimePlatform.WindowsEditor)]
-        public void ExportCurrentSceneResource_SceneNeverSavedOnWindows_AsksWhereToSaveItAndBuildsNothing()
+        [Test]
+        public void ExportCurrentSceneResource_DescriptorInEachOfTwoLoadedScenes_AsksWithADialogAndBuildsNothing()
         {
             // Arrange
             IgnoreOutsideBatchMode();
-            NewSceneWithADescriptor();
+            using var scene = new BuildableScene();
+            BuildableScene.AddUnsavedScene(withDescriptor: true);
+            LogAssert.Expect(LogType.Assert, new Regex("^" + Regex.Escape(DescriptorDialog)));
+
+            // Act
+            bool built = Export();
+
+            // Assert
+            Assert.That(built, Is.False);
+        }
+
+        [Test]
+        public void ExportCurrentSceneResource_DescriptorInALoadedSceneThatIsntActive_BuildsThatScene()
+        {
+            // Arrange: the active scene is another one, never saved.
+            using var scene = new BuildableScene(typeof(UdonCallLog));
+            BuildableScene.AddUnsavedScene(withDescriptor: false, typeof(UdonProbe));
+
+            // Act
+            bool built = Export();
+
+            // Assert
+            string text = BuiltWorld.Read(EditorPrefs.GetString(BuiltWorld.WorldFileKey));
+            Assert.That(built, Is.True);
+            Assert.That(text, Does.Contain(ProgramName(typeof(UdonCallLog))));
+            Assert.That(text, Does.Not.Contain(ProgramName(typeof(UdonProbe))));
+        }
+
+        [Test, UnityPlatform(RuntimePlatform.WindowsEditor)]
+        public void ExportCurrentSceneResource_WorldSceneNeverSavedOnWindows_AsksWhereToSaveItAndBuildsNothing()
+        {
+            // Arrange
+            IgnoreOutsideBatchMode();
+            using var scene = new BuildableScene();
+            MakeAnotherSceneTheWorldSceneNeverSaved(scene);
             LogAssert.Expect(LogType.Assert, new Regex("^Cancelling FileDialog: Save Scene"));
             LogAssert.Expect(LogType.Error, "AssetBundle was not built");
 
@@ -116,11 +155,12 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         }
 
         [Test, UnityPlatform(exclude = new[] { RuntimePlatform.WindowsEditor })]
-        public void ExportCurrentSceneResource_SceneNeverSaved_BuildsNothing()
+        public void ExportCurrentSceneResource_WorldSceneNeverSaved_BuildsNothing()
         {
             // Arrange
             IgnoreOutsideBatchMode();
-            NewSceneWithADescriptor();
+            using var scene = new BuildableScene();
+            MakeAnotherSceneTheWorldSceneNeverSaved(scene);
             LogAssert.Expect(LogType.Error, "AssetBundle was not built");
 
             // Act
@@ -139,7 +179,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             VRCSceneDescriptor descriptor = Object.FindObjectOfType<VRCSceneDescriptor>();
             descriptor.enabled = componentEnabled;
             descriptor.gameObject.SetActive(gameObjectActive);
-            EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+            EditorSceneManager.SaveScene(scene.Scene);
 
             // Act and assert
             Assert.That(Export(), Is.True);
@@ -151,30 +191,28 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         {
             // Arrange
             using var scene = new BuildableScene();
-            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            EditorSceneManager.MarkSceneDirty(scene.Scene);
 
             // Act and assert
             Assert.That(Export(), Is.True);
         }
 
+        private const string DescriptorDialog = "Cancelling DisplayDialog: Build Custom Scene Scene needs exactly one VRC_SceneDescriptor";
+
         private static bool Export() => new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { });
 
-        private static void NewSceneWithADescriptor()
+        // The saved scene keeps being the active scene, and the scene descriptor moves to a new scene
+        // that is never saved.
+        private static void MakeAnotherSceneTheWorldSceneNeverSaved(BuildableScene scene)
         {
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            AddDescriptors(1, 0);
+            Object.DestroyImmediate(Object.FindObjectOfType<VRCSceneDescriptor>().gameObject);
+            EditorSceneManager.SaveScene(scene.Scene);
+            BuildableScene.AddUnsavedScene(withDescriptor: true);
+            SceneManager.SetActiveScene(scene.Scene);
         }
 
-        private static void AddDescriptors(int active, int inactive)
-        {
-            for (int i = 0; i < active + inactive; i++)
-            {
-                var descriptor = new GameObject("Descriptor");
-                descriptor.AddComponent<VRCSceneDescriptor>().spawns = new[] { descriptor.transform };
-                descriptor.AddComponent<PipelineManager>();
-                descriptor.SetActive(i < active);
-            }
-        }
+        private static string ProgramName(System.Type udonSharpClass) =>
+            $"m_Name \"{UdonSharpEditorUtility.GetUdonSharpProgramAsset(udonSharpClass).SerializedProgramAsset.name}\"";
 
         private static void IgnoreOutsideBatchMode()
         {

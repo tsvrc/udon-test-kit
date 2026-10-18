@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using VRC.SDK3.Editor.Builder;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;
@@ -12,8 +11,9 @@ using Object = UnityEngine.Object;
 namespace Tsvrc.UdonTestKit
 {
     /// <summary>
-    /// A world the VRChat SDK built from the open scene, so a test can check what a world build holds,
-    /// such as which UdonSharp programs reach it.
+    /// A world the VRChat SDK built from the world scene, the loaded scene that holds the scene
+    /// descriptor, so a test can check what a world build holds, such as which UdonSharp programs
+    /// reach it.
     /// </summary>
     public sealed class BuiltWorld
     {
@@ -26,41 +26,47 @@ namespace Tsvrc.UdonTestKit
             Text = text;
         }
 
-        // Where the world file was before FromOpenScene deleted it.
+        // Where the world file was before FromWorldScene deleted it.
         internal string FilePath { get; }
 
         /// <summary>The objects in the world file, as text from the WebExtract and binary2text tools
         /// that ship with the Unity Editor.</summary>
         public string Text { get; }
 
-        /// <summary>Builds the open scene into a world file with the world exporter of the VRChat SDK,
-        /// without the callbacks the SDK runs before a build, reads the file and deletes it. Without
-        /// those callbacks UdonSharp doesn't compile for upload first, so the world holds each program
-        /// as last compiled for the Editor. The exporter records the path of the file in EditorPrefs,
-        /// which every Unity project of the user shares, so the path recorded before is put back.
-        /// Throws InvalidOperationException when the open scene doesn't have exactly one scene
-        /// descriptor, or was never saved.</summary>
-        public static BuiltWorld FromOpenScene()
+        /// <summary>Builds the world scene, the loaded scene that holds the scene descriptor, into a
+        /// world file with the world exporter of the VRChat SDK, without the callbacks the SDK runs
+        /// before a build, reads the file and deletes it. Without those callbacks UdonSharp doesn't
+        /// compile for upload first, so the world holds each program as last compiled for the Editor.
+        /// The exporter records the path of the file in EditorPrefs, which every Unity project of the
+        /// user shares, so the path recorded before is put back. Throws InvalidOperationException when
+        /// the loaded scenes don't hold exactly one scene descriptor, when the world scene was never
+        /// saved, or when the exporter builds nothing.</summary>
+        public static BuiltWorld FromWorldScene()
+        {
+            return FromWorldScene(() => new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { }));
+        }
+
+        internal static BuiltWorld FromWorldScene(Func<bool> export)
         {
             // The exporter builds neither. It asks about the descriptors with a dialog, and on Windows
-            // about the scene never saved too, and outside batch mode a dialog waits for a click.
-            int descriptors = Object.FindObjectsOfType<VRC_SceneDescriptor>(true).Length;
-            if (descriptors != 1)
+            // about the world scene never saved too, and outside batch mode a dialog waits for a click.
+            VRC_SceneDescriptor[] descriptors = Object.FindObjectsOfType<VRC_SceneDescriptor>(true);
+            if (descriptors.Length != 1)
             {
-                throw new InvalidOperationException($"The open scene has {descriptors} scene descriptors. The world exporter of the VRChat SDK builds a scene with exactly one.");
+                throw new InvalidOperationException($"The loaded scenes have {descriptors.Length} scene descriptors. The world exporter of the VRChat SDK builds a world with exactly one.");
             }
-            if (string.IsNullOrEmpty(SceneManager.GetActiveScene().path))
+            if (string.IsNullOrEmpty(descriptors[0].gameObject.scene.path))
             {
-                throw new InvalidOperationException("The open scene was never saved. The world exporter of the VRChat SDK builds only a saved scene.");
+                throw new InvalidOperationException("The world scene, which holds the scene descriptor, was never saved. The world exporter of the VRChat SDK builds only a saved scene.");
             }
 
             string previousFile = EditorPrefs.GetString(WorldFileKey);
             string file;
             try
             {
-                if (!new VRCWorldAssetExporter().ExportCurrentSceneResource(true, _ => { }, _ => { }))
+                if (!export())
                 {
-                    throw new InvalidOperationException("The world exporter of the VRChat SDK didn't build the open scene.");
+                    throw new InvalidOperationException("The world exporter of the VRChat SDK didn't build the world scene.");
                 }
                 file = EditorPrefs.GetString(WorldFileKey);
             }
@@ -84,7 +90,7 @@ namespace Tsvrc.UdonTestKit
             return Text.Contains($"m_Name \"{UdonHost.ProgramAssetOf(udonSharpClass).SerializedProgramAsset.name}\"");
         }
 
-        private static string Read(string worldFile)
+        internal static string Read(string worldFile)
         {
             string tools = Path.Combine(EditorApplication.applicationContentsPath, "Tools");
             // The Windows Editor ships these tools as .exe files, the Linux Editor without an extension.
