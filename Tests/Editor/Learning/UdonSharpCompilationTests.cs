@@ -20,7 +20,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
     public class UdonSharpCompilationTests
     {
         private const string Folder = "Assets/UdonTestKitCompilationTests";
-        private const string Copy = Folder + "/UdonProbe.cs";
+        private const string Copy = Folder + "/UdonDouble.cs";
 
         private readonly List<string> _errors = new List<string>();
 
@@ -53,7 +53,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         {
             // Arrange: the class of a kit Udon double, again, in Assembly-CSharp.
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(Folder));
-            File.WriteAllText(Copy, "namespace Tsvrc.UdonTestKit.Tests { public class UdonProbe : UdonSharp.UdonSharpBehaviour { } }");
+            File.WriteAllText(Copy, "namespace Tsvrc.UdonTestKit.Tests { public class UdonDouble : UdonSharp.UdonSharpBehaviour { } }");
             AssetDatabase.ImportAsset(Copy);
             UdonSharpEditorUtility.ResetAssemblyCaches();
 
@@ -61,7 +61,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             RecordErrors(() => UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions()));
 
             // Assert
-            Assert.That(_errors, Has.Some.Contains("error CS0101: The namespace 'Tsvrc.UdonTestKit.Tests' already contains a definition for 'UdonProbe'"));
+            Assert.That(_errors, Has.Some.Contains("error CS0101: The namespace 'Tsvrc.UdonTestKit.Tests' already contains a definition for 'UdonDouble'"));
         }
 
         private void RecordErrors(Action compile)

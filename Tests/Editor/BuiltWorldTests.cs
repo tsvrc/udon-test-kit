@@ -43,7 +43,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         [Test]
         public void HoldsProgramOf_BehaviourNothingPlaces_IsFalse()
         {
-            Assert.That(_world.HoldsProgramOf(typeof(UdonProbe)), Is.False);
+            Assert.That(_world.HoldsProgramOf(typeof(UdonDouble)), Is.False);
         }
 
         [Test]
@@ -125,14 +125,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         {
             // Arrange
             using var scene = new BuildableScene(typeof(UdonCallLog));
-            BuildableScene.AddUnsavedScene(withDescriptor: false, typeof(UdonProbe));
+            BuildableScene.AddUnsavedScene(withDescriptor: false, typeof(UdonDouble));
 
             // Act
             BuiltWorld world = BuiltWorld.FromWorldScene();
 
             // Assert
             Assert.That(world.HoldsProgramOf(typeof(UdonCallLog)), Is.True);
-            Assert.That(world.HoldsProgramOf(typeof(UdonProbe)), Is.False);
+            Assert.That(world.HoldsProgramOf(typeof(UdonDouble)), Is.False);
         }
 
         [Test]

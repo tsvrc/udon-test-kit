@@ -70,14 +70,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             // Arrange
             using var scene = new BuildableScene();
             UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions());
-            Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.Member(UdonProbe.EditorOnlyMarker),
+            Assert.That(ProgramHeap.Strings(typeof(UdonDouble)), Has.Member(UdonDouble.EditorOnlyMarker),
                 "The Editor compile left the marker out.");
 
             // Act
             Export();
 
             // Assert: the compile for upload leaves the marker out.
-            Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.Member(UdonProbe.EditorOnlyMarker));
+            Assert.That(ProgramHeap.Strings(typeof(UdonDouble)), Has.Member(UdonDouble.EditorOnlyMarker));
         }
 
 
@@ -125,7 +125,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         {
             // Arrange: the active scene is another one, never saved.
             using var scene = new BuildableScene(typeof(UdonCallLog));
-            BuildableScene.AddUnsavedScene(withDescriptor: false, typeof(UdonProbe));
+            BuildableScene.AddUnsavedScene(withDescriptor: false, typeof(UdonDouble));
 
             // Act
             bool built = Export();
@@ -134,7 +134,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             string text = BuiltWorld.Read(EditorPrefs.GetString(BuiltWorld.WorldFileKey));
             Assert.That(built, Is.True);
             Assert.That(text, Does.Contain(ProgramName(typeof(UdonCallLog))));
-            Assert.That(text, Does.Not.Contain(ProgramName(typeof(UdonProbe))));
+            Assert.That(text, Does.Not.Contain(ProgramName(typeof(UdonDouble))));
         }
 
         [Test, UnityPlatform(RuntimePlatform.WindowsEditor)]

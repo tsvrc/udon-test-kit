@@ -66,7 +66,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
 
         private UdonBehaviour Create(bool assignProgram)
         {
-            UdonSharpProgramAsset program = UdonSharpEditorUtility.GetUdonSharpProgramAsset(typeof(UdonProbe));
+            UdonSharpProgramAsset program = UdonSharpEditorUtility.GetUdonSharpProgramAsset(typeof(UdonDouble));
             var host = new GameObject(nameof(UdonRuntimeBehaviourTests));
             host.SetActive(false);
             _hosts.Add(host);
@@ -83,8 +83,8 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
         // Whether _Run ran and counted the call.
         private static bool Runs(UdonBehaviour behaviour)
         {
-            behaviour.SendCustomEvent(nameof(UdonProbe._Run));
-            return behaviour.GetProgramVariable(nameof(UdonProbe.Runs)) is int runs && runs == 1;
+            behaviour.SendCustomEvent(nameof(UdonDouble._Run));
+            return behaviour.GetProgramVariable(nameof(UdonDouble.Runs)) is int runs && runs == 1;
         }
     }
 }

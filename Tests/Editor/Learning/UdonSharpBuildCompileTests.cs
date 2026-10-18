@@ -81,14 +81,14 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         {
             // Arrange
             UdonSharpCompilerV1.CompileSync(new UdonSharpCompileOptions());
-            Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.Member(UdonProbe.EditorOnlyMarker),
+            Assert.That(ProgramHeap.Strings(typeof(UdonDouble)), Has.Member(UdonDouble.EditorOnlyMarker),
                 "The Editor compile left the marker out.");
 
             // Act
             RequestBuild();
 
             // Assert
-            Assert.That(ProgramHeap.Strings(typeof(UdonProbe)), Has.No.Member(UdonProbe.EditorOnlyMarker));
+            Assert.That(ProgramHeap.Strings(typeof(UdonDouble)), Has.No.Member(UdonDouble.EditorOnlyMarker));
         }
 
         private IEnumerable<string> Messages => _logs.Select(log => log.message);

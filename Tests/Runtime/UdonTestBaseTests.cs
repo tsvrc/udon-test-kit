@@ -25,7 +25,7 @@ namespace Tsvrc.UdonTestKit.Tests
         public void DisposeUdonHost_AfterATest_DestroysWhatTheTestCreated()
         {
             // Act
-            _created = Udon.Create<UdonProbe>("Probe").gameObject;
+            _created = Udon.Create<UdonDouble>("Double").gameObject;
 
             // Assert: in CheckWhatTheTestCreatedIsGone.
         }
@@ -45,7 +45,7 @@ namespace Tsvrc.UdonTestKit.Tests
         public void Create_EachTest_GoesInTheTestsOwnScene([Values(1, 2)] int test)
         {
             // Act
-            Scene scene = Udon.Create<UdonProbe>("Probe").gameObject.scene;
+            Scene scene = Udon.Create<UdonDouble>("Double").gameObject.scene;
 
             // Assert
             Assert.That(scene.name, Is.EqualTo(SceneName));
@@ -68,7 +68,7 @@ namespace Tsvrc.UdonTestKit.Tests
         public void Create_EachTest_GoesInTheFixturesScene([Values(1, 2)] int test)
         {
             // Act
-            Scene scene = Udon.Create<UdonProbe>("Probe").gameObject.scene;
+            Scene scene = Udon.Create<UdonDouble>("Double").gameObject.scene;
 
             // Assert
             _firstSceneHandle ??= scene.handle;

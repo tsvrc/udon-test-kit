@@ -12,41 +12,41 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
     // through UdonHost, yields until the event ran instead of calling the delayed method itself.
     public class UdonDelayedEventTests : UdonTestBase
     {
-        // The delay of UdonProbe._RunAfterHalfASecond.
+        // The delay of UdonDouble._RunAfterHalfASecond.
         private const float DelaySeconds = 0.5f;
 
         [UnityTest]
         public IEnumerator SendCustomEventDelayedFrames_FromTheProgram_RunsTheEventOnALaterFrame()
         {
             // Arrange
-            UdonBehaviour probe = Udon.Create<UdonProbe>("Probe");
+            UdonBehaviour udonDouble = Udon.Create<UdonDouble>("Double");
 
             // Act
-            probe.SendCustomEvent(nameof(UdonProbe._RunAfterAFrame));
-            int runsDuringTheCall = Runs(probe);
-            for (int frame = 0; frame < 10 && Runs(probe) == 0; frame++)
+            udonDouble.SendCustomEvent(nameof(UdonDouble._RunAfterAFrame));
+            int runsDuringTheCall = Runs(udonDouble);
+            for (int frame = 0; frame < 10 && Runs(udonDouble) == 0; frame++)
             {
                 yield return null;
             }
 
             // Assert
             Assert.That(runsDuringTheCall, Is.Zero);
-            Assert.That(Runs(probe), Is.EqualTo(1), "The delayed event didn't run within 10 frames.");
+            Assert.That(Runs(udonDouble), Is.EqualTo(1), "The delayed event didn't run within 10 frames.");
         }
 
         [UnityTest]
         public IEnumerator SendCustomEventDelayedSeconds_FromTheProgram_RunsTheEventOnceTheDelayPassed()
         {
             // Arrange
-            UdonBehaviour probe = Udon.Create<UdonProbe>("Probe");
+            UdonBehaviour udonDouble = Udon.Create<UdonDouble>("Double");
 
             // Act
-            probe.SendCustomEvent(nameof(UdonProbe._RunAfterHalfASecond));
-            int runsDuringTheCall = Runs(probe);
+            udonDouble.SendCustomEvent(nameof(UdonDouble._RunAfterHalfASecond));
+            int runsDuringTheCall = Runs(udonDouble);
             yield return new WaitForSeconds(DelaySeconds / 2);
-            int runsBeforeTheDelay = Runs(probe);
+            int runsBeforeTheDelay = Runs(udonDouble);
             float waitStart = Time.time;
-            while (Runs(probe) == 0 && Time.time - waitStart < 5f)
+            while (Runs(udonDouble) == 0 && Time.time - waitStart < 5f)
             {
                 yield return null;
             }
@@ -54,9 +54,9 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             // Assert
             Assert.That(runsDuringTheCall, Is.Zero);
             Assert.That(runsBeforeTheDelay, Is.Zero);
-            Assert.That(Runs(probe), Is.EqualTo(1), "The delayed event didn't run within 5 seconds of the delay.");
+            Assert.That(Runs(udonDouble), Is.EqualTo(1), "The delayed event didn't run within 5 seconds of the delay.");
         }
 
-        private static int Runs(UdonBehaviour probe) => (int)probe.GetProgramVariable(nameof(UdonProbe.Runs));
+        private static int Runs(UdonBehaviour udonDouble) => (int)udonDouble.GetProgramVariable(nameof(UdonDouble.Runs));
     }
 }

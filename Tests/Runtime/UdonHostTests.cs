@@ -16,13 +16,13 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             using var udon = new UdonHost();
-            UdonBehaviour probe = udon.Create<UdonProbe>("Probe");
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Double");
 
             // Act
-            probe.SendCustomEvent(nameof(UdonProbe._Run));
+            udonDouble.SendCustomEvent(nameof(UdonDouble._Run));
 
             // Assert
-            Assert.That(probe.GetProgramVariable(nameof(UdonProbe.Runs)), Is.EqualTo(1));
+            Assert.That(udonDouble.GetProgramVariable(nameof(UdonDouble.Runs)), Is.EqualTo(1));
         }
 
         [Test]
@@ -32,10 +32,10 @@ namespace Tsvrc.UdonTestKit.Tests
             using var udon = new UdonHost();
 
             // Act
-            UdonBehaviour probe = udon.Create<UdonProbe>("Door");
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Door");
 
             // Assert
-            Assert.That(probe.gameObject.name, Is.EqualTo("Door"));
+            Assert.That(udonDouble.gameObject.name, Is.EqualTo("Door"));
         }
 
         [UnityTest]
@@ -45,11 +45,11 @@ namespace Tsvrc.UdonTestKit.Tests
             using var udon = new UdonHost();
 
             // Act
-            UdonBehaviour probe = udon.Create<UdonProbe>("Probe");
-            yield return WaitForStart(probe);
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Double");
+            yield return WaitForStart(udonDouble);
 
             // Assert
-            Assert.That(probe.HasDoneStart, Is.True);
+            Assert.That(udonDouble.HasDoneStart, Is.True);
         }
 
         [Test]
@@ -59,10 +59,10 @@ namespace Tsvrc.UdonTestKit.Tests
             using var udon = new UdonHost();
 
             // Act
-            UdonBehaviour probe = udon.Create<UdonProbe>("Probe", active: false);
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Double", active: false);
 
             // Assert
-            Assert.That(probe.gameObject.activeSelf, Is.False);
+            Assert.That(udonDouble.gameObject.activeSelf, Is.False);
         }
 
         [UnityTest]
@@ -70,14 +70,14 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             using var udon = new UdonHost();
-            UdonBehaviour probe = udon.Create<UdonProbe>("Probe", active: false);
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Double", active: false);
 
             // Act
-            probe.gameObject.SetActive(true);
-            yield return WaitForStart(probe);
+            udonDouble.gameObject.SetActive(true);
+            yield return WaitForStart(udonDouble);
 
             // Assert
-            Assert.That(probe.HasDoneStart, Is.True);
+            Assert.That(udonDouble.HasDoneStart, Is.True);
         }
 
         [Test]
@@ -96,8 +96,8 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             var udon = new UdonHost();
-            GameObject first = udon.Create<UdonProbe>("First").gameObject;
-            GameObject second = udon.Create<UdonProbe>("Second").gameObject;
+            GameObject first = udon.Create<UdonDouble>("First").gameObject;
+            GameObject second = udon.Create<UdonDouble>("Second").gameObject;
 
             // Act
             udon.Dispose();
@@ -112,7 +112,7 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             var udon = new UdonHost();
-            Object.DestroyImmediate(udon.Create<UdonProbe>("Probe").gameObject);
+            Object.DestroyImmediate(udon.Create<UdonDouble>("Double").gameObject);
 
             // Act and assert
             Assert.That(() => udon.Dispose(), Throws.Nothing);
@@ -125,13 +125,13 @@ namespace Tsvrc.UdonTestKit.Tests
             VRChatExceptionWatching.DropQueuedErrors();
             using var watching = new VRChatExceptionWatching(on: false);
             using var udon = new UdonHost();
-            UdonBehaviour probe = udon.Create<UdonProbe>("Probe");
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Double");
             bool copied = false;
             Application.LogCallback onLog = (message, stackTrace, type) => copied |= message.Contains(UdonHost.UdonSharpCopy);
             Application.logMessageReceived += onLog;
 
             // Act: stepped here instead of yielded, so no frame passes after it ends.
-            IEnumerator expect = UdonHost.ExpectUdonException(() => probe.SendCustomEvent(nameof(UdonProbe._Throw)));
+            IEnumerator expect = UdonHost.ExpectUdonException(() => udonDouble.SendCustomEvent(nameof(UdonDouble._Throw)));
             try
             {
                 while (expect.MoveNext())
@@ -156,7 +156,7 @@ namespace Tsvrc.UdonTestKit.Tests
             VRChatExceptionWatching.DropQueuedErrors();
             using var watching = new VRChatExceptionWatching(on: false);
             using var udon = new UdonHost();
-            UdonBehaviour probe = udon.Create<UdonProbe>("Probe");
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Double");
             var firstLines = new List<string>();
             Application.LogCallback onLog = (message, stackTrace, type) => firstLines.Add(message.Split('\n')[0]);
             Application.logMessageReceived += onLog;
@@ -164,7 +164,7 @@ namespace Tsvrc.UdonTestKit.Tests
             // Act
             try
             {
-                yield return UdonHost.ExpectUdonException(() => probe.SendCustomEvent(nameof(UdonProbe._Throw)));
+                yield return UdonHost.ExpectUdonException(() => udonDouble.SendCustomEvent(nameof(UdonDouble._Throw)));
             }
             finally
             {
@@ -181,14 +181,14 @@ namespace Tsvrc.UdonTestKit.Tests
         {
             // Arrange
             using var udon = new UdonHost();
-            UdonBehaviour probe = udon.Create<UdonProbe>("Probe");
+            UdonBehaviour udonDouble = udon.Create<UdonDouble>("Double");
 
             // Act and assert: UdonSharp queues the error for its copy in the call that logs the error,
             // so dropping the queue right after the throw keeps the copy from coming, and an expected
             // error that never came would fail this test.
             yield return UdonHost.ExpectUdonException(() =>
             {
-                probe.SendCustomEvent(nameof(UdonProbe._Throw));
+                udonDouble.SendCustomEvent(nameof(UdonDouble._Throw));
                 VRChatExceptionWatching.DropQueuedErrors();
             });
         }

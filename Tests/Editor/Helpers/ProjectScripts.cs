@@ -52,7 +52,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Helpers
                 AssetDatabase.DeleteAsset(folder);
             }
             yield return new WaitForDomainReload();
-            // Before a reload, Unity Test Framework 1.1 saves the step the current test method reached,
+            // Before a reload, Unity Test Framework saves the step the current test method reached,
             // and after it, starts the next test method at that step. In [UnityTearDown] the test
             // method has finished, so the next [UnityTest] would start finished and run nothing.
             PrivateFieldAccess.SetField(typeof(TestRunnerApi).Assembly.GetType("UnityEditor.TestTools.TestRunner.EnumeratorStepHelper", throwOnError: true), "m_PC", 0);
