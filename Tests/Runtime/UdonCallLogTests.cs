@@ -33,5 +33,36 @@ namespace Tsvrc.UdonTestKit.Tests
             // Act and assert
             Assert.That(UdonHost.Calls(log), Is.Empty);
         }
+
+        [Test]
+        public void Add_CallWithASemicolon_KeepsItWhole()
+        {
+            // Arrange
+            UdonBehaviour log = Udon.Create<UdonCallLog>("Log");
+            UdonBehaviour probe = Udon.Create<UdonProbe>("Semi;colon");
+            probe.SetProgramVariable(nameof(UdonProbe.Log), log);
+
+            // Act
+            probe.SendCustomEvent(nameof(UdonProbe._Record));
+
+            // Assert
+            Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Semi;colon._Record" }));
+        }
+
+        [Test]
+        public void Calls_ReturnedArrayChanged_LeavesTheLog()
+        {
+            // Arrange
+            UdonBehaviour log = Udon.Create<UdonCallLog>("Log");
+            UdonBehaviour probe = Udon.Create<UdonProbe>("Probe");
+            probe.SetProgramVariable(nameof(UdonProbe.Log), log);
+            probe.SendCustomEvent(nameof(UdonProbe._Record));
+
+            // Act
+            UdonHost.Calls(log)[0] = "Changed";
+
+            // Assert
+            Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Probe._Record" }));
+        }
     }
 }

@@ -86,7 +86,7 @@ namespace Tsvrc.UdonTestKit.Tests
         public IEnumerator Start_ClientSimNotReadyWithinTimeout_ThrowsTimeoutException()
         {
             // Arrange: ClientSim takes 5 s to get ready, the timeout is 0.2 s.
-            _slowSession = new ClientSimSession(readyTimeoutSeconds: 0.2f, initializationDelay: 5f);
+            _slowSession = new ClientSimSession(initializationDelay: 5f) { ReadyTimeoutSeconds = 0.2f };
             IEnumerator start = _slowSession.Start();
 
             // Act

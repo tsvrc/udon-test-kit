@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 
@@ -5,9 +7,58 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
     // GetField and GetMethod on a derived type miss a private member of its base class, so
     // PrivateFieldAccess searches base classes.
+    //
+    // Type.DefaultBinder picks, of the overloads it's given, the one the arguments fit best, as C#
+    // does. When no overload takes the arguments it throws MissingMethodException, and when two take
+    // them equally well AmbiguousMatchException. So PrivateFieldAccess binds a method call through it,
+    // one class of the hierarchy at a time. Unlike C#, it lets null fit a parameter of a value type,
+    // so PrivateFieldAccess first leaves out the overloads a null argument can't go to.
     public class ReflectionTests
     {
         private const BindingFlags InstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        [Test]
+        public void BindToMethod_StringArgument_PicksTheStringOverloadOverTheObjectOne()
+        {
+            Assert.That(Bind(nameof(Overloads.StringOrObject), "text").GetParameters()[0].ParameterType, Is.EqualTo(typeof(string)));
+        }
+
+        [Test]
+        public void BindToMethod_NullArgumentOverloadsOfAReferenceAndAValueType_ThrowsAmbiguousMatchException()
+        {
+            Assert.That(() => Bind(nameof(Overloads.StringOrInt), new object[] { null }), Throws.TypeOf<AmbiguousMatchException>());
+        }
+
+        [Test]
+        public void BindToMethod_ArgumentNoOverloadTakes_ThrowsMissingMethodException()
+        {
+            Assert.That(() => Bind(nameof(Overloads.StringOrInt), 1.5), Throws.TypeOf<MissingMethodException>());
+        }
+
+        [Test]
+        public void BindToMethod_ArgumentsTwoOverloadsTakeEquallyWell_ThrowsAmbiguousMatchException()
+        {
+            Assert.That(() => Bind(nameof(Overloads.Tie), "a", "b"), Throws.TypeOf<AmbiguousMatchException>());
+        }
+
+        private static MethodBase Bind(string name, params object[] args)
+        {
+            MethodBase[] overloads = typeof(Overloads).GetMethods(InstanceFlags | BindingFlags.DeclaredOnly)
+                .Where(method => method.Name == name).ToArray<MethodBase>();
+            return Type.DefaultBinder.BindToMethod(InstanceFlags, overloads, ref args, null, null, null, out _);
+        }
+
+#pragma warning disable IDE0060 // Only their parameter types matter.
+        private class Overloads
+        {
+            public void StringOrObject(string value) { }
+            public void StringOrObject(object value) { }
+            public void StringOrInt(string value) { }
+            public void StringOrInt(int value) { }
+            public void Tie(string first, object second) { }
+            public void Tie(object first, string second) { }
+        }
+#pragma warning restore IDE0060
 
         [Test]
         public void GetField_PrivateFieldDeclaredOnBaseType_ReturnsNull()

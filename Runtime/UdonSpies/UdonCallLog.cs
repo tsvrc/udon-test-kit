@@ -9,12 +9,15 @@ namespace Tsvrc.UdonTestKit
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class UdonCallLog : UdonSharpBehaviour
     {
-        /// <summary>The recorded calls, each followed by a semicolon.</summary>
-        public string Calls = "";
+        /// <summary>The recorded calls, in the order they arrived.</summary>
+        public string[] Calls = new string[0];
 
         public void Add(string call)
         {
-            Calls += call + ";";
+            var calls = new string[Calls.Length + 1];
+            System.Array.Copy(Calls, calls, Calls.Length);
+            calls[Calls.Length] = call;
+            Calls = calls;
         }
     }
 }

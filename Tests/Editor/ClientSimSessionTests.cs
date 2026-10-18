@@ -99,7 +99,37 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 
             // Assert
             Assert.That(PrivateFieldAccess.GetField<float>(session, "_initializationDelay"), Is.Zero);
-            Assert.That(PrivateFieldAccess.GetField<float>(session, "_readyTimeoutSeconds"), Is.EqualTo(10f));
+            Assert.That(session.ReadyTimeoutSeconds, Is.EqualTo(10f));
+        }
+
+        [Test]
+        public void ReadyTimeoutSeconds_SetAboveZero_IsKept()
+        {
+            // Arrange
+            var session = new ClientSimSession();
+
+            // Act
+            session.ReadyTimeoutSeconds = 0.5f;
+
+            // Assert
+            Assert.That(session.ReadyTimeoutSeconds, Is.EqualTo(0.5f));
+        }
+
+        [TestCase(0f)]
+        [TestCase(-1f)]
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        public void ReadyTimeoutSeconds_NotAFiniteNumberAboveZero_ThrowsAndKeepsTheTimeout(float seconds)
+        {
+            // Arrange
+            var session = new ClientSimSession();
+
+            // Act
+            var failure = Assert.Throws<System.ArgumentOutOfRangeException>(() => session.ReadyTimeoutSeconds = seconds);
+
+            // Assert
+            Assert.That(failure.Message, Does.StartWith("The timeout needs a finite number of seconds above 0."));
+            Assert.That(session.ReadyTimeoutSeconds, Is.EqualTo(10f));
         }
 
         [Test]

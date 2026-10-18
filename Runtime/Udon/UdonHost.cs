@@ -70,11 +70,11 @@ namespace Tsvrc.UdonTestKit
             return program;
         }
 
-        /// <summary>The calls an <see cref="UdonCallLog"/> recorded, in the order they arrived.</summary>
+        /// <summary>A copy of the calls an <see cref="UdonCallLog"/> recorded, in the order they
+        /// arrived.</summary>
         public static string[] Calls(UdonBehaviour log)
         {
-            var calls = (string)log.GetProgramVariable(nameof(UdonCallLog.Calls));
-            return calls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            return (string[])((string[])log.GetProgramVariable(nameof(UdonCallLog.Calls))).Clone();
         }
 
         // The error Udon logs when it halts a behaviour, and the start of the copy UdonSharp logs later.
