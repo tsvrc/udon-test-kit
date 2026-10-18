@@ -5,7 +5,8 @@ using Tsvrc.UdonTestKit.Tests;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.TestTools;
+using UnityEngine.SceneManagement;
+using VRC.SDK3.Components;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
 {
@@ -74,20 +75,51 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(File.Exists(_world.FilePath), Is.False, $"'{_world.FilePath}' is still there.");
         }
 
-        [Test]
-        public void FromOpenScene_SceneWithoutADescriptor_ThrowsThatTheExporterDidNotBuildIt()
+        // Had the exporter run, the dialog it cancels in batch mode would fail the test with its log.
+        [TestCase(0, 0)]
+        [TestCase(2, 0)]
+        [TestCase(1, 1)]
+        public void FromOpenScene_NotExactlyOneDescriptor_ThrowsBeforeTheExporterAsks(int active, int inactive)
         {
             // Arrange
-            if (!Application.isBatchMode)
-            {
-                Assert.Ignore("Outside batch mode the exporter shows a dialog for this, which waits for a click.");
-            }
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            LogAssert.ignoreFailingMessages = true;
+            for (int i = 0; i < active + inactive; i++)
+            {
+                var descriptor = new GameObject("Descriptor");
+                descriptor.AddComponent<VRCSceneDescriptor>();
+                descriptor.SetActive(i < active);
+            }
 
             // Act and assert
             Assert.That(() => BuiltWorld.FromOpenScene(), Throws.InvalidOperationException.With.Message.EqualTo(
-                "The world exporter of the VRChat SDK didn't build the open scene."));
+                $"The open scene has {active + inactive} scene descriptors. The world exporter of the VRChat SDK builds a scene with exactly one."));
+        }
+
+        [Test]
+        public void FromOpenScene_SceneNeverSaved_ThrowsBeforeTheExporterAsks()
+        {
+            // Arrange
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            new GameObject("Descriptor").AddComponent<VRCSceneDescriptor>();
+
+            // Act and assert
+            Assert.That(() => BuiltWorld.FromOpenScene(), Throws.InvalidOperationException.With.Message.EqualTo(
+                "The open scene was never saved. The world exporter of the VRChat SDK builds only a saved scene."));
+        }
+
+        [Test]
+        public void FromOpenScene_OnlyDescriptorInactive_BuildsTheWorld()
+        {
+            // Arrange
+            using var scene = new BuildableScene(typeof(UdonCallLog));
+            Object.FindObjectOfType<VRCSceneDescriptor>().gameObject.SetActive(false);
+            EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+
+            // Act
+            BuiltWorld world = BuiltWorld.FromOpenScene();
+
+            // Assert
+            Assert.That(world.HoldsProgramOf(typeof(UdonCallLog)), Is.True);
         }
     }
 }

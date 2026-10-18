@@ -112,6 +112,27 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             Assert.That(() => ClientSimSession.DeleteSavedData(missing, "World"), Throws.Nothing);
         }
 
+        [Test]
+        public void DeleteTestSceneSavedData_FilesOfSeveralScenes_DeletesOnlyThoseOfTestScenes()
+        {
+            // Arrange
+            _storageRoot = Path.GetFullPath(FileUtil.GetUniqueTempPathInProject());
+            string data = CreateFile("PlayerData", "PlayerData_1_InitTestScene639276975825145332.json");
+            string objects = CreateFile("PlayerObjects", "PlayerObject_2_InitTestScene639276991293267109.json");
+            string world = CreateFile("PlayerData", "PlayerData_1_World.json");
+            string noDigits = CreateFile("PlayerData", "PlayerData_1_InitTestScene.json");
+            string prefixed = CreateFile("PlayerData", "PlayerData_1_MyInitTestScene1.json");
+            string suffixed = CreateFile("PlayerObjects", "PlayerObject_1_InitTestScene1Copy.json");
+
+            // Act
+            ClientSimSession.DeleteTestSceneSavedData(_storageRoot);
+
+            // Assert
+            Assert.That(File.Exists(data), Is.False);
+            Assert.That(File.Exists(objects), Is.False);
+            Assert.That(new[] { world, noDigits, prefixed, suffixed }, Has.All.Matches<string>(File.Exists));
+        }
+
         private string CreateFile(string folder, string name)
         {
             string path = Path.Combine(_storageRoot, folder, name);

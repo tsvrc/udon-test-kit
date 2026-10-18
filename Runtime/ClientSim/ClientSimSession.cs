@@ -86,9 +86,19 @@ namespace Tsvrc.UdonTestKit
             }
         }
 
-        /// <summary>Spawns a remote player and returns it. Give each player its own name.</summary>
+        /// <summary>Spawns a remote player and returns it. Throws ArgumentException when
+        /// <paramref name="displayName"/> is empty or a player in the session has it already: the
+        /// player is found by its name.</summary>
         public VRCPlayerApi SpawnRemotePlayer(string displayName)
         {
+            if (string.IsNullOrEmpty(displayName))
+            {
+                throw new ArgumentException("A remote player needs a display name.", nameof(displayName));
+            }
+            if (FindPlayerByName(displayName) != null)
+            {
+                throw new ArgumentException($"A player named {displayName} is in the session already. Give each player its own name.", nameof(displayName));
+            }
             ClientSimMain.SpawnRemotePlayer(displayName);
             return FindPlayerByName(displayName);
         }
@@ -155,20 +165,32 @@ namespace Tsvrc.UdonTestKit
         /// </summary>
         public static void DeleteSavedData()
         {
-            DeleteSavedData(Path.Combine(Path.GetDirectoryName(Application.dataPath), "ClientSimStorage"),
-                SceneManager.GetActiveScene().name);
+            DeleteSavedData(StorageRoot, SceneManager.GetActiveScene().name);
         }
 
-        // ClientSim saves to <storageRoot>/PlayerData/PlayerData_<playerId>_<scene>.json and
-        // <storageRoot>/PlayerObjects/PlayerObject_<playerId>_<scene>.json.
+        // ClientSim saves to <StorageRoot>/PlayerData/PlayerData_<playerId>_<scene>.json and
+        // <StorageRoot>/PlayerObjects/PlayerObject_<playerId>_<scene>.json.
+        internal static string StorageRoot => Path.Combine(Path.GetDirectoryName(Application.dataPath), "ClientSimStorage");
+
         internal static void DeleteSavedData(string storageRoot, string sceneName)
+        {
+            DeleteSavedDataOfScenes(storageRoot, Regex.Escape(sceneName));
+        }
+
+        // The Unity Test Framework names the scene it runs Play Mode tests in InitTestScene and digits.
+        internal static void DeleteTestSceneSavedData(string storageRoot)
+        {
+            DeleteSavedDataOfScenes(storageRoot, @"InitTestScene\d+");
+        }
+
+        private static void DeleteSavedDataOfScenes(string storageRoot, string scenePattern)
         {
             if (!Directory.Exists(storageRoot))
             {
                 return;
             }
 
-            var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_" + Regex.Escape(sceneName) + @"\.json$");
+            var sceneFile = new Regex(@"^(PlayerData|PlayerObject)_\d+_" + scenePattern + @"\.json$");
             foreach (string file in Directory.GetFiles(storageRoot, "*.json", SearchOption.AllDirectories))
             {
                 if (sceneFile.IsMatch(Path.GetFileName(file)))
