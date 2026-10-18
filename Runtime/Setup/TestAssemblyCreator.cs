@@ -122,9 +122,17 @@ namespace Tsvrc.UdonTestKit
 
         internal static string Example(string example, string assemblyPrefix) => example.Replace(PrefixToken, assemblyPrefix);
 
+        internal static string SuffixOf(AssemblyKind kind) => kind switch
+        {
+            AssemblyKind.EditModeTests => EditModeSuffix,
+            AssemblyKind.PlayModeTests => PlayModeSuffix,
+            AssemblyKind.Doubles => DoublesSuffix,
+            _ => UdonDoublesSuffix,
+        };
+
         // The world's assemblies an assembly of a kind references: those in player builds, and the
         // Editor-only ones for the Edit Mode test assembly, the one Editor-only assembly of a set.
-        private static IEnumerable<string> WorldReferencesOf(AssemblyKind kind, IEnumerable<string> worldAssemblies, IEnumerable<string> editorWorldAssemblies)
+        internal static IEnumerable<string> WorldReferencesOf(AssemblyKind kind, IEnumerable<string> worldAssemblies, IEnumerable<string> editorWorldAssemblies)
         {
             return kind == AssemblyKind.EditModeTests ? worldAssemblies.Concat(editorWorldAssemblies) : worldAssemblies;
         }
