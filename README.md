@@ -17,52 +17,6 @@ ClientSim session.
 [Antony Seas](https://github.com/ToniSeas). It isn't affiliated with, endorsed by, or sponsored by
 VRChat Inc.*
 
-## Example
-
-The Play Mode tests **Assets > Create > TsVRC > Udon Test Kit > Test Assemblies** writes as an
-example, in a project whose **Product Name** is My World. The second runs an example test double
-as Udon:
-
-```csharp
-using System.Collections;
-using NUnit.Framework;
-using Tsvrc.UdonTestKit;
-using UnityEngine.TestTools;
-using VRC.SDKBase;
-using VRC.Udon;
-
-namespace MyWorld.Tests
-{
-    public class ExamplePlayModeTests : UdonTestBase
-    {
-        [UnityTest]
-        public IEnumerator SpawnRemotePlayer_InClientSim_JoinsThePlayerList()
-        {
-            yield return Session.Start();
-
-            VRCPlayerApi remote = Session.SpawnRemotePlayer("Remote");
-
-            Assert.That(VRCPlayerApi.GetPlayerCount(), Is.EqualTo(2));
-            Assert.That(remote.isLocal, Is.False);
-        }
-
-        [Test]
-        public void SendCustomEvent_OnExample_IsLoggedFromUdon()
-        {
-            UdonBehaviour log = Udon.Create<UdonCallLog>("Log");
-            UdonBehaviour example = Udon.Create<ExampleUdonDouble>("Example");
-            example.SetProgramVariable(nameof(ExampleUdonDouble.Log), log);
-
-            example.SendCustomEvent(nameof(ExampleUdonDouble.OnExample));
-
-            Assert.That(UdonHost.Calls(log), Is.EqualTo(new[] { "Example.OnExample" }));
-        }
-    }
-}
-```
-
-[Write your first test](https://tsvrc.com/docs/udon-test-kit/first-test) walks through it.
-
 ## What's in the kit
 
 - ClientSim sessions with the local player, remote players you spawn, ownership and saved data.
@@ -87,7 +41,9 @@ on Windows or on Linux with the Windows build target, batch mode included.
 Install **Udon Test Kit** (`com.tsvrc.udon-test-kit`) as
 [Install a TsVRC package](https://tsvrc.com/docs/install-a-package) describes. The `.unitypackage`
 is on the [releases page](https://github.com/tsvrc/udon-test-kit/releases). Then create your test
-assemblies: [Add Udon Test Kit to your project](https://tsvrc.com/docs/udon-test-kit/add-to-your-project).
+assemblies with **Assets > Create > TsVRC > Udon Test Kit > Test Assemblies**, as
+[Add Udon Test Kit to your project](https://tsvrc.com/docs/udon-test-kit/add-to-your-project)
+describes.
 
 ## Documentation
 

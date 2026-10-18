@@ -5,23 +5,10 @@ using UnityEditor.Compilation;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
 {
-    // The README shows what the kit writes and requires, and CONTRIBUTING what it requires.
+    // The README shows the menu item that creates the test assemblies and what the kit requires, and
+    // CONTRIBUTING what it requires.
     public class ReadmeTests
     {
-        [Test]
-        public void ExamplePlayModeTests_InTheReadme_IsTheExampleCreateWrites()
-        {
-            // Arrange
-            string readme = Read("README.md");
-
-            // Act
-            int start = readme.IndexOf("```csharp\n") + "```csharp\n".Length;
-            string block = readme.Substring(start, readme.IndexOf("```", start) - start);
-
-            // Assert
-            Assert.That(block, Is.EqualTo(TestAssemblyCreator.Example(TestAssemblyCreator.ExamplePlayModeTests, "MyWorld").Replace("\r\n", "\n")));
-        }
-
         [Test]
         public void MenuPath_InTheReadme_IsTheMenuItem()
         {
