@@ -126,9 +126,9 @@ namespace Tsvrc.UdonTestKit
         /// <summary>
         /// Makes <paramref name="player"/> the owner of <paramref name="obj"/>, as Networking.SetOwner
         /// does in VRChat. ClientSim only lets GameObjects with VRCObjectSync or VRCObjectPool change
-        /// owner, and the master owns all others. After this, Networking.SetOwner moves
-        /// <paramref name="obj"/>'s ownership too, such as when the code under test calls it, and
-        /// when its owner leaves, the master becomes the owner.
+        /// owner, and the master owns all others. After this, Networking.SetOwner moves the ownership
+        /// of <paramref name="obj"/> too, such as when the code under test calls it, and when its
+        /// owner leaves, the master becomes the owner.
         /// </summary>
         public void SetOwner(VRCPlayerApi player, GameObject obj)
         {
@@ -158,8 +158,8 @@ namespace Tsvrc.UdonTestKit
         }
 
         /// <summary>
-        /// Ends ClientSim, stops its players saved data from being written, and removes the scene
-        /// descriptor Start added, if any. Safe to call when no session is running.
+        /// Ends ClientSim, stops the saved data of its players from being written, and removes the
+        /// scene descriptor Start added, if any. Safe to call when no session is running.
         /// </summary>
         public void End()
         {

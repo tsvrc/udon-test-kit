@@ -11,8 +11,8 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
     // UdonSharp logs an exception thrown in Udon a second time, on a later frame, where it would fail
     // the next test. It doesn't when it watches the VRChat client's log, as it does by default, and
     // finds no VRChat installation: it queues the error instead, and logs the copy once watching
-    // stops. So UdonHost.ExpectUdonException waits a few frames for the copy and expects it only once
-    // it came, and the kit tests that stop watching drop the queue first.
+    // stops. So UdonHost.ExpectUdonException waits a few frames for the copy and expects it only if
+    // it comes, and the kit tests that stop watching drop the queue first.
     public class UdonSharpExceptionLogTests : UdonTestBase
     {
         private bool _copied;
@@ -92,7 +92,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
             yield return WaitForCopy();
         }
 
-        // Waits up to 10 frames for the copy, and expects it once it came.
+        // Waits up to 10 frames for the copy, and expects it if it comes.
         private IEnumerator WaitForCopy()
         {
             Application.logMessageReceived += RecordCopy;

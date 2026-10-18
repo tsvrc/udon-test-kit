@@ -6,7 +6,7 @@ namespace Tsvrc.UdonTestKit
 {
     /// <summary>
     /// Base for Play Mode tests that use ClientSim. Start <see cref="Session"/> in a test; it ends
-    /// after every test, after the derived class's own teardown. Tests run in the Unity Test Framework
+    /// after every test, after the teardown of the derived class. Tests run in the Unity Test Framework
     /// test scene, shared by the whole run, unless the fixture passes its own <see cref="TestScene"/>.
     /// </summary>
     public abstract class ClientSimTestBase
@@ -20,8 +20,8 @@ namespace Tsvrc.UdonTestKit
         {
         }
 
-        /// <summary>Runs every test in <paramref name="scene"/>, loaded before the derived class's
-        /// setup and unloaded once ClientSim has ended.</summary>
+        /// <summary>Runs every test in <paramref name="scene"/>, loaded before the setup of the
+        /// derived class and unloaded once ClientSim has ended.</summary>
         protected ClientSimTestBase(TestScene scene, TestSceneLifetime lifetime = TestSceneLifetime.PerTest)
         {
             _scene = scene;

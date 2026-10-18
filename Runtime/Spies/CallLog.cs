@@ -7,7 +7,8 @@ using Object = UnityEngine.Object;
 namespace Tsvrc.UdonTestKit
 {
     /// <summary>
-    /// The calls a test's spies received, in the order they arrived, as "GameObjectName.CallbackName".
+    /// The calls the spies of a test received, in the order they arrived, as
+    /// "GameObjectName.CallbackName".
     /// Disposing it destroys the spies it created, so a test with <c>using var calls = new CallLog();</c>
     /// needs no teardown.
     /// </summary>
@@ -28,7 +29,7 @@ namespace Tsvrc.UdonTestKit
             return spy;
         }
 
-        /// <summary>Forgets the calls so far, such as the ones a test's setup caused.</summary>
+        /// <summary>Forgets the calls so far, such as the ones the setup of a test caused.</summary>
         public void Clear() => _calls.Clear();
 
         public void Dispose()

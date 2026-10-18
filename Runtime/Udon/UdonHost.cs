@@ -15,8 +15,8 @@ using Object = UnityEngine.Object;
 namespace Tsvrc.UdonTestKit
 {
     /// <summary>
-    /// Runs UdonSharp behaviours as their compiled Udon programs, not as their C# classes, so a test sees
-    /// what Udon does. Disposing it destroys the GameObjects it created.
+    /// Runs UdonSharp behaviours as their compiled Udon programs instead of their C# classes, so a test
+    /// sees what Udon does. Disposing it destroys the GameObjects it created.
     /// </summary>
     public sealed class UdonHost : IDisposable
     {
@@ -113,7 +113,7 @@ namespace Tsvrc.UdonTestKit
             }
 
             // UdonSharp doesn't log the copy when it watches the VRChat client's log and finds no
-            // VRChat installation, so the copy is expected only once it came.
+            // VRChat installation, so the copy is expected only if it comes.
             if (copied)
             {
                 LogAssert.Expect(LogType.Error, new Regex(Regex.Escape(UdonSharpCopy)));

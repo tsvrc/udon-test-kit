@@ -6,9 +6,9 @@ using UnityEngine.SceneManagement;
 namespace Tsvrc.UdonTestKit
 {
     /// <summary>
-    /// A scene for Play Mode tests to run in: a new empty scene, or a scene asset such as the world's
-    /// own scene. Loading it makes it the active scene, so ClientSim and the objects a test creates
-    /// go into it, and unloading it destroys them.
+    /// A scene for Play Mode tests to run in: a new empty scene, or a scene asset such as the world
+    /// scene. Loading it makes it the active scene, so ClientSim and the objects a test creates go
+    /// into it, and unloading it destroys them.
     /// </summary>
     public sealed class TestScene
     {
@@ -54,7 +54,7 @@ namespace Tsvrc.UdonTestKit
                     yield return null;
                 }
                 // LoadSceneInPlayMode drops the operation it loads with. Finalized on Unity's exit
-                // instead, it crashed Unity; finalizing it now, while the scene is loaded, doesn't.
+                // instead, it crashed Unity; finalizing it here, while the scene is loaded, doesn't.
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
@@ -75,8 +75,9 @@ namespace Tsvrc.UdonTestKit
             {
                 SceneManager.SetActiveScene(_previousActiveScene);
             }
-            // The synchronous unload, obsolete because it's unsafe inside physics callbacks, which a
-            // teardown isn't. It finishes before returning, unlike UnloadSceneAsync.
+            // The synchronous unload, obsolete because it can't be called during physics and
+            // visibility callbacks, which a teardown isn't. It finishes before returning, unlike
+            // UnloadSceneAsync.
 #pragma warning disable CS0618
             SceneManager.UnloadScene(_scene);
 #pragma warning restore CS0618

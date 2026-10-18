@@ -71,9 +71,9 @@ update, change the kit code it names, then update the test to the new behavior.
 
 Match the style of the surrounding file. A few things aren't obvious from reading one file:
 
-- Kit code in `Runtime/` calls `UnityEditor` directly, without `#if UNITY_EDITOR`. The `Tsvrc.UdonTestKit`
-  assembly compiles only when `UNITY_INCLUDE_TESTS` is defined, which keeps it out of player
-  builds, and `PlayerBuildTests` fails if that stops being true.
+- Kit code in `Runtime/` calls `UnityEditor` directly, without `#if UNITY_EDITOR`. The
+  `Tsvrc.UdonTestKit` assembly compiles only when `UNITY_INCLUDE_TESTS` is defined, which keeps it
+  out of player builds, and `PlayerBuildTests` fails if that stops being true.
 - Code that runs as Udon is the exception. UdonSharp compiles only player assemblies for a world
   upload, so `UdonCallLog` is in `Tsvrc.UdonTestKit.UdonSpies`, and the test doubles that run as
   Udon are in `Tests/UdonDoubles/`. Both are player assemblies with a U# assembly definition, and

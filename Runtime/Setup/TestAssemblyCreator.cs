@@ -18,8 +18,8 @@ namespace Tsvrc.UdonTestKit
     /// Creates a Tests folder with an Edit Mode and a Play Mode test assembly, and two test doubles
     /// assemblies both of them reference: one for behaviours the tests add to GameObjects, such as
     /// spies, and one for behaviours that run as Udon. They reference the kit, UdonSharp, the VRChat
-    /// SDK, and the world's own assembly definitions under Assets, the Editor-only ones from the Edit
-    /// Mode test assembly only. Each gets an example.
+    /// SDK, and the assembly definitions of the world under Assets, the Editor-only ones from the
+    /// Edit Mode test assembly only. Each gets an example.
     /// </summary>
     public static class TestAssemblyCreator
     {

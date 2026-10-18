@@ -21,7 +21,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             MethodInfo isTargetPermitted = typeof(UnityEventFilter).GetMethod("IsTargetPermitted", BindingFlags.NonPublic | BindingFlags.Static);
             Assume.That(isTargetPermitted, Is.Not.Null, "UnityEventFilter.IsTargetPermitted not found. Has the VRChat SDK changed?");
 
-            // Act and Assert
+            // Act and assert
             Assert.Catch(() => isTargetPermitted.Invoke(null, new object[] { _target, "SetActive" }));
         }
     }

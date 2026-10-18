@@ -6,8 +6,9 @@ using UnityEngine.TestTools;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
 {
-    // Invoke-UnityTests.ps1 lists the assembly definitions Unity imports, and Windows can mark a file
-    // or folder hidden with an attribute.
+    // Unity skips a folder that has the Windows Hidden attribute, with what it holds, but imports a
+    // file that has it. So Invoke-UnityTests.ps1, which lists the assembly definitions Unity imports,
+    // skips those folders and keeps those files.
     [UnityPlatform(RuntimePlatform.WindowsEditor)]
     public class UnityHiddenAttributeTests
     {

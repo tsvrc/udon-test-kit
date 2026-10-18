@@ -9,7 +9,7 @@ namespace Tsvrc.UdonTestKit.Tests.Learning
     // Outside Udon, as in a test, SendCustomEvent calls only a public method with that exact name and
     // no parameters, silently ignores any other name, and delayed events never arrive. So
     // CallbackSpy declares each callback as a public method without parameters, and a test checks
-    // what its CallLog recorded rather than the absence of errors.
+    // what its CallLog recorded, since a misspelled name raises no error.
     public class UdonSharpCallByNameTests
     {
         private GameObject _host;
