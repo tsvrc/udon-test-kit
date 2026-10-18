@@ -21,8 +21,6 @@ namespace Tsvrc.UdonTestKit
 
         private const string GuidReference = "GUID:";
 
-        private static readonly AssemblyKind[] Kinds = { AssemblyKind.EditModeTests, AssemblyKind.PlayModeTests, AssemblyKind.Doubles, AssemblyKind.UdonDoubles };
-
         [MenuItem(MenuPath)]
         private static void UpdateFromMenu()
         {
@@ -63,8 +61,8 @@ namespace Tsvrc.UdonTestKit
             Func<string, string> definitionOf)
         {
             return from name in assemblyNames
-                   where !name.StartsWith("Tsvrc.UdonTestKit")
-                   from kind in Kinds
+                   where !TestAssemblyCreator.IsKitAssembly(name)
+                   from kind in TestAssemblyCreator.Kinds
                    where name.EndsWith(TestAssemblyCreator.SuffixOf(kind))
                    let definition = definitionOf(name)
                    where definition.StartsWith("Assets/")

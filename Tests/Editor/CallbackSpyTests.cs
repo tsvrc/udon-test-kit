@@ -101,7 +101,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             var calls = new CallLog();
             Object.DestroyImmediate(calls.CreateSpy().gameObject);
 
-            // Act and Assert
+            // Act and assert
             Assert.DoesNotThrow(calls.Dispose);
         }
 

@@ -41,25 +41,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(() => Bind(nameof(Overloads.Tie), "a", "b"), Throws.TypeOf<AmbiguousMatchException>());
         }
 
-        private static MethodBase Bind(string name, params object[] args)
-        {
-            MethodBase[] overloads = typeof(Overloads).GetMethods(InstanceFlags | BindingFlags.DeclaredOnly)
-                .Where(method => method.Name == name).ToArray<MethodBase>();
-            return Type.DefaultBinder.BindToMethod(InstanceFlags, overloads, ref args, null, null, null, out _);
-        }
-
-#pragma warning disable IDE0060 // Only their parameter types matter.
-        private class Overloads
-        {
-            public void StringOrObject(string value) { }
-            public void StringOrObject(object value) { }
-            public void StringOrInt(string value) { }
-            public void StringOrInt(int value) { }
-            public void Tie(string first, object second) { }
-            public void Tie(object first, string second) { }
-        }
-#pragma warning restore IDE0060
-
         [Test]
         public void GetField_PrivateFieldDeclaredOnBaseType_ReturnsNull()
         {
@@ -86,6 +67,13 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             Assert.That(method, Is.Null);
         }
 
+        private static MethodBase Bind(string name, params object[] args)
+        {
+            MethodBase[] overloads = typeof(Overloads).GetMethods(InstanceFlags | BindingFlags.DeclaredOnly)
+                .Where(method => method.Name == name).ToArray<MethodBase>();
+            return Type.DefaultBinder.BindToMethod(InstanceFlags, overloads, ref args, null, null, null, out _);
+        }
+
         private class Base
         {
 #pragma warning disable CS0414, IDE0044, IDE0051 // Reached only through reflection.
@@ -97,5 +85,17 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
         private class Derived : Base
         {
         }
+
+#pragma warning disable IDE0060 // Only their parameter types matter.
+        private class Overloads
+        {
+            public void StringOrObject(string value) { }
+            public void StringOrObject(object value) { }
+            public void StringOrInt(string value) { }
+            public void StringOrInt(int value) { }
+            public void Tie(string first, object second) { }
+            public void Tie(object first, string second) { }
+        }
+#pragma warning restore IDE0060
     }
 }
