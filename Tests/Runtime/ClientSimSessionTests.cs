@@ -171,6 +171,12 @@ namespace Tsvrc.UdonTestKit.Tests
             Assert.That(spawn == null, "The spawn point Start added is still in the scene.");
         }
 
+        [Test]
+        public void End_NeverStarted_DoesNotThrow()
+        {
+            Assert.DoesNotThrow(Session.End);
+        }
+
         [UnityTest]
         public IEnumerator SpawnRemotePlayer_SameFrame_ReturnsTheRemotePlayer()
         {
