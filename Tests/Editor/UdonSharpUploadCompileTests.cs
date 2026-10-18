@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Tsvrc.UdonTestKit.Editor.Tests.Helpers;
 using Tsvrc.UdonTestKit.Tests;
+using UdonSharp.Compiler;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -28,6 +29,34 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 
             // Assert
             Assert.That(errors, Has.Some.Contains("TestsOnlyBehaviour.cs' does not belong to a U# assembly"));
+        }
+
+        [Test]
+        public void Run_ProgramThatFailsOnlyForUpload_ReturnsItsError()
+        {
+            // Arrange
+            using var programAsset = new TemporaryProgramAsset(typeof(UploadFailingBehaviour));
+
+            // Act
+            IReadOnlyList<string> errors = UdonSharpUploadCompile.Run();
+
+            // Assert
+            Assert.That(errors, Has.Some.Contains(UploadFailingBehaviour.UploadError));
+        }
+
+        [Test]
+        public void Run_CompileUnderWayAndAnotherQueued_ReturnsTheErrorsOfItsOwnCompile()
+        {
+            // Arrange
+            using var programAsset = new TemporaryProgramAsset(typeof(UploadFailingBehaviour));
+            UdonSharpCompilerV1.Compile();
+            UdonSharpCompilerV1.Compile();
+
+            // Act
+            IReadOnlyList<string> errors = UdonSharpUploadCompile.Run();
+
+            // Assert
+            Assert.That(errors, Has.Some.Contains(UploadFailingBehaviour.UploadError));
         }
 
         [Test]
