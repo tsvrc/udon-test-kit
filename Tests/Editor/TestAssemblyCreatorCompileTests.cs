@@ -9,7 +9,6 @@ using Tsvrc.UdonTestKit.Tests.Helpers;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine.TestTools;
-using VRC.Udon;
 
 namespace Tsvrc.UdonTestKit.Editor.Tests
 {
@@ -21,8 +20,6 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
     {
         private const string RunKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Run";
         private const string LogsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Logs";
-        private const string CallsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Calls";
-        private const string UploadErrorsKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.UploadErrors";
         private const string ChangedKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Changed";
         private const string FolderKey = "Tsvrc.UdonTestKit.Editor.Tests.TestAssemblyCreatorCompileTests.Folder";
         private const string Parent = "Assets/UdonTestKitCreatorCompileTests";
@@ -94,8 +91,6 @@ public class EditorRunnerUsage__RUN__
             Selection.activeObject = null;
             SessionState.EraseString(RunKey);
             SessionState.EraseString(LogsKey);
-            SessionState.EraseString(CallsKey);
-            SessionState.EraseString(UploadErrorsKey);
             SessionState.EraseString(ChangedKey);
         }
 
@@ -159,27 +154,28 @@ public class EditorRunnerUsage__RUN__
         }
 
         // The Udon doubles assembly is a player assembly with a U# assembly definition, so its example
-        // compiles for a world upload and runs as Udon. This assembly can't reference it, so the
-        // test reaches it by reflection. This project's only scripts without an assembly definition
-        // are UdonSharp's utility scripts, so creating the assemblies warns about none.
+        // compiles for a world upload, and the example has the program asset UdonHost runs it from;
+        // the Play Mode tests run the kit's copy of it as Udon. This assembly can't reference it, so
+        // the test finds it by reflection. This project's only scripts without an assembly
+        // definition are UdonSharp's utility scripts, so creating the assemblies warns about none.
+        // Unity Test Framework loses a failure that comes after an Edit Mode test enters Play Mode,
+        // so the test checks all of it in Edit Mode.
         [UnityTest]
-        public IEnumerator Create_NoFolderGiven_CreatesAnUdonDoubleThatCompilesForUploadAndRunsAsUdon()
+        public IEnumerator Create_NoFolderGiven_CreatesAnUdonDoubleThatCompilesForUploadFromItsProgramAsset()
         {
             // Arrange
             SessionState.SetString(LogsKey, string.Join("\n", Messages(() => SessionState.SetString(FolderKey, TestAssemblyCreator.Create()))));
             yield return new WaitForDomainReload();
 
             // Act
-            SessionState.SetString(UploadErrorsKey, string.Join("\n", UdonSharpUploadCompile.Run()));
-            yield return new EnterPlayMode();
-            SessionState.SetString(CallsKey, RunTheExampleUdonDouble(SessionState.GetString(FolderKey, "")));
-            yield return new ExitPlayMode();
+            IReadOnlyList<string> uploadErrors = UdonSharpUploadCompile.Run();
 
             // Assert
+            Type example = ExampleUdonDouble(SessionState.GetString(FolderKey, ""));
             Assert.That(SessionState.GetString(FolderKey, ""), Does.StartWith("Assets/Tests"));
             Assert.That(SessionState.GetString(LogsKey, "").Split('\n'), Has.No.Member(TestAssemblyCreator.AssemblyCSharpWarning));
-            Assert.That(SessionState.GetString(UploadErrorsKey, "not run"), Is.Empty);
-            Assert.That(SessionState.GetString(CallsKey, ""), Is.EqualTo("Example.OnExample"));
+            Assert.That(uploadErrors, Is.Empty);
+            Assert.That(UdonHost.ProgramAssetOf(example).sourceCsScript.GetClass(), Is.EqualTo(example));
         }
 
         // The world got two assembly definitions after the set was created, one of them Editor-only.
@@ -222,28 +218,11 @@ public class EditorRunnerUsage__RUN__
 
         private static IEnumerable<string> ReferencesOf(Assembly assembly) => assembly.assemblyReferences.Select(reference => reference.name);
 
-        // The calls the example double made, or what it threw: Unity Test Framework loses an exception
-        // thrown between EnterPlayMode and ExitPlayMode and passes the test, so the assertion shows it.
-        private static string RunTheExampleUdonDouble(string tests)
+        private static Type ExampleUdonDouble(string tests)
         {
-            try
-            {
-                Assembly udonDoubles = AssemblyOf(CompilationPipeline.GetAssemblies(AssembliesType.Editor), tests + "/UdonDoubles/ExampleUdonDouble.cs");
-                string prefix = udonDoubles.name.Substring(0, udonDoubles.name.Length - TestAssemblyCreator.UdonDoublesSuffix.Length);
-                Type exampleType = Type.GetType($"{prefix}.Tests.ExampleUdonDouble, {udonDoubles.name}", throwOnError: true);
-
-                using var udon = new UdonHost();
-                UdonBehaviour log = udon.Create<UdonCallLog>("Log");
-                var example = (UdonBehaviour)typeof(UdonHost).GetMethod(nameof(UdonHost.Create)).MakeGenericMethod(exampleType)
-                    .Invoke(udon, new object[] { "Example", true });
-                example.SetProgramVariable("Log", log);
-                example.SendCustomEvent("OnExample");
-                return string.Join("\n", UdonHost.Calls(log));
-            }
-            catch (Exception e)
-            {
-                return e.ToString();
-            }
+            Assembly udonDoubles = AssemblyOf(CompilationPipeline.GetAssemblies(AssembliesType.Editor), tests + "/UdonDoubles/ExampleUdonDouble.cs");
+            string prefix = udonDoubles.name.Substring(0, udonDoubles.name.Length - TestAssemblyCreator.UdonDoublesSuffix.Length);
+            return Type.GetType($"{prefix}.Tests.ExampleUdonDouble, {udonDoubles.name}", throwOnError: true);
         }
 
         private static IEnumerable<string> Messages(Action act) => Logs.During(act).Select(log => log.Message);
