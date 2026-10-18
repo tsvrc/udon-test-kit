@@ -21,7 +21,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void Run_ProgramAssetOfATestsOnlyScript_ReturnsTheErrorAndExpectsIt()
         {
             // Arrange
-            using var programAsset = new TestsOnlyProgramAsset();
+            using var programAsset = new TemporaryProgramAsset(typeof(TestsOnlyBehaviour));
 
             // Act
             IReadOnlyList<string> errors = UdonSharpUploadCompile.Run();

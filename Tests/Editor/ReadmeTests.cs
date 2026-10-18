@@ -19,7 +19,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
             string block = readme.Substring(start, readme.IndexOf("```", start) - start);
 
             // Assert
-            Assert.That(block, Is.EqualTo(TestAssemblyCreator.ExamplePlayModeTests.Replace("\r\n", "\n")));
+            Assert.That(block, Is.EqualTo(TestAssemblyCreator.Example(TestAssemblyCreator.ExamplePlayModeTests, "MyWorld").Replace("\r\n", "\n")));
         }
 
         [Test]

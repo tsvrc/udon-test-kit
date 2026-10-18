@@ -30,7 +30,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         public void Create_ClassWithAProgramAssetInATestsOnlyAssembly_ThrowsAnErrorThatSaysWhereItGoes()
         {
             // Arrange
-            using var programAsset = new TestsOnlyProgramAsset();
+            using var programAsset = new TemporaryProgramAsset(typeof(TestsOnlyBehaviour));
             using var udon = new UdonHost();
             string menu = TypeCache.GetMethodsWithAttribute<MenuItem>()
                 .Where(method => method.DeclaringType == typeof(UdonSharpAssemblyDefinition))
