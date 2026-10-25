@@ -28,7 +28,18 @@ The kit tests need a VRChat world project to run in.
 
    Don't install the kit through the Creator Companion as well: two copies stop the project
    compiling.
-3. Add `TSVRC_UDON_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The
+3. In the clone's folder, set up the filter that keeps compiled Udon program references out of git:
+
+   ```powershell
+   git config filter.udon-programs.clean 'perl "Tools~/udon-programs-filter.pl"'
+   ```
+
+   Udon stores each compiled program in the project's own `Assets/SerializedUdonPrograms` folder,
+   under an id that differs in every project, and the kit's program assets reference it. The
+   filter, which `.gitattributes` applies to `.asset`, `.prefab` and `.unity` files, stages those
+   references empty; without it, every compile shows those files as changed. Perl comes with Git
+   for Windows.
+4. Add `TSVRC_UDON_TEST_KIT_TESTS` to **Project Settings > Player > Scripting Define Symbols**. The
    kit tests compile only when it's defined, so they never show up in a world that uses the kit.
 
 ## Running tests

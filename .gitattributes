@@ -1,4 +1,13 @@
+# Unity writes LF, so checking out LF keeps a core.autocrlf setting from reporting files Unity
+# rewrote.
+* text=auto eol=lf
 # Bash fails on a carriage return, so shell scripts keep LF line endings in every checkout.
 *.sh text eol=lf
 # The script tests compare outputs byte for byte, so their files keep LF line endings too.
 Tests/Scripts~/** text eol=lf
+
+# References to the project's own compiled Udon programs differ in every project. The udon-programs
+# filter stages them empty; set it up once per clone, as CONTRIBUTING.md (Setup) shows.
+*.asset filter=udon-programs
+*.prefab filter=udon-programs
+*.unity filter=udon-programs
