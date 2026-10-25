@@ -29,7 +29,11 @@ namespace Tsvrc.UdonTestKit
 
         /// <summary>Adds the references, imports the assembly definitions it changed, and returns
         /// their paths.</summary>
-        public static IReadOnlyList<string> Update()
+        public static IReadOnlyList<string> Update() => Update("Assets/");
+
+        // Only the sets under folder; the kit's tests pass their own folder, so they leave the
+        // project's other sets alone.
+        internal static IReadOnlyList<string> Update(string folder)
         {
             Assembly[] editor = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
             Assembly[] player = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
@@ -38,7 +42,7 @@ namespace Tsvrc.UdonTestKit
 
             var changed = new List<string>();
             foreach ((string definition, AssemblyKind kind) in CreatedAssemblyDefinitions(editor.Select(assembly => assembly.name),
-                CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName))
+                CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName, folder))
             {
                 string json = File.ReadAllText(definition);
                 string updated = WithMissingReferences(json, TestAssemblyCreator.WorldReferencesOf(kind, world, editorWorld));
@@ -55,17 +59,17 @@ namespace Tsvrc.UdonTestKit
             return changed;
         }
 
-        // The assembly definitions under Assets of the assemblies named as TestAssemblyCreator names
-        // them, but the kit's own. Assembly definitions in packages are left alone.
+        // The assembly definitions under folder (Assets by default) of the assemblies named as
+        // TestAssemblyCreator names them, but the kit's own. Assembly definitions in packages are left alone.
         internal static IEnumerable<(string definition, AssemblyKind kind)> CreatedAssemblyDefinitions(IEnumerable<string> assemblyNames,
-            Func<string, string> definitionOf)
+            Func<string, string> definitionOf, string folder = "Assets/")
         {
             return from name in assemblyNames
                    where !TestAssemblyCreator.IsKitAssembly(name)
                    from kind in TestAssemblyCreator.Kinds
                    where name.EndsWith(TestAssemblyCreator.SuffixOf(kind))
                    let definition = definitionOf(name)
-                   where definition.StartsWith("Assets/")
+                   where definition.StartsWith(folder)
                    select (definition, kind);
         }
 

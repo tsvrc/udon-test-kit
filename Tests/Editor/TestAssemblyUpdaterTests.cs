@@ -11,18 +11,33 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
 {
     public class TestAssemblyUpdaterTests
     {
-        // At the path the docs give. This project has no test assemblies the kit created.
+        // At the path the docs give. Running it would update every set in the project the kit is
+        // developed in, so the test only finds it.
         [Test]
-        public void MenuItem_NothingToAdd_LogsThatTheTestAssembliesReferenceEveryAssemblyDefinition()
+        public void MenuItem_UpdateTestAssemblyReferences_IsAtThePathTheDocsGive()
+        {
+            // Act
+            var menus = TypeCache.GetMethodsWithAttribute<MenuItem>()
+                .Where(method => method.DeclaringType == typeof(TestAssemblyUpdater))
+                .SelectMany(method => method.GetCustomAttributes(typeof(MenuItem), false).Cast<MenuItem>())
+                .Select(item => item.menuItem);
+
+            // Assert
+            Assert.That(menus, Is.EqualTo(new[] { "Tools/TsVRC/Udon Test Kit/Update Test Assembly References" }));
+        }
+
+        // A folder with no test assemblies the kit created, so the project's other sets stay as they are.
+        [Test]
+        public void Update_NothingToAdd_LogsThatTheTestAssembliesReferenceEveryAssemblyDefinition()
         {
             // Arrange
             LogAssert.Expect(LogType.Log, "[UdonTestKit] The test assemblies reference every assembly definition of the world.");
 
             // Act
-            bool ran = EditorApplication.ExecuteMenuItem("Tools/TsVRC/Udon Test Kit/Update Test Assembly References");
+            IReadOnlyList<string> changed = TestAssemblyUpdater.Update("Assets/UdonTestKitNoTestAssemblies/");
 
             // Assert
-            Assert.That(ran, Is.True);
+            Assert.That(changed, Is.Empty);
         }
 
         [Test]
@@ -51,6 +66,26 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
                 "EditModeTests Assets/Tests/EditMode/MyWorld.Tests.EditMode.asmdef", "PlayModeTests Assets/Tests/PlayMode/MyWorld.Tests.PlayMode.asmdef",
                 "Doubles Assets/Tests/Doubles/MyWorld.Tests.Doubles.asmdef", "UdonDoubles Assets/Tests/UdonDoubles/MyWorld.Tests.UdonDoubles.asmdef",
             }));
+        }
+
+        // The compile tests update only the set they created, so they leave the project's other sets alone.
+        [Test]
+        public void CreatedAssemblyDefinitions_Folder_FindsOnlyTheSetsUnderIt()
+        {
+            // Arrange
+            var definitions = new Dictionary<string, string>
+            {
+                ["MyWorld.Tests.EditMode"] = "Assets/Tests/EditMode/MyWorld.Tests.EditMode.asmdef",
+                ["Probe.Tests.EditMode"] = "Assets/Probe/Tests/EditMode/Probe.Tests.EditMode.asmdef",
+                ["ProbeTwo.Tests.EditMode"] = "Assets/ProbeTwo/Tests/EditMode/ProbeTwo.Tests.EditMode.asmdef",
+            };
+
+            // Act
+            var created = TestAssemblyUpdater.CreatedAssemblyDefinitions(definitions.Keys, name => definitions[name], "Assets/Probe/")
+                .Select(definition => definition.definition);
+
+            // Assert
+            Assert.That(created, Is.EqualTo(new[] { "Assets/Probe/Tests/EditMode/Probe.Tests.EditMode.asmdef" }));
         }
 
         // As TestAssemblyCreator writes an assembly definition.
