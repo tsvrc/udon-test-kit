@@ -156,8 +156,9 @@ public class EditorRunnerUsage__RUN__
         // The Udon doubles assembly is a player assembly with a U# assembly definition, so its example
         // compiles for a world upload, and the example has the program asset UdonHost runs it from;
         // the Play Mode tests run the kit's copy of it as Udon. This assembly can't reference it, so
-        // the test finds it by reflection. This project's only scripts without an assembly
-        // definition are UdonSharp's utility scripts, so creating the assemblies warns about none.
+        // the test finds it by reflection. Creating the assemblies warns about scripts without an
+        // assembly definition only when the project has some, which TestAssemblyCreatorTests covers
+        // case by case; the project the kit is developed in may have them.
         // Unity Test Framework loses a failure that comes after an Edit Mode test enters Play Mode,
         // so the test checks all of it in Edit Mode.
         [UnityTest]
@@ -173,14 +174,16 @@ public class EditorRunnerUsage__RUN__
             // Assert
             Type example = ExampleUdonDouble(SessionState.GetString(FolderKey, ""));
             Assert.That(SessionState.GetString(FolderKey, ""), Does.StartWith("Assets/Tests"));
-            Assert.That(SessionState.GetString(LogsKey, "").Split('\n'), Has.No.Member(TestAssemblyCreator.AssemblyCSharpWarning));
+            bool looseScripts = TestAssemblyCreator.HasScriptsInPredefinedAssemblies(CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies));
+            Assert.That(SessionState.GetString(LogsKey, "").Split('\n').Contains(TestAssemblyCreator.AssemblyCSharpWarning), Is.EqualTo(looseScripts));
             Assert.That(uploadErrors, Is.Empty);
             Assert.That(UdonHost.ProgramAssetOf(example).sourceCsScript.GetClass(), Is.EqualTo(example));
         }
 
         // The world got two assembly definitions after the set was created, one of them Editor-only.
         // The Play Mode test assembly references by GUID, as the Unity Editor writes them with Use
-        // GUIDs on.
+        // GUIDs on. The test updates only the sets in its own folder, so the other sets of the project
+        // the kit is developed in stay as they are.
         [UnityTest]
         public IEnumerator Update_WorldAssemblyDefinitionsAddedAfterTheSet_AddsThemToTheSetAndReturnsItsDefinitions()
         {
@@ -197,7 +200,7 @@ public class EditorRunnerUsage__RUN__
             yield return new WaitForDomainReload();
 
             // Act
-            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => SessionState.SetString(ChangedKey, string.Join("\n", TestAssemblyUpdater.Update())))));
+            SessionState.SetString(LogsKey, string.Join("\n", Messages(() => SessionState.SetString(ChangedKey, string.Join("\n", TestAssemblyUpdater.Update(Parent + "/"))))));
             yield return new WaitForDomainReload();
 
             // Assert
@@ -213,7 +216,7 @@ public class EditorRunnerUsage__RUN__
             Assert.That(ReferencesOf(udonDoubles), Has.Member(WorldAssembly).And.No.Member(WorldEditorAssembly));
             Assert.That(AssemblyDefinitionText.Items(File.ReadAllText(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(playMode.name)), "references"),
                 Has.All.StartsWith("GUID:"));
-            Assert.That(TestAssemblyUpdater.Update(), Is.Empty);
+            Assert.That(TestAssemblyUpdater.Update(Parent + "/"), Is.Empty);
         }
 
         private static IEnumerable<string> ReferencesOf(Assembly assembly) => assembly.assemblyReferences.Select(reference => reference.name);
