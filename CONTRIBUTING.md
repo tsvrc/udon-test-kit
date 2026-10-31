@@ -109,7 +109,17 @@ what users call or see needs a matching pull request there.
 1. Sign off every commit (`git commit -s`) per the
    [Developer Certificate of Origin](https://developercertificate.org/). It certifies you wrote the
    change, or otherwise have the right to submit it under the MIT license, so only you can add it,
-   never a tool. A check fails the pull request if any of its commits isn't signed off.
+   never a tool. Use the name you're known by in the community, set as `user.name` in Git. It
+   doesn't have to be your legal name, but it can't be anonymous.
+
+   A check fails the pull request if any of its commits isn't signed off with the name and email of
+   its author. To add the missing sign-offs:
+
+   ```powershell
+   git rebase --signoff origin/main
+   git push --force-with-lease
+   ```
+
 2. If AI tools helped, say which parts and how in the pull request description. You're the author
    either way: read, understand and test all of it before you submit it, and be ready to explain it
    in review. A pull request that's mostly unreviewed AI output, and would take longer to review
