@@ -108,7 +108,7 @@ namespace Tsvrc.UdonTestKit.Tests
         }
 
         [Test]
-        public void Dispose_GameObjectTheTestDestroyed_ThrowsAndLogsNothing()
+        public void Dispose_GameObjectTheTestDestroyed_LogsNothing()
         {
             // Arrange
             var udon = new UdonHost();
