@@ -115,7 +115,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests.Learning
             // Act
             Export();
 
-            // Assert: the compile for upload leaves the marker out.
+            // Assert: the exporter runs no upload compile, so the marker stays.
             Assert.That(ProgramHeap.Strings(typeof(UdonDouble)), Has.Member(UdonDouble.EditorOnlyMarker));
         }
 

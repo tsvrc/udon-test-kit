@@ -97,7 +97,7 @@ namespace Tsvrc.UdonTestKit.Editor.Tests
         }
 
         [Test]
-        public void Dispose_SpyTheTestDestroyed_ThrowsAndLogsNothing()
+        public void Dispose_SpyTheTestDestroyed_LogsNothing()
         {
             // Arrange
             var calls = new CallLog();
